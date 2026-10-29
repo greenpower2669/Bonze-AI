@@ -214,6 +214,7 @@ el('voice').checked=browserVoiceEnabled;el('native-voice-row').hidden=!isNative;
 el('native-voice').addEventListener('change',e=>{const wanted=e.target.value;pendingVoice=wanted;nativeVoice=wanted;stopAll();configureNative();});
 el('voice').addEventListener('change',()=>{browserVoiceEnabled=el('voice').checked;el('voice-status').textContent=browserVoiceEnabled?'Voix locale choisie si disponible.':'Lecture désactivée.';if(!browserVoiceEnabled)window.speechSynthesis?.cancel();configureNative();save();});
 setupEditor({getIdentity:()=>identity,setIdentity:i=>{identity=i;renderAppearance(face,i);describedMood='';draw();save();},root:el('avatar-fields'),description:el('avatar-description')});
+el('voice-sample').addEventListener('click',()=>{stopAll();if(['off','text'].includes(resourceMode)){el('voice-status').textContent='Choisis un mode avec voix pour écouter cet essai.';return;}const sample='Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?';closeSettings();el('answer').textContent=sample;if(isNative)nativeCommand('describe',sample);else browserSpeak(sample,true);});
 el('avatar-read').addEventListener('click',()=>{stopAll();if(isNative)nativeCommand('describe',describe(identity));else browserSpeak(describe(identity),true);});
 el('resources-refresh').addEventListener('click',()=>{
  if(!isNative){el('resources-real').textContent='Mesures système indisponibles dans ce navigateur.';return;}

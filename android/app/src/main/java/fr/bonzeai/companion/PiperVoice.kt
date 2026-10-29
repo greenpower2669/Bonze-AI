@@ -19,7 +19,6 @@ class PiperVoice(private val app: Context) {
     }
     private val worker = Executors.newSingleThreadExecutor()
     private val serial = AtomicLong()
-    private val audioLock = Any()
     private var track: AudioTrack? = null
     private var engine: OfflineTts? = null
     private var dictionary: Set<String>? = null
@@ -56,7 +55,7 @@ class PiperVoice(private val app: Context) {
                         .setAudioFormat(AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_PCM_16BIT).setSampleRate(generated.sampleRate).setChannelMask(AudioFormat.CHANNEL_OUT_MONO).build())
                         .setBufferSizeInBytes(max(minBuffer,8192)).setTransferMode(AudioTrack.MODE_STREAM).build()
                     try {
-                        synchronized(audioLock) { if(serial.get()!=token)return@execute; track=player; player.play() }
+                        if (!attachPlayer(player,token)) return@execute
                         var written=0;var started=false;val deadline=SystemClock.elapsedRealtime()+60000
                         while(serial.get()==token && player.playbackHeadPosition < pcm.size) {
                             if(SystemClock.elapsedRealtime()>deadline)error("playback-timeout")
@@ -67,7 +66,7 @@ class PiperVoice(private val app: Context) {
                                 events.level(id,min(1.0,sqrt(sum/max(1,frame-from))*5.0),frame)}
                             Thread.sleep(20)
                         }
-                    } finally { synchronized(audioLock){if(track===player)track=null;try{player.pause();player.flush()}catch(_:IllegalStateException){};player.release()} }
+                    } finally { releasePlayer(player) }
                     if(serial.get()==token){events.level(id,0.0,pcm.size);Thread.sleep(140)}
                 }
                 if(serial.get()==token)events.done()
@@ -75,7 +74,10 @@ class PiperVoice(private val app: Context) {
               catch(e: LinkageError) { if(serial.get()==token)events.failed(e.javaClass.simpleName,hadAudio) }
         }
     }
-    fun stop(){serial.incrementAndGet();synchronized(audioLock){try{track?.pause();track?.flush()}catch(_:IllegalStateException){}}}
+    // Method monitors avoid a Kotlin/D8 verifier failure with non-local returns in inline synchronized/finally.
+    @Synchronized private fun attachPlayer(player: AudioTrack,token: Long): Boolean {if(serial.get()!=token)return false;track=player;player.play();return true}
+    @Synchronized private fun releasePlayer(player: AudioTrack){if(track===player)track=null;try{player.pause();player.flush()}catch(_:IllegalStateException){};player.release()}
+    @Synchronized fun stop(){serial.incrementAndGet();try{track?.pause();track?.flush()}catch(_:IllegalStateException){}}
     fun unload(){stop();worker.execute{engine?.release();engine=null;dictionary=null}}
     fun close(){stop();worker.execute{engine?.release();engine=null};worker.shutdown()}
 }

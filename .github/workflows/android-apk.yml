@@ -106,22 +106,6 @@ jobs:
             signature.txt
             android/app/build/reports/lint-results-debug.html
           if-no-files-found: error
-      - name: Publish direct APK in a versioned prerelease
-        if: github.ref == 'refs/heads/feature/offline-bonsaiv1' && false # candidate under validation
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          tag="bonze-ai-v0.6.0"
-          if gh release view "$tag" >/dev/null 2>&1; then
-            existing="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq '.object.sha')"
-            test "$existing" = "$GITHUB_SHA" || { echo 'Version already published at another commit; increment version.'; exit 1; }
-            exit 0
-          fi
-          gh release create "$tag" Bonze-AI-v0.6.0-debug.apk Bonze-AI-v0.6.0.sha256 \
-            --target "$GITHUB_SHA" --prerelease \
-            --title "🌱 Bonze AI 0.6.0 · Piper et conseil émotionnel · version de test" \
-            --notes-file docs/release-v0.6.0.md
-
 
   android-offline-test:
     needs: validate
@@ -159,7 +143,32 @@ jobs:
             adb shell svc data disable
             adb shell settings put global airplane_mode_on 1
             adb shell am instrument -w fr.bonzeai.companion.test/androidx.test.runner.AndroidJUnitRunner | tee android-offline-test.txt
-            grep -q 'OK (2 tests)' android-offline-test.txt
+            grep -q 'OK (3 tests)' android-offline-test.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: bonze-android-offline-test, path: android-offline-test.txt}
+
+  publish-test-release:
+    needs: [android-debug, android-offline-test]
+    if: github.ref == 'refs/heads/feature/offline-bonsaiv1' # requires every validation job to succeed
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {name: Bonze-AI-v0.6.0-debug, path: release-files}
+      - name: Publish direct APK after all checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd release-files
+          sha256sum -c Bonze-AI-v0.6.0.sha256
+          tag="bonze-ai-v0.6.0"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            existing="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq '.object.sha')"
+            test "$existing" = "$GITHUB_SHA" || { echo 'Version already published at another commit; increment version.'; exit 1; }
+            exit 0
+          fi
+          gh release create "$tag" Bonze-AI-v0.6.0-debug.apk Bonze-AI-v0.6.0.sha256 signature.txt \
+            --target "$GITHUB_SHA" --prerelease \
+            --title "🌱 Bonze AI 0.6.0 · Piper et conseil émotionnel · version de test" \
+            --notes-file ../docs/release-v0.6.0.md

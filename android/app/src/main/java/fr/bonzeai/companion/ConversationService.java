@@ -254,7 +254,7 @@ public final class ConversationService extends Service {
   localVoiceReady=choice!=null&&tts.setVoice(choice)==TextToSpeech.SUCCESS;
   if("piper-siwis".equals(preferred))voiceName=preferred;else if(localVoiceReady)voiceName=choice.getName();prefs.edit().putString("voiceChoiceV2",voiceName).putString("voice",voiceName).apply();
  }
- public void describe(String text,String id){stop(id,"Description de Bonze.");if(!"off".equals(mode)&&!"text".equals(mode))speak(text,false,workEpoch,0);}
+ public void describe(String text,String id){stop(id,"Lecture demandée.");if(!"off".equals(mode)&&!"text".equals(mode))speak(text,false,workEpoch,0);}
  private void speak(String text,boolean conversation,long epoch,int attempt){
   if(disposed||epoch!=workEpoch)return;
   if(!acquireFocus()){stop(request,"Son indisponible pour le moment.");return;}
@@ -264,7 +264,7 @@ public final class ConversationService extends Service {
   if("piper-siwis".equals(voiceName)){
    speechEngine="piper-siwis";setState("waiting","Je prépare ma voix locale.");
    piper.speak(speechChunks,prefix,"calme".equals(mood)?.94f:"joie".equals(mood)?1.02f:.98f,new PiperVoice.Events(){
-    public void start(String id,String content){main.post(()->{if(epoch!=workEpoch||!validSpeech(id))return;speechId=id;speechText=content;speechBegan=SystemClock.elapsedRealtime();journal.add("speech",diagnosticTurn,DiagnosticJournal.fields("engine","piper-siwis","text",content,"id",id,"firstAudioLatencyMs",SystemClock.elapsedRealtime()-voiceBegan));setState("speaking","Je te réponds.");speechEvent("speech-start",id,0,0);});}
+    public void start(String id,String content){main.post(()->{if(epoch!=workEpoch||!validSpeech(id))return;speechId=id;speechText=content;speechBegan=SystemClock.elapsedRealtime();journal.add("speech",diagnosticTurn,DiagnosticJournal.fields("engine","piper-siwis","text",content,"id",id,"firstAudioLatencyMs",partIndex(id)==0?SystemClock.elapsedRealtime()-voiceBegan:JSONObject.NULL));setState("speaking","Je te réponds.");speechEvent("speech-start",id,0,0);});}
     public void level(String id,double value,int frame){main.post(()->{if(epoch!=workEpoch||!validSpeech(id)||listener==null)return;JSONObject e=base("speech-level");try{e.put("id",id).put("level",value).put("frame",frame);listener.onEvent(e.toString());}catch(JSONException ignored){}});}
     public void done(){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;finishSpeech();});}
     public void failed(String reason,boolean hadAudio){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;journal.add("speech-fallback",diagnosticTurn,DiagnosticJournal.fields("reason",reason,"hadAudio",hadAudio));if(hadAudio)stop(request,"Lecture interrompue. Tu peux réessayer.");else androidSpeech(epoch,0);});}

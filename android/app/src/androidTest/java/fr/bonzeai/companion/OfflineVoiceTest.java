@@ -19,4 +19,20 @@ public class OfflineVoiceTest {
   for(int a=0;a<6;a++){double sum=0;for(int i=0;i<8;i++)sum+=trace.getJSONArray("contributions").getJSONObject(i).getJSONArray("vector").getDouble(a);assertEquals(sum,trace.getJSONArray("totals").getDouble(a),1e-9);}
   JSONObject before=c.snapshot();EmotionalCouncil restarted=new EmotionalCouncil(app,p);assertEquals(before.toString(),restarted.snapshot().toString());assertTrue(r.getString("hint").contains("scène"));
  }
+ @Test public void nativeRestoreValidatesBeforeMutationAndCanRollback()throws Exception{
+  android.content.Context app=InstrumentationRegistry.getInstrumentation().getTargetContext();CountDownLatch connected=new CountDownLatch(1);AtomicReference<ConversationService> ref=new AtomicReference<>();
+  android.content.ServiceConnection connection=new android.content.ServiceConnection(){public void onServiceConnected(android.content.ComponentName name,android.os.IBinder binder){ref.set(((ConversationService.LocalBinder)binder).service());connected.countDown();}public void onServiceDisconnected(android.content.ComponentName name){}};
+  app.bindService(new android.content.Intent(app,ConversationService.class),connection,android.content.Context.BIND_AUTO_CREATE);assertTrue(connected.await(20,TimeUnit.SECONDS));AtomicReference<Throwable> failure=new AtomicReference<>();
+  try{InstrumentationRegistry.getInstrumentation().runOnMainSync(()->{try{
+   ConversationService service=ref.get();service.configureCouncil("{}");JSONObject council=service.backupData().getJSONObject("council"),state=council.getJSONObject("state");
+   JSONObject identity=DiagnosticJournal.fields("version",1,"seed","android-restore-fixture","acquired",DiagnosticJournal.fields("forces",state.getJSONObject("forces"),"endurance",.65));
+   JSONObject web=DiagnosticJournal.fields("identity",identity,"history",new JSONArray(),"resourceMode","off","neuralEnabled",false);
+   service.saveWebState(DiagnosticJournal.fields("web",web).toString());JSONObject previous=service.backupData().getJSONObject("native");
+   JSONObject nativeData=DiagnosticJournal.fields("schema",1,"mode","off","history",new JSONArray().put(DiagnosticJournal.fields("id",77,"role","human","text","Souvenir restauré")),"neural",false,"readText",false,"voice","piper-siwis");
+   JSONObject backup=DiagnosticJournal.fields("schema",1,"web",web,"native",nativeData,"council",council,"journal",new JSONArray());service.restoreBackup(backup.toString());
+   assertEquals("Souvenir restauré",service.backupData().getJSONObject("native").getJSONArray("history").getJSONObject(0).getString("text"));assertFalse(service.backupData().getJSONObject("native").getBoolean("neural"));
+   String before=service.backupData().toString();nativeData.getJSONArray("history").getJSONObject(0).put("role","unknown");try{service.restoreBackup(backup.toString());throw new AssertionError("corrupt backup accepted");}catch(IllegalArgumentException expected){}assertEquals(before,service.backupData().toString());
+   service.rollbackBackup();assertEquals(previous.getJSONArray("history").toString(),service.backupData().getJSONObject("native").getJSONArray("history").toString());assertFalse(new JSONObject(service.snapshot()).getBoolean("active"));
+  }catch(Throwable e){failure.set(e);}});if(failure.get()!=null)throw new AssertionError(failure.get());}finally{app.unbindService(connection);}
+ }
 }

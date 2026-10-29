@@ -55,18 +55,7 @@ Les huit experts doivent chacun contribuer au calcul de comportement/arbitrage, 
 Candidat avenant : correction d'affichage en cours ; sauvegarde AES-GCM/phrase secrète et accès administrateur via code de verrouillage Android implémentés localement, validationCI encore attendue. L'authentification de l'appareil ne constitue pas une gestion familiale multi-rôles. Journaux techniques locaux bornés, jamais exposés en conversation ; les journaux ne sont pas des pensées neuronales inventées.
 
 
-### Avenant 0.5 — candidat en validation, 29 octobre 2026
-- Correction prouvée : ancien sous-titre associé au nouveau tour et flex des sous-titres ; CI 40906407823 réussie (avant nouveaux experts/Piper).
-- Probes exact GGUF : le contexte aplati provoque un écho ; contexte recréé et réutilisé donnent les mêmes réponses faibles. Suppression des préfixes du message utilisateur, contexte humain séparé, répétitions journalisées. Qualité 230M encore insuffisante, non déclarée résolue.
-- Conseil partagé JS/Rhino : huit activations entraînées + votes de politiques contextualisées écrites à la main, endurances individuelles, influences directionnelles, arbitrage réellement transmis au générateur. Pas un MoE linguistique achevé.
-- Console Android authentifiée par le code du téléphone, curseurs et geste de découverte 60 touches alternées ; ce geste ne donne aucun droit.
-- Sauvegardes AES-GCM/PBKDF2 versionnées : identité, acquis, historiques, poids, paramètres, états et traces ; vérification avant restauration, retour arrière. Validation sur téléphone encore à effectuer.
-- Piper Siwis int8 via sherpa-onnx 2.0.1 réellement branché à AudioTrack ; lexique français MIT, secours Android explicite pour les mots absents. PCM/arrêt/latence à vérifier sur Android. Synthèse hôte française réussie CI 40906407731, écoute humaine encore requise.
-- Nettoyage automatique de l’environnement : reprise depuis edb86e5 ; aucune perte de commit distant ; ajouts non commis reconstruits puis testés.
-- 45 tests JS passent localement ; compilation/lint et nouveaux essais Android en attente. Publication candidate désactivée, aucun merge main.
-
-Candidat complément : tests instrumentés Android Piper/conseil ajoutés ; migration des acquis sans ancien conseil corrigée, journaux PWA persistés. Licences détaillées dans docs/piper-integration.md et docs/licenses. Validation Android toujours en cours.
-
-Relecture indépendante : export SAF périmé rejeté avant ouverture du fichier ; poids par défaut restaurés immédiatement ; six tests JVM désormais prévus. CI instrumentée 40954882209 a échoué avant les essais à cause de la clé debug absente du runner ; clé éphémère dédiée à l’émulateur ajoutée. La clé de livraison reste celle de 0.5, avec contrôle SHA-256 obligatoire. Tests de sauvegarde chiffrée de bout en bout ajoutés au navigateur.
-
-Validation : le nouveau scénario navigateur importait le fichier sans activer le bouton Importer (qui capture la phrase secrète) ; test corrigé pour utiliser le véritable sélecteur. Probe complémentaire demandé : comparer début de séquence explicite et automatique, température 0,1 recommandée upstream ; ne conclure à une cause modèle qu’après comparaison.
+## État 0.6.0 candidat — 29 octobre 2026
+Code de la voix Piper française réellement intégré (sherpa 2.0.1 + Siwis int8 + lexique MIT, pas d'eSpeak), AudioTrack et bouche sur amplitude jouée ; Android de secours pour mots inconnus. Essai comparatif accessible par phrase fixe dans Options. Conseil partagé JS/Rhino : huit activations entraînées + votes contextualisés, endurances individuelles, influences et arbitre transmis au générateur. Les politiques restent écrites à la main ; pas de MoE linguistique complet.
+Sous-titres périmés et chevauchement corrigés. Le dernier message est séparé du contexte humain ; répétitions et sorties journalisées. Le 230M demeure faible en français/jeu, même en contexte neuf, à température 0,1 et avec début de séquence vérifié. Ne pas déclarer cette limite résolue.
+Sauvegarde chiffrée, restauration/retour arrière, console Android authentifiée et curseurs intégrés. Migration des acquis et poids corrigée après revue. Historique et traces sont bornés. Tests/compilation 0.6 passent, mais premier essai Android a révélé un VerifyError dans Piper : moniteurs de méthodes séparés, nouveaux essais requis. Publication seulement après tous les jobs verts ; écoute humaine/Samsung restent nécessaires. Aucun merge main.
