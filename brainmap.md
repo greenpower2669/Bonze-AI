@@ -60,3 +60,7 @@ Canal de preuve 0.4.0 : tag bonze-ai-v0.4.0 → e60d887 ; workflow 40858508226, 
 
 
 Preuves0.5 : tag bonze-ai-v0.5.0→ff04ec4 ; run #40868793495 :35 tests JS, VoiceSession/DialogueMemory/SpeechPlan/PendingStart sur JVM,34 assertions navigateur (masquage/réveil simulés, dialogue, bouchevisible/description sansmicro, choix de voix asynchrone/persistant, horsligne et tailles), puis assembleDebug/lintDebug et inspection APK. Capture navigateur du personnage agrandi inspectée, aucun test d'appareil réel. Cache keystore désormais explicite android/test-signing/debug.keystore, ignoré parGit, alimenté viaANDROID_USER_HOME dédié et effectivement sauvé enCI ; certificat différent des versions précédentes, cache pas sauvegarde de production.
+
+## Investigation avenant0.5 (en cours)
+
+`.github/probes/dialogue.cpp` et workflow `dialogue-probe.yml` comparent sur CPU Linux le contexte aplati0.5 et de vrais rôles avec le même GGUF et la révision llama.cpp de l'AAR (`2da6686`). Ce test est un diagnostic du modèle, pas un test Android. Source AARv0.1.1 vérifiée : KV vidé à chaque complete ; aucun indice d'ancien cache conservé. UI `applyNativeHistory` conserve le dernier bot même si la dernière ligne est humaine ; CSS captions grid flex-shrink peut déborder sur le bouton suivant. Régressions à produire.

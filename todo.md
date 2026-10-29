@@ -97,3 +97,15 @@ Candidat5edd1c8 : tests JS et JVM CI réussis ; scénario navigateur bloqué par
 État courant après correction :0.5.0 livrée, APK direct dans la Release bonze-ai-v0.5.0 ;161213280 octets, SHA-256 e5d12f3357e463232db7d2dea94663c53cf0ffd8cbdb99a89efff05572eacdee. Revue indépendante effectuée, ses trois problèmes importants corrigés et contrôles complets verts. Main toujours f5910311f903d8ae4378d62d100129b690fc0e85.
 
 Prochain geste : essai humain Samsung avec conversation lancée avant verrouillage, poursuite et arrêt depuis notification, retour au même dialogue, choix de voix et jeu de rôle. Aucun essai physique n'a été effectué ici. La signature0.5 est différente de0.4 (ancienne clé non récupérable dans les éléments accessibles) : préserver l'ancienne installation et ses données si Android refuse la mise à jour. La nouvelle clé a effectivement été sauvegardée dans le cacheCI bonze-ai-debug-signing-v2, sans garantie durable de rétention.
+
+## Avenant0.5 — exécution courante
+
+- [ ] Comparer générations réelles contexte aplati/rôles, tracer tours et erreurs, distinguer résultat modèle et ancien affichage.
+- [ ] Régression longs sous-titres/grands caractères, correction sans recouvrir les commandes.
+- [ ] Endurances/contributions/arbitrage/traces des huit modules, paramètres vérifiables.
+- [ ] Console avec authentification et accès accessible, geste optionnel.
+- [ ] Sauvegarde/restauration chiffrée, validation stricte, retour arrière et reprise sans micro.
+- [ ] Piper réel : résolution licences, intégration/audio joué/interruption, comparaison/écoute.
+- [ ] Vérifications CI/APK/signature identique0.5 et essai Samsung. Aucun merge main.
+
+État : reprise au commit c271d31 ;35 tests JS de base verts. Revue parallèle Piper indisponible (quota de l'agent) ; recherche poursuivie par l'agent principal. Ne pas déclarer ces missions réalisées.

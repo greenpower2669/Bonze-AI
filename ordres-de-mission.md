@@ -59,3 +59,15 @@ Audit ciblé demandé et réalisé : audit-2026-10-29-veille-dialogue-visage.md.
 
 
 Livraison de correction29/10 : prérelease0.5.0, commit ff04ec4, run #40868793495 vert. BONZE-019/020/021 et la partie voix Android de BONZE-022 sont produits pour essai humain : service écran éteint, contexte de jeu/dialogue, visage agrandi, parole animée et voix locale choisie. La qualité réelle sur Samsung et l'intégration Piper restent ouvertes. Aucun merge main. La clé de signature de test0.5 diffère de0.4 ; ne pas supprimer les données existantes sans décision de Fab.
+
+## Avenant Fab 0.5.0 — 29 octobre 2026, après vidéo d'essai
+
+- [ ] BONZE-023 PRIORITÉ : auditer toute la chaîne de conversation, réponses répétées/bloquées, préfixes Humain/Bonze, affichage périmé ; corriger seulement les causes prouvées avec régressions. Sous-titres non masqués par Arrêter, vérifier les états vers le visage.
+- [ ] BONZE-024 : huit modules émotionnels avec contributions contextualisées, expertise, interactions et arbitrage central ; progresser vers sous-réseaux neuronaux. Une seule personnalité, pas de scores présentés comme une délibération complète.
+- [ ] BONZE-025 : forces ET endurances individuelles ; fatigue modifiant différemment colère/humour/empathie, influences réciproques, apaisement et réglages expérimentaux. Modifie l'ancien contrat d'endurance uniquement globale.
+- [ ] BONZE-026 : journaux privés des calculs réellement exécutés, états, paramètres, contributions, arbitrage, réponse finale et erreurs ; aucune explication fabriquée après coup.
+- [ ] BONZE-027 : console administrateur avec curseurs forces/endurance/influences/arbitrage ; étudier 60 touches alternées (30 gauche/30 droite) dans zones libres supérieures ; authentification code ou biométrie supplémentaire et alternative accessible.
+- [ ] BONZE-028 : export/réimport protégés, versionnés et vérifiables de mémoire/identité/acquis/paramètres/poids/journaux ; migration et restauration contrôlée avant toute réinstallation à signature différente.
+- [ ] BONZE-029 PRIORITÉ VOCALE : réellement embarquer une voix Piper française via moteur compatible, licences moteur/phonémiseur/dépendances/poids résolues avant publication ; génération hors ligne, débit/pauses/timbre stable, expression réelle limitée, ressources mesurées, interruption, bouche sur signal joué, comparaison Android en secours. Ne pas clore sans fonctionnement APK, essai hors ligne et écoute humaine.
+
+Ordre demandé : anomalies bloquantes, puis mécanismes émotionnels, administration, Piper ; conserver les acquis0.5 et publier APK direct testé. Aucun merge main.

@@ -1,0 +1,28 @@
+name: Bonze dialogue model probe
+on:
+  push:
+    branches: [feature/offline-bonsaiv1]
+    paths: ['.github/probes/**', '.github/workflows/dialogue-probe.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build exact llama.cpp revision used by Android AAR
+        run: |
+          git clone https://github.com/ggml-org/llama.cpp /tmp/llama
+          git -C /tmp/llama checkout 2da668617612d2df773f966e3b0ee22dc2beef7b
+          cmake -S /tmp/llama -B /tmp/llama/build -DBUILD_SHARED_LIBS=OFF -DGGML_NATIVE=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=OFF -DLLAMA_BUILD_TOOLS=OFF -DLLAMA_CURL=OFF
+          cmake --build /tmp/llama/build --target llama -j 4
+          c++ -std=c++17 -I/tmp/llama/include -I/tmp/llama/ggml/include .github/probes/dialogue.cpp /tmp/llama/build/src/libllama.a /tmp/llama/build/ggml/src/libggml.a /tmp/llama/build/ggml/src/ggml-cpu/libggml-cpu.a /tmp/llama/build/ggml/src/libggml-base.a -fopenmp -lpthread -ldl -o /tmp/bonze-probe
+      - name: Compare real generations on the packaged weights
+        run: |
+          curl -fL --retry 3 https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LFM2.5-230M-Q4_K_M.gguf -o /tmp/model.gguf
+          echo '7bbd90384d3deffe4c646ec9643b212802d32d4ce417c90a1ec9282100650062  /tmp/model.gguf' | sha256sum -c
+          /tmp/bonze-probe /tmp/model.gguf 2>model-stderr.txt | tee dialogue-probe.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: bonze-dialogue-probe, path: '*-*.txt'}
