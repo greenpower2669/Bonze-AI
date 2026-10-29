@@ -142,3 +142,13 @@ Spécification : `docs/architecture-memoire-a-tiroirs.md`. Cette tâche étend B
 - [ ] Garder le texte et la TTS distincts dans le diagnostic : Piper lit la réponse mais ne crée pas ses formulations. Demander validation Fab avant déclarer l'UX naturelle.
 
 Constats fondés sur la capture d'essai et la lecture de `BonzeInference.kt`, `DialogueMemory.java`, `docs/index.html` sur `feature/offline-bonsaiv1`. Liquid AI classe explicitement le 230M comme non recommandé pour l'écriture créative : https://huggingface.co/LiquidAI/LFM2.5-230M/blob/main/README.md . **Documenté seulement ; aucun code ni APK modifié, aucun merge main.**
+
+## Priorité réaffirmée par Fab — 30 octobre 2026 : vrai MoE linguistique
+
+- [ ] **BONZE-032 — couche MoE linguistique réellement neuronale**, distincte de BONZE-024 (huit experts émotionnels à décisions partiellement programmées). Prévoir des sous-réseaux/expertises linguistiques entraînés, un routeur mesurable, une seule voix/personnalité de synthèse, des tests d'ablation et un budget RAM/CPU pour Android hors connexion. Il ne suffit pas de renommer huit prompts ou huit heuristiques « MoE ».
+- [ ] Avant intégration : fixer critères et jeux de tests français reproductibles (conversation spontanée, absurdités, cohérence de rôle, factualité, demandes délicates, reprise de contexte) et comparer à une base dense réellement conçue pour dialoguer. Aucune affirmation de meilleure qualité tant que les tests ne le montrent pas.
+- [ ] Évaluer séparément un modèle de conversation local plus adapté (p. ex. LFM2.5-1.2B-Instruct GGUF) comme **baseline de dialogue, pas comme MoE**. Vérifier licence, empreinte APK, mémoire de chargement, quantification, temps de réponse, stabilité/voix simultanée sur Samsung. Ne pas remplacer silencieusement les poids 230M.
+- [ ] Conserver les huit forces émotionnelles et leur arbitre ; concevoir une interface mesurée entre conseil émotionnel, routage des spécialistes linguistiques et mémoire à tiroirs BONZE-030, en isolant les autorisations.
+- [ ] Publier seulement après tests Android vérifiés et retour Fab ; ne jamais déclarer le MoE livré tant que le code d'inférence spécialisée et les évaluations ne le prouvent.
+
+Référence : Liquid AI recommande le LFM2.5-230M pour extraction / agents légers et déconseille l'écriture créative : https://huggingface.co/LiquidAI/LFM2.5-230M . Le 1.2B est un candidat dense de comparaison : https://huggingface.co/LiquidAI/LFM2.5-1.2B-Instruct-GGUF . Aucune intégration MoE linguistique dans l'APK 0.6.
