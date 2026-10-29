@@ -13,6 +13,7 @@ import androidx.annotation.ChecksSdkIntAtLeast;
 import org.json.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** User-started offline conversation. The Activity is a view, never the session owner. */
 public final class ConversationService extends Service {
@@ -30,7 +31,9 @@ public final class ConversationService extends Service {
  private android.content.SharedPreferences prefs;
  private PowerManager.WakeLock cpu;
  private AudioManager audio;private AudioFocusRequest focus;
- private boolean promoted,recording,generating,disposed,localVoiceReady,voiceInitFinished;
+ private boolean promoted,recording,disposed,localVoiceReady,voiceInitFinished;
+ private final AtomicBoolean generating=new AtomicBoolean();
+ private long focusSerial;
  private boolean neural=true,readText=false,economy;
  private String mode="precise",mood="curiosite",request="",state="off",status="Micro arrêté.",voiceName="";
  private long workEpoch,sequence,speechSerial,speechBegan,lastHeardAt;
@@ -100,7 +103,7 @@ public final class ConversationService extends Service {
   if(promoted){stopForeground(STOP_FOREGROUND_REMOVE);promoted=false;stopSelf();}
  }
  private void invalidate(){
-  workEpoch++;session.stop();main.removeCallbacksAndMessages(null);releaseRecognizer(true);
+  workEpoch++;session.stop();releaseRecognizer(true);
   speechId="";speechPrefix="";speechText="";if(tts!=null)tts.stop();abandonFocus();
  }
  public void configure(String json){
@@ -113,6 +116,7 @@ public final class ConversationService extends Service {
    prefs.edit().putString("mode",mode).putBoolean("neural",neural).putBoolean("readText",readText).apply();
    if(!neural||!Arrays.asList("precise","eco").contains(mode)){if(!inference.isShutdown())inference.execute(BonzeInference::release);}
    if(("off".equals(mode)||"text".equals(mode))&&session.active())stop(request,"Mode texte : conversation vocale arrêtée.");
+   publish();
   }catch(JSONException ignored){}
  }
  public void bootstrap(String json){
@@ -139,14 +143,15 @@ public final class ConversationService extends Service {
   memory.add("human",text);saveMemory();lastHeardAt=SystemClock.elapsedRealtime();
   if(fromVoice)session.awaiting();setState("thinking","Je réfléchis à ce que tu viens de me dire.");holdCpu();
   if(!neural||!Arrays.asList("precise","eco").contains(mode)){complete(epoch,lightReply(text),fromVoice);return;}
-  if(generating){complete(epoch,"Ma précédente pensée se termine encore. Redis-moi ta phrase dans un instant ?",fromVoice);return;}
-  generating=true;final boolean eco=economy;final String currentMood=mood;
+  if(!generating.compareAndSet(false,true)){complete(epoch,"Ma précédente pensée se termine encore. Redis-moi ta phrase dans un instant ?",fromVoice);return;}
+  final boolean eco=economy;final String currentMood=mood;
   inference.execute(()->{
    String result;long began=SystemClock.elapsedRealtime(),cpuBegan=SystemClock.currentThreadTimeMillis();
    try{BonzeInference.setEconomy(eco);result=BonzeInference.reply(getApplicationContext(),prompt,currentMood);}
    catch(Exception|LinkageError error){result="Je cherche encore mes mots. Tu peux me le dire autrement ?";}
+   finally{generating.set(false);}
    final String answer=result;final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
-   main.post(()->{generating=false;lastLatency=elapsed;lastCpu=cpuTime;if(!disposed&&epoch==workEpoch)complete(epoch,answer,fromVoice);});
+   main.post(()->{lastLatency=elapsed;lastCpu=cpuTime;if(!disposed&&epoch==workEpoch)complete(epoch,answer,fromVoice);});
   });
  }
  private String lightReply(String text){
@@ -202,12 +207,13 @@ public final class ConversationService extends Service {
   if(old!=null){if(cancel)try{old.cancel();}catch(RuntimeException ignored){}try{old.destroy();}catch(RuntimeException ignored){}}
  }
  private boolean acquireFocus(){
+  final long focusToken=++focusSerial;
   focus=new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
    .setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ASSISTANT).setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build())
-   .setOnAudioFocusChangeListener(change->{if(change<0)main.post(()->stop(request,"Une autre source audio interrompt Bonze."));},main).build();
+   .setOnAudioFocusChangeListener(change->{if(change<0)main.post(()->{if(!disposed&&focusToken==focusSerial&&focus!=null)stop(request,"Une autre source audio interrompt Bonze.");});},main).build();
   return audio.requestAudioFocus(focus)==AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
  }
- private void abandonFocus(){if(focus!=null){audio.abandonAudioFocusRequest(focus);focus=null;}}
+ private void abandonFocus(){focusSerial++;if(focus!=null){audio.abandonAudioFocusRequest(focus);focus=null;}}
  private void prepareVoice(){
   tts=new TextToSpeech(getApplicationContext(),code->{
    voiceInitFinished=true;if(code!=TextToSpeech.SUCCESS||tts==null||disposed)return;

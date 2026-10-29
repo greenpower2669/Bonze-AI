@@ -55,3 +55,5 @@ Canal de preuve 0.4.0 : tag bonze-ai-v0.4.0 → e60d887 ; workflow 40858508226, 
 - `core/native-view.mjs` : barrière des commandes UI, numéros de séquence et processus retraités ; bloque les événements périmés. `core/speech.mjs` : début/plage/fin/arrêt de lecture, repli approximatif, maintien d'une bouche visible en mouvement réduit.
 - `docs/app.js` : rendu et persistance identité ; conversation Android reçoit des snapshots (état/dialogue/voix) et événements de parole. Veille Android ne fait que sauvegarder/détacher le rendu. Web conserve l'arrêt quand masqué. Les échanges natifs importés ne sont pas recomptés en apprentissages acquis.
 - `docs/avatar.js` et CSS : bouche ouverte et formes/mouvements proportionnels, visage58vw en portrait (avant38), mise en page adaptée aux faibles hauteurs et aux réglages.
+
+`PendingStart.java` conserve la demande explicite à travers la pause du dialogue de permission, sans donner d'autorité à onResume. L'inférence libère son drapeau atomique dans le worker, même si la réponse devient périmée ; l'époque protège uniquement sa publication. Le choix de voix UI attend l'accusé natif pour résister aux anciens snapshots d'arrêt.

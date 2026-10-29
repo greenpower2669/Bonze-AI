@@ -11,9 +11,13 @@ test('Activity detaches its view at pause without stopping the authorized native
 test('microphone service is private, declares permissions and starts only after visible action',()=>{
  for(const p of ['FOREGROUND_SERVICE_MICROPHONE','FOREGROUND_SERVICE_MEDIA_PLAYBACK','WAKE_LOCK'])assert.ok(manifest.includes(p));
  assert.ok(manifest.includes('android:exported="false"'));assert.ok(!manifest.includes('uses-permission android:name="android.permission.INTERNET"'));
- assert.ok(activity.includes('!visible||destroyed||!pendingStart.equals(id)'));assert.ok(activity.includes('runOnUiThread'));
+ assert.ok(activity.includes('pendingStart.consumeIfVisible(visible&&!destroyed)'));assert.ok(activity.includes('runOnUiThread'));
 });
 test('speech callbacks carry playback ranges and guard old utterance ownership',()=>{
  assert.ok(service.includes('onRangeStart'));assert.ok(service.includes('validSpeech(id)'));assert.ok(service.includes('speech-range'));
  assert.ok(service.includes('memory.prompt(text)'));assert.ok(service.includes('BonzeInference.reply'));
+});
+test('stop cannot discard inference completion bookkeeping from the main queue',()=>{
+ assert.ok(!service.includes('main.removeCallbacksAndMessages(null)'));
+ assert.ok(service.includes('finally{generating.set(false);}'));
 });

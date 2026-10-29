@@ -60,11 +60,11 @@ try{
 
  const native=await browser.newContext({viewport:{width:393,height:852}});
  await native.addInitScript(()=>{
-  window.calls=[];window.seq=0;window.request='';window.active=false;window.rows=[];window.emitSnapshot=(extra={})=>{
-   BonzeNativeEvent({type:'snapshot',boot:'service',seq:++seq,request,active,state:active?'listening':'off',status:'Service local',history:rows,voices:[{name:'fr-local'}],voice:'fr-local',...extra});
+  window.calls=[];window.seq=0;window.request='';window.active=false;window.rows=[];window.chosen=localStorage.getItem('test-native-voice')||'fr-local';window.delayConfigAck=false;window.emitSnapshot=(extra={},delay=0)=>{
+   const e={type:'snapshot',boot:'service',seq:++seq,request,active,state:active?'listening':'off',status:'Service local',history:rows,voices:[{name:'fr-local'},{name:'fr-soft'}],voice:chosen,...extra};if(delay)setTimeout(()=>BonzeNativeEvent(e),delay);else BonzeNativeEvent(e);
   };
   window.BonzeAndroid={localSpeechAvailable:()=>true,
-   connectNative:()=>{calls.push(['connect']);emitSnapshot();},configureNative:data=>calls.push(['configure',JSON.parse(data)]),
+   connectNative:(initial,config)=>{calls.push(['connect']);calls.push(['configure',JSON.parse(config)]);emitSnapshot();},configureNative:data=>{const c=JSON.parse(data);calls.push(['configure',c]);if(c.voice){chosen=c.voice;localStorage.setItem('test-native-voice',chosen);}const delay=delayConfigAck?100:0;delayConfigAck=false;emitSnapshot({},delay);},
    command:(action,text,id)=>{
     calls.push([action,text,id]);if(action==='sync'){emitSnapshot();return;}
     request=id;
@@ -89,7 +89,12 @@ try{
  await p.locator('#stop-all').click();
  await p.evaluate(()=>BonzeNativeEvent({type:'speech-start',boot:'service',seq:++seq,request:'old-request',id:'old',text:'Périmé'}));
  check(await p.locator('#face').evaluate(el=>!el.classList.contains('is-talking')),'stop rejects old speech event');
- await p.locator('#settings-open').click();await p.locator('#avatar-editor summary').first().click();
+ await p.locator('#settings-open').click();
+ await p.evaluate(()=>{delayConfigAck=true;});await p.locator('#native-voice').selectOption('fr-soft');
+ check(await p.locator('#native-voice').inputValue()==='fr-soft','pending voice survives old stop snapshot');
+ await p.waitForTimeout(130);
+ check(await p.evaluate(()=>chosen==='fr-soft'),'native acknowledges selected voice');
+ await p.locator('#avatar-editor summary').first().click();
  await p.locator('#avatar-read').click();
  await p.waitForFunction(()=>document.getElementById('face').classList.contains('is-talking'));
  check(await p.locator('#native-mic').getAttribute('aria-pressed')==='false','description animates without enabling microphone');
@@ -100,6 +105,7 @@ try{
  await p.reload();await p.waitForSelector('#avatar-fields select',{state:'attached'});
  check(await p.evaluate(()=>calls.some(c=>c[0]==='configure'&&c[1].neural===false)),'neural disable persisted');
  check(await p.evaluate(()=>!calls.some(c=>c[0]==='start')),'reload never resumes microphone by itself');
+ check(await p.locator('#native-voice').inputValue()==='fr-soft','selected native voice survives reload');
  check(errors.length===0,'no native UI exceptions: '+errors.join(','));
  await native.close();
  console.log(checks+' browser assertions passed');

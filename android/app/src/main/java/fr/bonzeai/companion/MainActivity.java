@@ -15,7 +15,8 @@ public final class MainActivity extends Activity {
  private static final int MIC_PERMISSION=411;
  private WebView web;private volatile ConversationService engine;
  private boolean visible,uiReady,bound,destroyed;
- private String pendingStart="",bootstrap="{}",configuration="{}";
+ private final PendingStart pendingStart=new PendingStart();
+ private String bootstrap="{}",configuration="{}";
  private final List<Runnable> pending=new ArrayList<>();
  private final ConversationService.Listener observer=json->{
   if(web!=null&&uiReady&&visible&&!destroyed)web.evaluateJavascript("window.BonzeNativeEvent&&window.BonzeNativeEvent("+json+")",null);
@@ -53,39 +54,39 @@ public final class MainActivity extends Activity {
   });}
   @JavascriptInterface public void configureNative(String config){runOnUiThread(()->{configuration=config;withService(()->engine.configure(config));});}
   @JavascriptInterface public void command(String action,String text,String id){runOnUiThread(()->{
-   if("stop".equals(action)){pendingStart="";withService(()->engine.stop(id,"Conversation arrêtée par toi."));}
+   if("stop".equals(action)){pendingStart.cancel();withService(()->engine.stop(id,"Conversation arrêtée par toi."));}
    else if("start".equals(action)){if(visible&&!destroyed)startAfterPermission(id);}
-   else if("text".equals(action)){pendingStart="";withService(()->engine.submitText(text,id));}
-   else if("describe".equals(action)){pendingStart="";if(visible)withService(()->engine.describe(text,id));}
+   else if("text".equals(action)){pendingStart.cancel();withService(()->engine.submitText(text,id));}
+   else if("describe".equals(action)){pendingStart.cancel();if(visible)withService(()->engine.describe(text,id));}
    else if("sync".equals(action)){if(visible)withService(()->engine.attach(observer));}
   });}
   @JavascriptInterface public String resourceSnapshot(){ConversationService current=engine;return current==null?"{}":current.resources();}
  }
  private void startAfterPermission(String id){
-  pendingStart=id;
+  pendingStart.request(id);
   List<String> permissions=new ArrayList<>();
   if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED)permissions.add(Manifest.permission.RECORD_AUDIO);
   if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)permissions.add(Manifest.permission.POST_NOTIFICATIONS);
   if(!permissions.isEmpty()){requestPermissions(permissions.toArray(new String[0]),MIC_PERMISSION);return;}
-  launchConversation(id);
+  pendingStart.grant();launchConversation();
  }
- private void launchConversation(String id){
+ private void launchConversation(){
   withService(()->{
-   if(!visible||destroyed||!pendingStart.equals(id))return;pendingStart="";engine.authorizeStart(id);
+   String id=pendingStart.consumeIfVisible(visible&&!destroyed);if(id==null)return;engine.authorizeStart(id);
    try{startForegroundService(new Intent(this,ConversationService.class).setAction(ConversationService.START).putExtra("request",id));}
    catch(RuntimeException error){engine.stop(id,"Le service vocal n'a pas pu démarrer. Réessaie en gardant Bonze ouvert.");}
   });
  }
  @Override public void onRequestPermissionsResult(int code,String[] permissions,int[] results){
-  super.onRequestPermissionsResult(code,permissions,results);if(code!=MIC_PERMISSION||pendingStart.isEmpty())return;
-  String id=pendingStart;
-  if(visible&&checkSelfPermission(Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED)launchConversation(id);
-  else{pendingStart="";withService(()->engine.stop(id,"Micro arrêté. Tu peux relancer la conversation lorsque Bonze est ouvert."));}
+  super.onRequestPermissionsResult(code,permissions,results);if(code!=MIC_PERMISSION||pendingStart.id().isEmpty())return;
+  String id=pendingStart.id();
+  if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED){pendingStart.grant();launchConversation();}
+  else{pendingStart.cancel();withService(()->engine.stop(id,"Micro arrêté. Tu peux relancer la conversation lorsque Bonze est ouvert."));}
  }
- @Override public void onResume(){super.onResume();visible=true;if(uiReady&&engine!=null)engine.attach(observer);}
+ @Override public void onResume(){super.onResume();visible=true;if(uiReady&&engine!=null)engine.attach(observer);launchConversation();}
  @Override public void onPause(){visible=false;if(engine!=null)engine.detach(observer);super.onPause();}
  @Override public void onDestroy(){
-  destroyed=true;pendingStart="";pending.clear();if(engine!=null)engine.detach(observer);
+  destroyed=true;pendingStart.cancel();pending.clear();if(engine!=null)engine.detach(observer);
   if(bound){unbindService(connection);bound=false;}if(web!=null){web.destroy();web=null;}engine=null;super.onDestroy();
  }
 }

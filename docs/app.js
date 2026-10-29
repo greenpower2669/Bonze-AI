@@ -16,7 +16,7 @@ let profile=null,history=[],trainedWeights=null,pendingInput=null;
 let nativeReady=false,mode='off',lastSaved=performance.now(),lastTick=performance.now();
 let fontSize=2,resourceMode='precise',neuralEnabled=true,contrast=false,reduceMotion=false;
 let browserVoiceEnabled=false,identity,saved=null,voiceRun=0;
-let nativeActive=false,nativeBusy=false,nativeConnected=false,nativeVoice='',lastNativeHumanId=0;
+let nativeActive=false,nativeBusy=false,nativeConnected=false,nativeVoice='',lastNativeHumanId=0,pendingVoice=null;
 try{saved=JSON.parse(localStorage.getItem(STORAGE)||'null');}catch{}
 if(saved&&typeof saved==='object'){
  profile=typeof saved.profile?.nickname==='string'?{nickname:saved.profile.nickname.slice(0,40)}:null;
@@ -153,7 +153,9 @@ window.BonzeNativeEvent=e=>{
   else if(e.state!=='speaking')speechMotion.stop();
   const select=el('native-voice');if(Array.isArray(e.voices)){
    select.replaceChildren();for(const v of e.voices){const o=document.createElement('option');o.value=v.name;o.textContent=v.name;select.append(o);}
-   nativeVoice=String(e.voice||'');select.value=nativeVoice;
+   const acknowledged=String(e.voice||'');
+   if(pendingVoice===acknowledged||pendingVoice&&!e.voices.some(v=>v.name===pendingVoice))pendingVoice=null;
+   nativeVoice=pendingVoice||acknowledged;select.value=nativeVoice;
    el('voice-status').textContent=nativeVoice?'Voix locale : '+nativeVoice+'. Lecture par phrases et pauses.':'Voix française locale en préparation ou absente.';
   }
  }else if(e.type==='speech-start'){speechMotion.start(e.id,e.text,performance.now());state('speaking');}
@@ -194,7 +196,7 @@ el('contrast').addEventListener('change',e=>{contrast=e.target.checked;visualSet
 el('reduce-motion').addEventListener('change',e=>{reduceMotion=e.target.checked;visualSettings();});
 visualSettings();
 el('voice').checked=browserVoiceEnabled;el('native-voice-row').hidden=!isNative;
-el('native-voice').addEventListener('change',e=>{stopAll();nativeVoice=e.target.value;configureNative();});
+el('native-voice').addEventListener('change',e=>{const wanted=e.target.value;pendingVoice=wanted;nativeVoice=wanted;stopAll();configureNative();});
 el('voice').addEventListener('change',()=>{browserVoiceEnabled=el('voice').checked;el('voice-status').textContent=browserVoiceEnabled?'Voix locale choisie si disponible.':'Lecture désactivée.';if(!browserVoiceEnabled)window.speechSynthesis?.cancel();configureNative();save();});
 setupEditor({getIdentity:()=>identity,setIdentity:i=>{identity=i;renderAppearance(face,i);describedMood='';draw();save();},root:el('avatar-fields'),description:el('avatar-description')});
 el('avatar-read').addEventListener('click',()=>{stopAll();if(isNative)nativeCommand('describe',describe(identity));else browserSpeak(describe(identity),true);});
