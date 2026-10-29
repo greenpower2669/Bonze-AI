@@ -121,3 +121,12 @@ Prochain geste humain : installer en mise à jour de0.5, Options → « MLS · m
 - Workflow 40964127638 entièrement réussi : 45 JS, 3 Python, 8 programmes JVM, 51 assertions navigateur, compilation/lint/manifeste/signature, 3 tests Android API 35 hors connexion et publication. Probe vocal 40964127723 vert au même SHA. Capture finale inspectée, visage/légendes/Stop visibles.
 - APK : https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.6.0/Bonze-AI-v0.6.0-debug.apk ; Release : https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.6.0 ; CI : https://github.com/greenpower2669/Bonze-AI/actions/runs/40964127638 .
 - Revue indépendante des changements effectuée. PR #1 en brouillon ; main vérifiée inchangée f5910311f903d8ae4378d62d100129b690fc0e85. Aucun essai physique Samsung ni écoute humaine revendiqués. Archives : sauvegarde.md et docs/history/avenant-0.6-worklog.md.
+
+## Demande Fab — 30 octobre 2026 : mémoire à tiroirs (à développer)
+
+- [ ] BONZE-030 : donner à Bonze AI une mémoire locale à tiroirs : carte centrale légère, catégories privées/isolées, chargement à la demande et recherche bornée par contexte ; ne jamais ingérer toute la mémoire à chaque réponse.
+- [ ] Définir schéma versionné, niveaux de fiabilité/provenance, consolidation, correction, oubli et archivage ; budgéter tokens, RAM, temps et stockage en mode avion.
+- [ ] Préserver/migrer non destructivement les souvenirs déjà stockés et l'export chiffré `.bonze` ; spécifier droits propriétaires/famille avant rappel de souvenirs sensibles ; vérifier les limites de chiffrement interne existant.
+- [ ] Prototyper, tester et instrumenter le rappel local sans accès GitHub ni Internet, puis évaluer pertinence/latence/consommation et non-régression sur Samsung avec Fab. Aucune modification de moteur ni APK supplémentaire dans cette seule étape de cadrage.
+
+Spécification : `docs/architecture-memoire-a-tiroirs.md`. Cette tâche étend BONZE-007/BONZE-018 et ne les clôt pas. L'APK 0.6.0 ne contient pas cette nouvelle mémoire à tiroirs.
