@@ -27,7 +27,8 @@ test("force interaction asymmetric, bounded",()=>{
   const r=inferExperts("Je suis en colère",W);
   const output=evolveForces({colere:.8,empathie:.7,calme:.5},r,1);
   assert.ok(NAMES.every(k=>output[k]>=0&&output[k]<=1));
-  assert.ok(output.colere<.9);
+  const unopposed=evolveForces({colere:.8,empathie:0,calme:.5},r,1);
+  assert.ok(output.colere<unopposed.colere, "empathy should inhibit anger");
 });
 test("fail closed on absent or corrupt weights",()=>{
   assert.throws(()=>inferExperts("salut",null),/Poids MoE/);

@@ -37,13 +37,9 @@ jobs:
       - name: Download verified GGUF model weights and license (build time only)
         run: |
           mkdir -p android/app/src/main/assets/models
-          curl --fail --location --retry 4 --retry-delay 3 \\
-            "https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LFM2.5-230M-Q4_K_M.gguf" \\
-            --output android/app/src/main/assets/models/LFM2.5-230M-Q4_K_M.gguf
+          curl --fail --location --retry 4 --retry-delay 3 --output android/app/src/main/assets/models/LFM2.5-230M-Q4_K_M.gguf "https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LFM2.5-230M-Q4_K_M.gguf"
           echo "7bbd90384d3deffe4c646ec9643b212802d32d4ce417c90a1ec9282100650062  android/app/src/main/assets/models/LFM2.5-230M-Q4_K_M.gguf" | sha256sum -c
-          curl --fail --location --retry 4 \\
-            "https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LICENSE" \\
-            --output android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt
+          curl --fail --location --retry 4 --output android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt "https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LICENSE"
           test -s android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt
       - name: Compile installable debug APK
         run: gradle --no-daemon :androidApp:assembleDebug
