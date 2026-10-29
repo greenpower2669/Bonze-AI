@@ -43,20 +43,22 @@ jobs:
           text='Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?'
           reference=subprocess.check_output(['espeak-ng','-q','-v','fr-fr','--ipa',text],text=True).strip()
           print('REFERENCE_PHONEMES',reference)
-          import re
+          import re,numpy as np
           dictionary={line.split(' || ',1)[0]:line.split(' || ',1)[1].replace(' ','') for line in (root/'lexicon.txt').read_text().splitlines()}
-          for word in re.findall(r"[^\W\d_]+",text.lower()):print('WORD_PHONEMES',word,dictionary.get(word))
-          lexical=' '.join(dictionary.get(word,word) for word in re.findall(r"[^\W\d_]+|[,.!?]",text.lower()))
-          print('LEXICAL_PHONEMES',lexical)
-          for sid in [0]:
-            for frontend in ['lexicon','lexical-codepoints','reference']:
-              cfg=sherpa_onnx.GenerationConfig();cfg.sid=sid
-              if frontend=='lexical-codepoints':cfg.phoneme_codepoints=[[ord(c) for c in lexical]]
-              if frontend=='reference':cfg.phoneme_codepoints=[[ord(c) for c in reference.replace('\n',' ')]]
-              audio=tts.generate(text.lower(),cfg);samples=audio.samples;gain=min(20,.6/max(abs(x) for x in samples))
-              path=f'voice-{sid}-{frontend}.wav';sf.write(path,[x*gain for x in samples],audio.sample_rate)
-              segments,info=model.transcribe(path,language='fr',beam_size=3)
-              print('ASR_HEARD',sid,frontend,len(samples)/audio.sample_rate,' '.join(s.text for s in segments),flush=True)
+          phrases=[text,'Bonjour mon ami. Comment vas tu ?','Je suis calme et content. Tu peux me raconter une histoire ?']
+          for index,phrase in enumerate(phrases):
+            all_samples=[]
+            for chunk in re.split(r'(?<=[.!?;:])\s+',phrase):
+              phones=' '.join(dictionary[word] for word in re.findall(r"[^\W\d_]+",chunk.lower()))
+              cfg=sherpa_onnx.GenerationConfig();cfg.sid=0;cfg.phoneme_codepoints=[[ord(c) for c in phones]]
+              audio=tts.generate(chunk,cfg);samples=audio.samples;gain=min(20,.6/max(abs(x) for x in samples))
+              all_samples.extend(x*gain for x in samples);all_samples.extend([0.0]*3087)
+            path=f'voice-{index}-direct.wav';sf.write(path,all_samples,audio.sample_rate)
+            segments,info=model.transcribe(path,language='fr',beam_size=3)
+            heard=' '.join(s.text for s in segments)
+            print('ASR_EXPECTED',phrase,flush=True);print('ASR_HEARD',index,heard,flush=True)
+            if index==0:
+              sf.write('Bonze-Piper-MLS-francais-essai.wav',all_samples,audio.sample_rate)
           PYTHON
       - uses: actions/upload-artifact@v4
         if: always()

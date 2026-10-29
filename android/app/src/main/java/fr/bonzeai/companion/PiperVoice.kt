@@ -21,14 +21,16 @@ class PiperVoice(private val app: Context) {
     private val serial = AtomicLong()
     private var track: AudioTrack? = null
     private var engine: OfflineTts? = null
-    private var dictionary: Set<String>? = null
+    private var dictionary: Map<String,String>? = null
+    private fun loadDictionary(){
+        if(dictionary==null)dictionary=app.assets.open("piper/lexicon.txt").bufferedReader().useLines { lines ->
+            lines.filter { "||" in it }.map { val fields=it.split("||",limit=2);fields[0].trim() to fields[1].replace(" ","").trim() }.toMap()
+        }
+    }
     private fun prepare(): OfflineTts {
         if (engine == null) {
-            dictionary = app.assets.open("piper/lexicon.txt").bufferedReader().useLines { lines ->
-                lines.map { it.substringBefore('\t').substringBefore(' ') }.toSet()
-            }
             engine = OfflineTts(app.assets, OfflineTtsConfig(model = OfflineTtsModelConfig(
-                vits = OfflineTtsVitsModelConfig(noiseScale = .333f, noiseScaleW = .333f, model = "piper/voice.onnx", tokens = "piper/tokens.txt", lexicon = "piper/lexicon.txt"),
+                vits = OfflineTtsVitsModelConfig(noiseScale = .333f, noiseScaleW = .333f, model = "piper/voice.onnx", tokens = "piper/tokens.txt", lexicon = ""),
                 numThreads = 2)))
         }
         return engine!!
@@ -38,13 +40,14 @@ class PiperVoice(private val app: Context) {
         worker.execute {
             var hadAudio = false
             try {
-                val tts = prepare()
-                // Check the whole utterance first: don't pronounce half a reply and replay it in the fallback.
-                val words = Regex("[\\p{L}]+", RegexOption.IGNORE_CASE).findAll(chunks.joinToString(" ").lowercase(Locale.FRANCE)).map { it.value }.toList()
-                if (chunks.any { it.any(Char::isDigit) } || words.any { !dictionary!!.contains(it) }) throw IllegalArgumentException("lexicon-oov")
+                loadDictionary()
+                // Verify every chunk before the first sound, then pass bare IPA directly.
+                val phoneticPlan=chunks.map { PiperPhonetics.phonemes(it,dictionary!!) }
+                val tts=prepare()
                 for ((part, text) in chunks.withIndex()) {
                     if (serial.get() != token) return@execute
-                    val generated = tts.generateWithCallback(text.lowercase(Locale.FRANCE), speed = speed, callback = PiperCancellation(serial,token))
+                    val generation=GenerationConfig(speed=speed, sid=0, phonemeCodepoints=arrayOf(phoneticPlan[part].codePoints().toArray()))
+                    val generated = tts.generateWithConfigAndCallback(text,generation,PiperCancellation(serial,token))
                     if (serial.get() != token) return@execute
                     val samples = generated.samples
                     check(samples.size > 100 && samples.size < generated.sampleRate * 45) { "invalid-pcm" }
