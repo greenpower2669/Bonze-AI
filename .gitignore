@@ -12,3 +12,6 @@ android/test-signing/
 
 android/app/libs/*.aar
 android/app/src/main/assets/piper/
+
+**/__pycache__/
+*.pyc
