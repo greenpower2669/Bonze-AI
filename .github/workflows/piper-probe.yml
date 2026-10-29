@@ -28,16 +28,18 @@ jobs:
           dictionary={line.split(' || ',1)[0]:line.split(' || ',1)[1].replace(' ','') for line in (root/'lexicon.txt').read_text().splitlines()}
           phrases=['Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?','Bonjour mon ami. Comment vas tu ?','Je suis calme et content. Tu peux me raconter une histoire ?']
           all_heard={}
-          for variant in ['plain','punctuation']:
+          for variant in ['plain','final-stress']:
             heard=[]
             for index,phrase in enumerate(phrases):
               # SpeechPlan.piperChunks keeps these bounded replies as a single segment.
               assert len(phrase)<=220
-              phones=''
-              for token in re.findall(r"[^\W\d_]+|[,.!?;:]",phrase.lower()):
-                if token in ',.!?;:':
-                  if variant=='punctuation':phones+=token
-                else:phones+=(' ' if phones else '')+dictionary[token]
+              words=re.findall(r"[^\W\d_]+",phrase.lower())
+              units=[dictionary[w] for w in words]
+              if variant=='final-stress' and 'ˈ' not in units[-1] and 'ˌ' not in units[-1]:
+                for pos in range(len(units[-1])-1,-1,-1):
+                  if units[-1][pos] in 'aeiouyøœɛɔɑɐɒɨʌə':
+                    units[-1]=units[-1][:pos]+'ˈ'+units[-1][pos:];break
+              phones=' '.join(units)
               print('PHONETIC_INPUT',variant,index,phones,flush=True)
               cfg=sherpa_onnx.GenerationConfig();cfg.sid=0;cfg.speed=.98;cfg.phoneme_codepoints=[[ord(c) for c in phones]]
               begin=time.monotonic();audio=tts.generate(phrase,cfg);samples=audio.samples
@@ -51,7 +53,7 @@ jobs:
               print('ASR_EXPECTED',phrase,flush=True);print('ASR_HEARD',variant,index,transcript,flush=True)
             all_heard[variant]=heard
           print("ALL_VARIANTS",all_heard,flush=True)
-          heard=all_heard['punctuation']
+          heard=all_heard['final-stress']
           # Coarse regression guards, not a human-listening or naturalness evaluation.
           assert sum(w in heard[0] for w in ['petit','compagnon','jouer','moi'])>=3,heard[0]
           assert 'comment' in heard[1],heard[1]
