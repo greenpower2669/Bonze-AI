@@ -65,3 +65,5 @@
 État de reprise : source distante vérifiée 9d7c9d5 ; modifications préparées sur la même branche via commit atomique, aucun merge main. Prochain geste : contrôler la CI du commit de reprise et corriger toute régression avant de donner un lien installable.
 
 Candidat e640023 : JS + JVM validés par CI, navigateur bloqué par incompatibilité runner/outillage. Correctif runner Ubuntu 24.04 et ordre UI stop→génération préparé ; attendre le nouveau run avant Release.
+
+Revue indépendante terminée : course stop→génération corrigée et protégée, appel String Android 33 remplacé pour Android 12, 27 tests locaux verts. Scénario navigateur corrigé pour les champs avancés masqués par défaut ; relancer la chaîne complète.

@@ -17,7 +17,7 @@ let checks=0;const check=(v,message)=>{assert.ok(v,message);checks++;};
 try{
  const context=await browser.newContext({viewport:{width:393,height:852}}),page=await context.newPage();
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));
- await page.goto(origin+'/docs/');await page.waitForSelector('#avatar-fields select');
+ await page.goto(origin+'/docs/');await page.waitForSelector('#avatar-fields select',{state:'attached'});
  const born=await page.evaluate(()=>JSON.parse(localStorage.getItem('bonze-proto-01')).identity);
  check(born.seed.length===32,'seed born');
  await page.getByRole('button',{name:'Options',exact:false}).click();
@@ -28,7 +28,7 @@ try{
  await page.locator('#open-keyboard').click();await page.locator('#message').fill('Comment tu t’appelles ?');await page.locator('#send-message').click();
  check((await page.locator('#answer').textContent()).includes("Je m'appelle Bonze AI !"),'natural name');
  const persisted=await page.evaluate(()=>JSON.parse(localStorage.getItem('bonze-proto-01')));
- await page.reload();await page.waitForSelector('#avatar-fields select');
+ await page.reload();await page.waitForSelector('#avatar-fields select',{state:'attached'});
  const reload=await page.evaluate(()=>JSON.parse(localStorage.getItem('bonze-proto-01')));
  check(reload.identity.seed===born.seed,'seed stable after reload');
  check(reload.identity.personalized.skin==='night','skin retained');
@@ -53,7 +53,7 @@ try{
  await page.setViewportSize({width:393,height:852});
  await page.screenshot({path:process.env.BONZE_SCREENSHOT||'/tmp/bonze-v040.png'});
  await page.evaluate(async()=>{await navigator.serviceWorker.ready;});
- await context.setOffline(true);await page.reload();await page.waitForSelector('#avatar-fields select');
+ await context.setOffline(true);await page.reload();await page.waitForSelector('#avatar-fields select',{state:'attached'});
  check(await page.locator('#face').isVisible(),'PWA offline reload');await context.setOffline(false);
  check(errors.length===0,'no browser exceptions: '+errors.join(','));await context.close();
 
@@ -68,7 +68,7 @@ try{
    speakReply:(...args)=>calls.push(['speak',...args]),speakDescription:()=>{},resourceSnapshot:()=>JSON.stringify({availableMiB:1024,totalMiB:8192,pssMiB:300})};
  });
  const p=await native.newPage();p.on('pageerror',e=>errors.push(String(e)));
- await p.goto(origin+'/docs/');await p.waitForSelector('#avatar-fields select');
+ await p.goto(origin+'/docs/');await p.waitForSelector('#avatar-fields select',{state:'attached'});
  check(await p.evaluate(()=>!calls.some(c=>c[0]==='begin')),'never auto listen');
  await p.locator('#native-mic').click();
  await p.evaluate(()=>{window.oldVoice=nativeToken;BonzeNativeResult('Bonjour',nativeToken);BonzeNativeResult('doublon',nativeToken);});
@@ -86,10 +86,10 @@ try{
  check(await p.evaluate(()=>calls.filter(c=>c[0]==='speak').length===1),'one spoken response');
  await p.locator('#stop-all').click();
  await p.locator('#settings-open').click();await p.locator('#neural').uncheck();
- await p.reload();await p.waitForSelector('#avatar-fields select');
+ await p.reload();await p.waitForSelector('#avatar-fields select',{state:'attached'});
  check(await p.evaluate(()=>calls.some(c=>c[0]==='neural'&&c[1]===false)),'neural disable persisted');
  check(await p.evaluate(()=>!calls.some(c=>c[0]==='begin')),'reload never resumes microphone');
  check(errors.length===0,'no native UI exceptions');
  await native.close();
  console.log(checks+' browser assertions passed');
-}finally{await browser.close();server.close();}
+}catch(error){const p=browser.contexts().at(-1)?.pages().at(-1);if(p)await p.screenshot({path:process.env.BONZE_SCREENSHOT||'/tmp/bonze-v040.png'});throw error;}finally{await browser.close();server.closeAllConnections();server.close();}

@@ -9,3 +9,7 @@ test('native generation request serializes epoch capture with queued microphone 
  const helper=source.slice(source.indexOf('private void generateReplyOnMain'),source.indexOf('private void releaseModel'));
  assert.ok(helper.includes('final long epoch=inferenceEpoch.get()'));
 });
+test('recognition bridge stays compatible with Android 12 on-device services',()=>{
+ assert.ok(!source.includes('value.isBlank()'));
+ assert.ok(source.includes('@androidx.annotation.ChecksSdkIntAtLeast(api = 31)'));
+});
