@@ -56,7 +56,9 @@ try{
  await page.evaluate(async()=>{await navigator.serviceWorker.ready;});
  await context.setOffline(true);await page.reload();await page.waitForSelector('#avatar-fields select',{state:'attached'});
  check(await page.locator('#face').isVisible(),'PWA offline reload');await context.setOffline(false);
- await page.locator('#settings-open').click();await page.locator('#backup-panel summary').click();
+ await page.locator('#settings-open').click();await page.locator('#quick-export').click();
+ check(await page.locator('#backup-panel').evaluate(el=>el.open),'one-tap access to encrypted backup');
+ check(await page.evaluate(()=>document.activeElement.id==='backup-password'),'backup password receives focus');
  const beforeBackup=await page.evaluate(()=>JSON.parse(localStorage.getItem('bonze-proto-01')));
  await page.locator('#backup-password').fill('une phrase secrète de test');
  const downloadPromise=page.waitForEvent('download');await page.locator('#backup-export').click();const download=await downloadPromise;
