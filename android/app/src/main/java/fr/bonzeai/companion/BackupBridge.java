@@ -37,6 +37,7 @@ final class BackupBridge {
   try{
    switch(action){
     case "unlock": event("unlocked","Administration ouverte pour deux minutes, jusqu'au passage en arrière-plan.",engine.diagnostics());break;
+    case "emotion": engine.configureCouncil(value);event("unlocked","Paramètres émotionnels enregistrés.",engine.diagnostics());break;
     case "snapshot": engine.stop(null,"Sauvegarde : conversation arrêtée.");event("snapshot","",engine.backupData());break;
     case "export":
      JSONObject envelope=new JSONObject(value);if(!"bonze-backup".equals(envelope.optString("format"))||envelope.optInt("version")!=1)throw new IllegalArgumentException();
@@ -49,7 +50,7 @@ final class BackupBridge {
   }catch(Exception e){event("error","Opération refusée : "+e.getClass().getSimpleName()+". Les données ne sont pas effacées.",null);}
  }
  void result(int code,int result,Intent data){
-  if(code==AUTH){String a=operation,v=payload;operation="";payload="";boolean valid=gate.complete(challenge,result==Activity.RESULT_OK,SystemClock.elapsedRealtime());if(valid)execute(a,v);else event("locked","Authentification annulée.",null);return;}
+  if(code==AUTH){String a=operation,v=payload;operation="";payload="";boolean valid=gate.complete(challenge,result==Activity.RESULT_OK,SystemClock.elapsedRealtime());if(valid)execute(a,v);else event("cancelled","Authentification annulée.",null);return;}
   if(code!=WRITE&&code!=READ)return;
   if(result!=Activity.RESULT_OK||data==null||data.getData()==null){encrypted="";event("cancelled","Choix du fichier annulé.",null);return;}
   Uri uri=data.getData();String text=encrypted;encrypted="";
@@ -62,3 +63,4 @@ final class BackupBridge {
  void destroy(){destroyed=true;gate.cancel();payload="";encrypted="";io.shutdown();}
  private void event(String type,String message,JSONObject data){activity.runOnUiThread(()->{if(destroyed)return;try{JSONObject e=new JSONObject().put("type",type).put("message",message);if(data!=null)e.put("data",data);web.evaluateJavascript("window.BonzeAdminEvent&&window.BonzeAdminEvent("+e+")",null);}catch(JSONException ignored){}});}
 }
+

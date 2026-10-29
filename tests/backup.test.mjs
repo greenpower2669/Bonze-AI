@@ -21,3 +21,5 @@ test('corrupt identity and unsupported weights are rejected rather than reborn s
  const d=data();d.web.identity.seed='';assert.throws(()=>validateBackup(d));
  const w=data();w.weights={version:900};assert.throws(()=>validateBackup(w));
 });
+
+test('council forces, all individual endurances, parameters and traces survive authenticated roundtrip',async()=>{const d=data(),r=JSON.parse(globalThis.BonzeCouncil.run(JSON.stringify({text:'un jeu',seconds:2})));d.council={state:r.state,params:r.params};d.journal=[{stage:'council',data:r.trace}];const restored=await openBackup(await sealBackup(d,'une phrase secrète longue'),'une phrase secrète longue');assert.deepEqual(restored.council,d.council);assert.deepEqual(restored.journal,d.journal);d.council.state.version=22;assert.throws(()=>validateBackup(d));});

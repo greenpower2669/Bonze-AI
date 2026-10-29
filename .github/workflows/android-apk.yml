@@ -65,6 +65,8 @@ jobs:
           echo "7bbd90384d3deffe4c646ec9643b212802d32d4ce417c90a1ec9282100650062  android/app/src/main/assets/models/LFM2.5-230M-Q4_K_M.gguf" | sha256sum -c
           curl --fail --location --retry 4 --output android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt "https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LICENSE"
           test -s android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt
+      - name: Fetch pinned Piper runtime and French voice
+        run: bash scripts/fetch-piper.sh
       - name: Compile APK and run Android lint
         env:
           ANDROID_USER_HOME: ${{ runner.temp }}/bonze-android-user
@@ -116,3 +118,4 @@ jobs:
             --target "$GITHUB_SHA" --prerelease \
             --title "🌱 Bonze AI 0.5.0 · Notre histoire continue écran éteint" \
             --notes-file docs/release-v0.5.0.md
+

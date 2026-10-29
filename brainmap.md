@@ -68,3 +68,14 @@ Preuves0.5 : tag bonze-ai-v0.5.0→ff04ec4 ; run #40868793495 :35 tests JS, Voic
 `core/captions.mjs` sélectionne les sous-titres par ordre du journal : une réponse antérieure à la dernière entrée humaine n'est pas sa réponse. `core/backup.mjs` : format1 chiffré AES256-GCM, PBKDF2-SHA256/310000, sel16octets/nonce12, schéma/tailles/poids vérifiés avant restitution ; pas encore branché à l'interface/native. La grille des sous-titres garde sa hauteur intrinsèque dans un panneau défilant.
 
 Candidat `BackupBridge.java` : gate Android credential, pickerSAF, I/O bornées, sessions120s verrouillées au fond ; `AdminGate.java` pur. `DiagnosticJournal.java` :120entrées/700k caractères, étape/turn/données issues de l'exécution. `ConversationService.backupData/restoreBackup` : validation avant mutation, transaction SharedPreferences, copie précédente, WebView à acquitter après écriture durable. `docs/backup-ui.js` chiffre/vérifie/affiche confirmation ; WebCrypto ne prétend pas fournir l'authentification Android au navigateur.
+
+
+### Avenant 0.5 — candidat en validation, 29 octobre 2026
+- Correction prouvée : ancien sous-titre associé au nouveau tour et flex des sous-titres ; CI 40906407823 réussie (avant nouveaux experts/Piper).
+- Probes exact GGUF : le contexte aplati provoque un écho ; contexte recréé et réutilisé donnent les mêmes réponses faibles. Suppression des préfixes du message utilisateur, contexte humain séparé, répétitions journalisées. Qualité 230M encore insuffisante, non déclarée résolue.
+- Conseil partagé JS/Rhino : huit activations entraînées + votes de politiques contextualisées écrites à la main, endurances individuelles, influences directionnelles, arbitrage réellement transmis au générateur. Pas un MoE linguistique achevé.
+- Console Android authentifiée par le code du téléphone, curseurs et geste de découverte 60 touches alternées ; ce geste ne donne aucun droit.
+- Sauvegardes AES-GCM/PBKDF2 versionnées : identité, acquis, historiques, poids, paramètres, états et traces ; vérification avant restauration, retour arrière. Validation sur téléphone encore à effectuer.
+- Piper Siwis int8 via sherpa-onnx 2.0.1 réellement branché à AudioTrack ; lexique français MIT, secours Android explicite pour les mots absents. PCM/arrêt/latence à vérifier sur Android. Synthèse hôte française réussie CI 40906407731, écoute humaine encore requise.
+- Nettoyage automatique de l’environnement : reprise depuis edb86e5 ; aucune perte de commit distant ; ajouts non commis reconstruits puis testés.
+- 45 tests JS passent localement ; compilation/lint et nouveaux essais Android en attente. Publication candidate désactivée, aucun merge main.

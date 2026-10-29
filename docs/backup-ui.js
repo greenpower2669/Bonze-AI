@@ -1,8 +1,10 @@
+import {renderAdmin,setupAdminGesture} from './admin-ui.js';
 import {sealBackup,openBackup} from '../core/backup.mjs';
 export function setupBackup({getData,restoreWeb,stop,saveNativeWeb,isNative}){
  const el=id=>document.getElementById(id),status=message=>el('backup-status').textContent=message;
  let nativeData=null,preview=null,exportSecret='',importSecret='';
  const admin=(action,payload='')=>window.BonzeAndroid.admin(action,payload);
+ setupAdminGesture(()=>el('admin-open').click());
  function download(text){const url=URL.createObjectURL(new Blob([text],{type:'application/octet-stream'})),a=document.createElement('a');a.href=url;a.download='Bonze-AI-sauvegarde-'+Date.now()+'.bonze';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
  async function encrypt(){try{const data=getData();const text=await sealBackup({...data,...nativeData},exportSecret);exportSecret='';el('backup-password').value='';if(isNative)admin('export',text);else{download(text);status('Fichier chiffré préparé. Vérifie son enregistrement.');}}catch(e){status(e.message);}}
  async function inspect(text){try{preview=await openBackup(text,importSecret);el('backup-password').value='';importSecret='';el('backup-restore').hidden=false;status('Sauvegarde vérifiée : '+preview.web.history.length+' échanges conservés, identité '+preview.web.identity.seed.slice(0,8)+'. Restaure seulement si tu veux remplacer l’état actuel. Une copie de retour arrière sera gardée.');}catch(e){preview=null;importSecret='';el('backup-restore').hidden=true;status(e.message);}}
@@ -18,8 +20,9 @@ export function setupBackup({getData,restoreWeb,stop,saveNativeWeb,isNative}){
   if(e.type==='snapshot'){nativeData=e.data;encrypt();}
   if(e.type==='imported')inspect(e.data.encrypted);
   if(e.type==='restored'){preview=null;importSecret='';el('backup-restore').hidden=true;}
-  if(e.type==='unlocked'){el('admin-console').hidden=false;el('admin-journal').textContent=JSON.stringify(e.data,null,2);el('admin-close').focus();}
+  if(e.type==='unlocked'){renderAdmin(e.data);el('admin-console').hidden=false;el('admin-journal').textContent=JSON.stringify(e.data,null,2);el('admin-close').focus();}
   if(e.type==='locked'){el('admin-console').hidden=true;}
  };
  document.addEventListener('visibilitychange',()=>{if(document.hidden){el('backup-password').value='';el('admin-console').hidden=true;}});
 }
+

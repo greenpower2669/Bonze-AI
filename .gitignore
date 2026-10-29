@@ -8,3 +8,7 @@ android/app/src/main/assets/models/
 
 node_modules/
 android/test-signing/
+
+
+android/app/libs/*.aar
+android/app/src/main/assets/piper/

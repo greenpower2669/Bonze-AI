@@ -18,9 +18,11 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
     sourceSets.main.assets.srcDirs('src/main/assets', layout.buildDirectory.dir('generated/bonzeAssets'))
-    androidResources { noCompress += ['gguf'] }
+    androidResources { noCompress += ['gguf','onnx'] }
 }
 dependencies {
+    implementation 'org.mozilla:rhino:1.7.15.1'
+    implementation files('libs/sherpa-onnx-2.0.1.aar')
     implementation 'androidx.webkit:webkit:1.12.1'
     implementation 'dev.ffmpegkit-maintained:llama-android:0.1.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0'
@@ -31,4 +33,5 @@ tasks.register('copyBonzeAssets', Copy) {
     into(layout.buildDirectory.dir('generated/bonzeAssets'))
 }
 tasks.named('preBuild').configure { dependsOn(tasks.named('copyBonzeAssets')) }
+
 

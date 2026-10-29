@@ -27,14 +27,7 @@ public final class DialogueMemory {
  public synchronized void clear(){entries.clear();scene="";name="";nextId=System.currentTimeMillis();}
  public synchronized int size(){return entries.size();}
  public synchronized List<Entry> entries(){return new ArrayList<>(entries);}
- public synchronized String prompt(String current){
-  StringBuilder recent=new StringBuilder();int remaining=1050;
-  for(int i=entries.size()-1;i>=0&&remaining>40;i--){
-   Entry e=entries.get(i);String line=(e.role.equals("human")?"Humain : ":"Bonze : ")+clean(e.text,Math.min(280,remaining-15))+"\n";
-   recent.insert(0,line);remaining-=line.length();
-  }
-  return "Conversation en cours"+(name.isEmpty()?"":" avec "+name)+".\n"+
-   (scene.isEmpty()?"":"Contexte de jeu proposé par l'humain : "+scene+"\n")+
-   "Échanges récents :\n"+recent+"Réponds au nouveau message de l'humain :\n"+clean(current,600);
- }
+ public synchronized String prompt(String current){return clean(current,600);}
+ public synchronized String context(){StringBuilder prior=new StringBuilder();int remaining=500;for(int i=entries.size()-1;i>=0&&remaining>40;i--){Entry e=entries.get(i);if(!e.role.equals("human"))continue;String t=clean(e.text,Math.min(180,remaining));prior.insert(0,t+" / ");remaining-=t.length()+3;}return(name.isEmpty()?"":"Ton humain : "+name+". ")+(scene.isEmpty()?"":"Jeu en cours : "+scene+". ")+"Messages précédents : "+prior;}
+ public synchronized boolean repeats(String answer){for(int i=entries.size()-1;i>=0;i--)if(entries.get(i).role.equals("bot"))return entries.get(i).text.trim().equalsIgnoreCase(answer.trim());return false;}
 }

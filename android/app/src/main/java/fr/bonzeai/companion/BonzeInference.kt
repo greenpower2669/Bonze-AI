@@ -21,7 +21,7 @@ object BonzeInference {
     @JvmStatic fun setEconomy(enabled: Boolean) { economy = enabled }
 
     @JvmStatic @Synchronized
-    fun reply(context: Context, text: String, mood: String): String = runBlocking {
+    fun reply(context: Context, text: String, contextData: String, hint: String): String = runBlocking {
         val model = loaded ?: run {
             val path = ensureModel(context)
             Llama.loadModel(
@@ -30,10 +30,9 @@ object BonzeInference {
                     topP = 0.9f, topK = 50, gpuLayers = 0)
             ).also { loaded = it }
         }
-        val personality = "Tu es Bonze AI, petit compagnon curieux, chaleureux et joueur. " +
-            "Parle naturellement en français et participe aux histoires de ton humain. " +
-            "Continue la scène et les échanges donnés en contexte. Réponds en une à trois phrases. " +
-            "Reste sincère quand on te questionne sur tes capacités. Humeur : " + mood.take(30) + "."
+        val personality = "Tu t'appelles Bonze AI. Réponds en français, brièvement, au dernier message. " +
+            "Participe aux jeux imaginaires. Reste gentil et sincère sur tes capacités. " + hint.take(110) +
+            "\nContexte mémorisé (il peut être incomplet) : " + contextData.take(950)
         val result = Llama.complete(model, prompt = text.take(2200),
             systemPrompt = personality, maxTokens = if (economy) 72 else 144)
         result.text.trim().ifEmpty {
@@ -69,4 +68,5 @@ object BonzeInference {
         loaded = null
     }
 }
+
 

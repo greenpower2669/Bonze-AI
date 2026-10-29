@@ -71,3 +71,14 @@ Livraison de correction29/10 : prérelease0.5.0, commit ff04ec4, run #4086879349
 - [ ] BONZE-029 PRIORITÉ VOCALE : réellement embarquer une voix Piper française via moteur compatible, licences moteur/phonémiseur/dépendances/poids résolues avant publication ; génération hors ligne, débit/pauses/timbre stable, expression réelle limitée, ressources mesurées, interruption, bouche sur signal joué, comparaison Android en secours. Ne pas clore sans fonctionnement APK, essai hors ligne et écoute humaine.
 
 Ordre demandé : anomalies bloquantes, puis mécanismes émotionnels, administration, Piper ; conserver les acquis0.5 et publier APK direct testé. Aucun merge main.
+
+
+### Avenant 0.5 — candidat en validation, 29 octobre 2026
+- Correction prouvée : ancien sous-titre associé au nouveau tour et flex des sous-titres ; CI 40906407823 réussie (avant nouveaux experts/Piper).
+- Probes exact GGUF : le contexte aplati provoque un écho ; contexte recréé et réutilisé donnent les mêmes réponses faibles. Suppression des préfixes du message utilisateur, contexte humain séparé, répétitions journalisées. Qualité 230M encore insuffisante, non déclarée résolue.
+- Conseil partagé JS/Rhino : huit activations entraînées + votes de politiques contextualisées écrites à la main, endurances individuelles, influences directionnelles, arbitrage réellement transmis au générateur. Pas un MoE linguistique achevé.
+- Console Android authentifiée par le code du téléphone, curseurs et geste de découverte 60 touches alternées ; ce geste ne donne aucun droit.
+- Sauvegardes AES-GCM/PBKDF2 versionnées : identité, acquis, historiques, poids, paramètres, états et traces ; vérification avant restauration, retour arrière. Validation sur téléphone encore à effectuer.
+- Piper Siwis int8 via sherpa-onnx 2.0.1 réellement branché à AudioTrack ; lexique français MIT, secours Android explicite pour les mots absents. PCM/arrêt/latence à vérifier sur Android. Synthèse hôte française réussie CI 40906407731, écoute humaine encore requise.
+- Nettoyage automatique de l’environnement : reprise depuis edb86e5 ; aucune perte de commit distant ; ajouts non commis reconstruits puis testés.
+- 45 tests JS passent localement ; compilation/lint et nouveaux essais Android en attente. Publication candidate désactivée, aucun merge main.

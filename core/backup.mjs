@@ -1,3 +1,4 @@
+import './council.js';
 import {restoreIdentity} from './identity.mjs';
 import {inferExperts} from './experts.mjs';
 const MAX=8*1024*1024,ITERATIONS=310000;
@@ -19,7 +20,10 @@ export function validateBackup(input){
  if(input.native!=null){const n=input.native;if(!plain(n)||n.schema!==1||!modes.includes(n.mode))fail();native={schema:1,history:rows(n.history),scene:String(n.scene||'').slice(0,360),mode:n.mode,neural:n.neural===true,readText:n.readText===true,voice:String(n.voice||'').slice(0,200),mood:String(n.mood||'curiosite').slice(0,30)};}
  let weights=null;if(input.weights!=null){inferExperts('',input.weights);weights=JSON.parse(JSON.stringify(input.weights));}
  const journal=input.journal??[];if(!Array.isArray(journal)||journal.length>200||JSON.stringify(journal).length>1000000)fail();
- return {schema:1,createdAt:Number.isFinite(input.createdAt)?input.createdAt:0,web,native,weights,journal};
+ let council=null;
+ if(input.council?.state){const c=input.council;if(c.state.version!==1)fail();for(const group of ['forces','endurances'])for(const key of globalThis.BonzeCouncil.names)if(!Number.isFinite(c.state[group]?.[key])||c.state[group][key]<0||c.state[group][key]>1)fail();if(!Number.isFinite(c.state.globalEndurance)||c.state.globalEndurance<0||c.state.globalEndurance>1)fail();
+ const result=JSON.parse(globalThis.BonzeCouncil.run(JSON.stringify({state:c.state,params:c.params,weights,seconds:0})));council={state:result.state,params:result.params};web.councilState=result.state;web.councilParams=result.params;}
+ return {council,schema:1,createdAt:Number.isFinite(input.createdAt)?input.createdAt:0,web,native,weights,journal};
 }
 function b64(bytes){let s='';for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s);}
 function un64(s,max){if(typeof s!=='string'||s.length>max*2||!/^[A-Za-z0-9+/]*={0,2}$/.test(s))fail();const b=Uint8Array.from(atob(s),c=>c.charCodeAt(0));if(b.length>max)fail();return b;}
@@ -42,3 +46,4 @@ export async function openBackup(text,password){
  try{const bytes=await crypto.subtle.decrypt({name:'AES-GCM',iv,additionalData:aad,tagLength:128},await key(password,salt),cipher);return validateBackup(JSON.parse(decoder.decode(bytes)));}
  catch{throw new Error('Phrase secrète incorrecte ou sauvegarde altérée. Aucune donnée modifiée.');}
 }
+

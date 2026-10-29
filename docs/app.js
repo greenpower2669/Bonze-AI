@@ -1,3 +1,4 @@
+import '../core/council.js';
 import {setupBackup} from './backup-ui.js';
 import {captionPair} from '../core/captions.mjs';
 import {answer,listening} from '../core/bonze.mjs';
@@ -17,7 +18,7 @@ const face=el('face'), nativeButton=el('native-mic'), faceTouch=el('face-touch')
 let profile=null,history=[],trainedWeights=null,pendingInput=null;
 let nativeReady=false,mode='off',lastSaved=performance.now(),lastTick=performance.now();
 let fontSize=2,resourceMode='precise',neuralEnabled=true,contrast=false,reduceMotion=false;
-let browserVoiceEnabled=false,identity,saved=null,voiceRun=0;
+let browserVoiceEnabled=false,identity,saved=null,voiceRun=0,councilState=null,councilParams=null,councilJournal=[];
 let nativeActive=false,nativeBusy=false,nativeConnected=false,nativeVoice='',lastNativeHumanId=0,pendingVoice=null;
 try{saved=JSON.parse(localStorage.getItem(STORAGE)||'null');}catch{}
 if(saved&&typeof saved==='object'){
@@ -29,8 +30,8 @@ if(saved&&typeof saved==='object'){
  contrast=saved.contrast===true;reduceMotion=saved.reduceMotion===true;
  browserVoiceEnabled=saved.browserVoiceEnabled===true;lastNativeHumanId=Number.isSafeInteger(saved.lastNativeHumanId)?saved.lastNativeHumanId:0;
 }
-identity=restoreIdentity(saved?.identity);
-function webState(){return {profile,history:history.slice(-30),fontSize,resourceMode,neuralEnabled,contrast,reduceMotion,identity,browserVoiceEnabled,lastNativeHumanId};}
+identity=restoreIdentity(saved?.identity);councilState=saved?.councilState||null;councilParams=saved?.councilParams||null;try{councilJournal=JSON.parse(localStorage.getItem("bonze-diagnostics")||"[]");}catch{}
+function webState(){return {profile,history:history.slice(-30),fontSize,resourceMode,neuralEnabled,contrast,reduceMotion,identity,browserVoiceEnabled,lastNativeHumanId,councilState,councilParams};}
 function saveNativeWeb(){if(isNative&&nativeConnected)window.BonzeAndroid.command('save-web',JSON.stringify({web:webState(),weights:trainedWeights}),'');}
 function save(){
  try{localStorage.setItem(STORAGE,JSON.stringify(webState()));}
@@ -126,13 +127,15 @@ function handleText(text,source='text'){
   stimulus=Object.fromEntries(routed.top2.map(x=>[x.name,x.weight*x.activation]));
   summary='Stimulus des micro-experts : '+routed.top2.map(x=>x.name+' '+Math.round(x.weight*100)+' %').join(' · ');
  }catch(error){summary='Erreur de routage : '+error.message;}
- identity={...identity,acquired:experience(identity,stimulus,'exchange',{familiar})};
+ const r=JSON.parse(globalThis.BonzeCouncil.run(JSON.stringify({state:councilState,params:councilParams,weights:trainedWeights,temperament:identity.innate.temperament,text:clean,context:{familiar},seconds:0})));
+ councilState=r.state;councilParams=r.params;councilJournal.push({at:Date.now(),stage:'council',data:r});councilJournal=councilJournal.slice(-120);
+ identity={...identity,acquired:{...experience(identity,stimulus,'exchange',{familiar}),forces:{...r.state.forces},endurance:r.state.globalEndurance}};
  el('experts-state').textContent=summary;state('thinking');save();
  pendingInput={text:clean,token};
  el('brain-status').textContent='Réponse du mode textuel léger.';
  finishReply(answer(clean,profile||{}).text,token);
 }
-function configData(){return JSON.stringify({mode:resourceMode,neural:neuralEnabled,readText:browserVoiceEnabled,mood:describedMood||'curiosite',nickname:profile?.nickname||'',voice:nativeVoice});}
+function configData(){return JSON.stringify({mode:resourceMode,neural:neuralEnabled,readText:browserVoiceEnabled,mood:describedMood||'curiosite',nickname:profile?.nickname||'',voice:nativeVoice,identity});}
 function configureNative(){if(isNative&&nativeConnected)window.BonzeAndroid.configureNative(configData());}
 function applyNativeHistory(rows){
  if(!Array.isArray(rows))return;
@@ -150,6 +153,7 @@ function applyNativeHistory(rows){
 }
 window.BonzeNativeEvent=e=>{
  if(!nativeView.accept(e))return;
+ if(e.council?.state){councilState=e.council.state;councilParams=e.council.params;}
  if(e.type==='snapshot'){
   if(e.restoredWeb){
    try{localStorage.setItem(STORAGE,JSON.stringify(e.restoredWeb));if(e.restoreWeights)localStorage.setItem('bonze-expert-weights',JSON.stringify(e.restoreWeights));if(e.restoreJournal)localStorage.setItem('bonze-diagnostics',JSON.stringify(e.restoreJournal));window.BonzeAndroid.command('restore-ack','','');location.reload();return;}catch{el('profile-status').textContent='Écriture de la restauration impossible : la copie native attend toujours.';return;}
@@ -167,9 +171,11 @@ window.BonzeNativeEvent=e=>{
    nativeVoice=pendingVoice||acknowledged;select.value=nativeVoice;
    el('voice-status').textContent=nativeVoice?'Voix locale : '+nativeVoice+'. Lecture par phrases et pauses.':'Voix française locale en préparation ou absente.';
   }
- }else if(e.type==='speech-start'){speechMotion.start(e.id,e.text,performance.now());state('speaking');}
+ }else if(e.type==='speech-level')speechMotion.level(e.id,e.level,performance.now());
+ else if(e.type==='speech-start'){speechMotion.start(e.id,e.text,performance.now());state('speaking');}
  else if(e.type==='speech-range')speechMotion.range(e.id,e.start,e.end,performance.now());
  else if(e.type==='speech-end')speechMotion.end(e.id);
+ if(councilState){identity={...identity,acquired:{...identity.acquired,forces:{...councilState.forces},endurance:councilState.globalEndurance}};}
  draw();
 };
 faceTouch.addEventListener('click',toggleConversation);nativeButton.addEventListener('click',toggleConversation);
@@ -223,7 +229,7 @@ renderAppearance(face,identity);applyMode();state('off');
 setInterval(()=>{
  const now=performance.now();const dt=Math.min(2,(now-lastTick)/1000);lastTick=now;
  if(document.hidden)return;
- identity={...identity,acquired:advance(identity,dt,mode)};draw();
+ if(!isNative){const r=JSON.parse(globalThis.BonzeCouncil.run(JSON.stringify({state:councilState,params:councilParams,temperament:identity.innate.temperament,seconds:dt,activity:mode})));councilState=r.state;councilParams=r.params;identity={...identity,acquired:{...identity.acquired,forces:{...r.state.forces},endurance:r.state.globalEndurance}};}draw();
  if(now-lastSaved>10000){save();saveNativeWeb();configureNative();}
 },65);
 document.addEventListener('visibilitychange',()=>{
@@ -232,7 +238,8 @@ document.addEventListener('visibilitychange',()=>{
  if(isNative&&!document.hidden)window.BonzeAndroid.command('sync','','');
 });
 window.addEventListener('pagehide',()=>{save();saveNativeWeb();if(!isNative)stopAll('Lecture arrêtée.');});
-setupBackup({isNative,getData:()=>({schema:1,createdAt:Date.now(),web:webState(),native:null,weights:trainedWeights,journal:[]}),stop:()=>stopAll(),saveNativeWeb,restoreWeb:data=>{localStorage.setItem(STORAGE,JSON.stringify(data.web));if(data.weights)localStorage.setItem('bonze-expert-weights',JSON.stringify(data.weights));localStorage.setItem('bonze-diagnostics',JSON.stringify(data.journal||[]));location.reload();}});
+setupBackup({isNative,getData:()=>({schema:1,createdAt:Date.now(),web:webState(),native:null,council:{state:councilState,params:councilParams},weights:trainedWeights,journal:councilJournal}),stop:()=>stopAll(),saveNativeWeb,restoreWeb:data=>{localStorage.setItem(STORAGE,JSON.stringify(data.web));if(data.weights)localStorage.setItem('bonze-expert-weights',JSON.stringify(data.weights));else localStorage.removeItem('bonze-expert-weights');localStorage.setItem('bonze-diagnostics',JSON.stringify(data.journal||[]));location.reload();}});
 if(isNative){nativeConnected=true;window.BonzeAndroid.connectNative(JSON.stringify({history}),configData());}
 fetch('../core/weights/expert-router-v1.json').then(r=>r.ok?r.json():Promise.reject(Error('404'))).then(w=>{try{const custom=JSON.parse(localStorage.getItem('bonze-expert-weights'));if(custom){inferExperts('',custom);w=custom;}}catch{}trainedWeights=w;el('experts-state').textContent='Huit micro-experts émotionnels disponibles.';}).catch(()=>{});
 if('serviceWorker' in navigator&&!isNative)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+

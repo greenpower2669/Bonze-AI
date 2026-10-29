@@ -83,3 +83,14 @@ CI #40904270408 reproduit réellement le débordement des sous-titres en320x568 
 Probe modèle réel #40904270395 : contexte aplati entraîne la copie des4phrases utilisateur ; rôles structurés retrouvent Pipo mais répètent un motif. Probe #40905257570 : consigne courte seule ne suffit pas ; réponses stéréotypées et erreur d'identité restent présentes. Prochaine isolation : mêmes messages sans système/historique, contexte natif réutilisé vs recréé. Ne pas annoncer le bug de génération réglé.
 
 Probe Piper #40905257759 : chargement sherpa2.0.1 + Siwis mediumINT8 + lexique français90114mots, synthèse et WAV produits ; l'étape échoue ensuite seulement sur le calcul Python du pic (abs appliqué à une liste), correction de ce calcul. Aucune écoute encore effectuée. Les données espeak de l'archive ne doivent PAS être empaquetées avec le moteur2.0 sans GPL ; copier seulement ONNX/tokens/carte et lexique MIT avec ses notices.
+
+
+### Avenant 0.5 — candidat en validation, 29 octobre 2026
+- Correction prouvée : ancien sous-titre associé au nouveau tour et flex des sous-titres ; CI 40906407823 réussie (avant nouveaux experts/Piper).
+- Probes exact GGUF : le contexte aplati provoque un écho ; contexte recréé et réutilisé donnent les mêmes réponses faibles. Suppression des préfixes du message utilisateur, contexte humain séparé, répétitions journalisées. Qualité 230M encore insuffisante, non déclarée résolue.
+- Conseil partagé JS/Rhino : huit activations entraînées + votes de politiques contextualisées écrites à la main, endurances individuelles, influences directionnelles, arbitrage réellement transmis au générateur. Pas un MoE linguistique achevé.
+- Console Android authentifiée par le code du téléphone, curseurs et geste de découverte 60 touches alternées ; ce geste ne donne aucun droit.
+- Sauvegardes AES-GCM/PBKDF2 versionnées : identité, acquis, historiques, poids, paramètres, états et traces ; vérification avant restauration, retour arrière. Validation sur téléphone encore à effectuer.
+- Piper Siwis int8 via sherpa-onnx 2.0.1 réellement branché à AudioTrack ; lexique français MIT, secours Android explicite pour les mots absents. PCM/arrêt/latence à vérifier sur Android. Synthèse hôte française réussie CI 40906407731, écoute humaine encore requise.
+- Nettoyage automatique de l’environnement : reprise depuis edb86e5 ; aucune perte de commit distant ; ajouts non commis reconstruits puis testés.
+- 45 tests JS passent localement ; compilation/lint et nouveaux essais Android en attente. Publication candidate désactivée, aucun merge main.
