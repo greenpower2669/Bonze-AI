@@ -17,3 +17,5 @@
 - [ ] Implémenter compréhension locale plus riche sans inventer de faits, gérer les émotions complexes.
 - [ ] Vérifier conformité sécurité, accessibilité, protection données ; préparer hébergement HTTPS si validé.
 - [ ] Faire accepter le premier prototype par Fab avant merge dans main.
+
+- [x] Réparer le blocage de préparation SDK GitHub Actions (legacy 'tools').
