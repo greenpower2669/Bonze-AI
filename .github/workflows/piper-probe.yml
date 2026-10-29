@@ -16,7 +16,7 @@ jobs:
       - name: Fetch pinned French MLS speech, runtime and lexicon
         run: |
           bash scripts/fetch-piper.sh
-          pip install sherpa-onnx==2.0.1 soundfile
+          pip install sherpa-onnx==2.0.1 soundfile faster-whisper==1.2.0
       - name: Synthesize actual French PCM
         run: |
           python - <<'PYTHON'
@@ -24,10 +24,18 @@ jobs:
           root=pathlib.Path('android/app/src/main/assets/piper')
           config=sherpa_onnx.OfflineTtsConfig(model=sherpa_onnx.OfflineTtsModelConfig(vits=sherpa_onnx.OfflineTtsVitsModelConfig(model=str(root/'voice.onnx'),tokens=str(root/'tokens.txt'),lexicon=str(root/'lexicon.txt'),noise_scale=.333,noise_scale_w=.333),num_threads=2))
           tts=sherpa_onnx.OfflineTts(config);begin=time.monotonic()
-          audio=tts.generate('Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?',sherpa_onnx.GenerationConfig())
+          audio=tts.generate('bonjour, je suis ton petit compagnon. tu veux jouer avec moi ?',sherpa_onnx.GenerationConfig())
           assert len(audio.samples)>1000 and audio.sample_rate==22050 and max(abs(x) for x in audio.samples)>.01
           sf.write('Bonze-Piper-MLS-francais-essai.wav',audio.samples,audio.sample_rate)
           print('PCM',len(audio.samples),'rate',audio.sample_rate,'generationSeconds',time.monotonic()-begin,'peak',max(abs(x) for x in audio.samples))
+          PYTHON
+      - name: Independent local transcription of generated sample (diagnostic, no human-listening claim)
+        run: |
+          python - <<'PYTHON'
+          from faster_whisper import WhisperModel
+          model=WhisperModel('tiny',device='cpu',compute_type='int8')
+          segments,info=model.transcribe('Bonze-Piper-MLS-francais-essai.wav',language='fr',beam_size=3)
+          print('ASR_HEARD', ' '.join(s.text for s in segments))
           PYTHON
       - uses: actions/upload-artifact@v4
         if: always()
