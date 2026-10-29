@@ -47,18 +47,15 @@ jobs:
           dictionary={line.split(' || ',1)[0]:line.split(' || ',1)[1].replace(' ','') for line in (root/'lexicon.txt').read_text().splitlines()}
           phrases=[text,'Bonjour mon ami. Comment vas tu ?','Je suis calme et content. Tu peux me raconter une histoire ?']
           for index,phrase in enumerate(phrases):
-            all_samples=[]
-            for chunk in re.split(r'(?<=[.!?;:])\s+',phrase):
-              phones=' '.join(dictionary[word] for word in re.findall(r"[^\W\d_]+",chunk.lower()))
+            words=re.findall(r"[^\W\d_]+",phrase.lower())
+            word_phones=[subprocess.check_output(['espeak-ng','-q','-v','fr-fr','--ipa',w],text=True).strip().replace('\n',' ') for w in words]
+            for variant,phones in [('dictionary',' '.join(dictionary[w] for w in words)),('word-reference',' '.join(word_phones)),('sentence-reference',subprocess.check_output(['espeak-ng','-q','-v','fr-fr','--ipa',phrase],text=True).strip().replace('\n',' '))]:
+              print('PHONETIC_INPUT',index,variant,phones,flush=True)
               cfg=sherpa_onnx.GenerationConfig();cfg.sid=0;cfg.phoneme_codepoints=[[ord(c) for c in phones]]
-              audio=tts.generate(chunk,cfg);samples=audio.samples;gain=min(20,.6/max(abs(x) for x in samples))
-              all_samples.extend(x*gain for x in samples);all_samples.extend([0.0]*3087)
-            path=f'voice-{index}-direct.wav';sf.write(path,all_samples,audio.sample_rate)
-            segments,info=model.transcribe(path,language='fr',beam_size=3)
-            heard=' '.join(s.text for s in segments)
-            print('ASR_EXPECTED',phrase,flush=True);print('ASR_HEARD',index,heard,flush=True)
-            if index==0:
-              sf.write('Bonze-Piper-MLS-francais-essai.wav',all_samples,audio.sample_rate)
+              audio=tts.generate(phrase,cfg);samples=audio.samples;gain=min(20,.6/max(abs(x) for x in samples))
+              path=f'voice-{index}-{variant}.wav';sf.write(path,[x*gain for x in samples],audio.sample_rate)
+              segments,info=model.transcribe(path,language='fr',beam_size=3)
+              print('ASR_EXPECTED',phrase,flush=True);print('ASR_HEARD',index,variant,' '.join(s.text for s in segments),flush=True)
           PYTHON
       - uses: actions/upload-artifact@v4
         if: always()
