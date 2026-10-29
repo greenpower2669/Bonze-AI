@@ -18,7 +18,13 @@ export function setupBackup({getData,restoreWeb,stop,saveNativeWeb,isNative}){
  function download(text){const url=URL.createObjectURL(new Blob([text],{type:'application/octet-stream'})),a=document.createElement('a');a.href=url;a.download='Bonze-AI-sauvegarde-'+Date.now()+'.bonze';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
  async function encrypt(){try{const data=getData();const text=await sealBackup({...data,...nativeData},exportSecret);exportSecret='';el('backup-password').value='';if(isNative)admin('export',text);else{download(text);status('Fichier chiffré préparé. Vérifie son enregistrement.');}}catch(e){status(e.message);}}
  async function inspect(text){try{preview=await openBackup(text,importSecret);el('backup-password').value='';importSecret='';el('backup-restore').hidden=false;status('Sauvegarde vérifiée : '+preview.web.history.length+' échanges conservés, identité '+preview.web.identity.seed.slice(0,8)+'. Restaure seulement si tu veux remplacer l’état actuel. Une copie de retour arrière sera gardée.');}catch(e){preview=null;importSecret='';el('backup-restore').hidden=true;status(e.message);}}
- el('backup-export').addEventListener('click',()=>{exportSecret=el('backup-password').value;el('backup-password').value='';stop();saveNativeWeb();nativeData=null;if(isNative)admin('snapshot');else encrypt();});
+ el('backup-export').addEventListener('click',()=>{
+  const phrase=el('backup-password').value;
+  if(phrase.length<12||phrase.length>256){status('Entre d’abord une phrase secrète entre 12 et 256 caractères. Rien n’a été arrêté ni modifié.');el('backup-password').focus();return;}
+  exportSecret=phrase;el('backup-password').value='';stop();saveNativeWeb();nativeData=null;
+  status(isNative?'Confirme ton code Android, puis choisis où enregistrer le fichier .bonze.':'Préparation de la sauvegarde chiffrée…');
+  if(isNative)admin('snapshot');else encrypt();
+ });
  el('backup-import').addEventListener('click',()=>{importSecret=el('backup-password').value;el('backup-password').value='';stop();preview=null;el('backup-restore').hidden=true;if(isNative)admin('import');else el('backup-file').click();});
  el('backup-file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;if(f.size>8*1024*1024){status('Fichier trop volumineux.');return;}await inspect(await f.text());e.target.value='';});
  el('backup-restore').addEventListener('click',()=>{if(!preview)return;stop();saveNativeWeb();if(isNative)admin('restore',JSON.stringify(preview));else{try{localStorage.setItem('bonze-rollback',JSON.stringify(getData()));restoreWeb(preview);status('Restauration enregistrée. Micro arrêté.');}catch(e){status('Restauration locale interrompue. La copie de retour arrière reste disponible.');}}});
