@@ -47,25 +47,25 @@ jobs:
         run: |
           APK="$(find android/app/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' -print -quit)"
           test -n "$APK"
-          cp "$APK" Bonze-AI-v0.2.0-MoE-debug.apk
-          test -s Bonze-AI-v0.2.0-MoE-debug.apk
-          sha256sum Bonze-AI-v0.2.0-MoE-debug.apk
+          cp "$APK" Bonze-AI-v0.3.0-accessible-debug.apk
+          test -s Bonze-AI-v0.3.0-accessible-debug.apk
+          sha256sum Bonze-AI-v0.3.0-accessible-debug.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: Bonze-AI-v0.2.0-MoE-debug
-          path: Bonze-AI-v0.2.0-MoE-debug.apk
+          name: Bonze-AI-v0.3.0-accessible-debug
+          path: Bonze-AI-v0.3.0-accessible-debug.apk
           if-no-files-found: error
       - name: Publish direct APK in prerelease (not main)
         if: github.ref == 'refs/heads/feature/offline-bonsaiv1'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="bonze-ai-v0.2.0-moe"
+          tag="bonze-ai-v0.3.0-accessible"
           if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" Bonze-AI-v0.2.0-MoE-debug.apk --clobber
+            gh release upload "$tag" Bonze-AI-v0.3.0-accessible-debug.apk --clobber
           else
-            gh release create "$tag" Bonze-AI-v0.2.0-MoE-debug.apk \
+            gh release create "$tag" Bonze-AI-v0.3.0-accessible-debug.apk \
               --target "$GITHUB_SHA" --prerelease \
-              --title "🌱 Bonze AI 0.2.0 · Neurones locaux + micro-MoE" \
-              --notes "APK de test avec vrais poids LFM2.5-230M Q4 (dense, 153 Mo) et micro-MoE émotionnel entraîné (304 paramètres). Inférence locale llama.cpp via AAR, sans Internet runtime. Licence LFM Open License v1.0 incluse dans APK. Pas un grand MoE transformeur natif. Aucune authentification propriétaire ; tests Android réels en attente."
+              --title "🌱 Bonze AI 0.3.0 · Visage permanent et conversation locale" \
+              --notes "Bonze AI 0.3.0 de test avec visage permanent, gros sous-titres, dialogue automatique sans Entrée sur Android local, arrêt manuel du micro, alternance STT/TTS français hors ligne si moteurs présents, modèle dense LFM2.5-230M et huit micro-experts. Aucune authentification propriétaire. La conversation reste à valider sur téléphone réel."
           fi

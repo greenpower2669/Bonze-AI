@@ -1,35 +1,73 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#15333a"><title>Bonze AI · Premier éveil</title>
-<meta name="description" content="Bonze AI : petit compagnon local et curieux">
+<meta name="theme-color" content="#10232d">
+<meta name="description" content="Bonze AI, petit compagnon local au visage toujours visible">
+<title>Bonze AI — Petit compagnon</title>
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./style.css"></head><body><main class="shell">
-<header><div class="brand">🌱 Bonze AI<small>Prototype 0.2 · Micro-MoE + neurones</small></div><span class="pill">Hors ligne · texte</span></header>
-<section class="hero"><div id="face" class="face calme" role="img" aria-label="Bonze AI est calme">
-<div class="sprout"></div><div class="brows"><span></span><span></span></div>
-<div class="eyes"><span><i></i></span><span><i></i></span></div><div class="cheeks"><span></span><span></span></div><div class="mouth"></div>
-</div><h1 id="mood">Je découvre le monde !</h1>
-<p>Quelques traits, beaucoup de curiosité. Mes émotions sont simulées.</p></section>
-<section class="panel"><h2>Notre première rencontre</h2>
-<p>Comment veux-tu que je t'appelle ? Surnom stocké en clair dans ce navigateur, sans authentification : n'entre aucune donnée sensible.</p>
-<form id="intro"><label for="nickname">Prénom ou surnom</label><div class="line">
-<input id="nickname" maxlength="40" autocomplete="off" required placeholder="Fab"><button>Me présenter</button></div></form>
-<p id="profile-status" class="muted"></p></section>
-<section class="panel"><h2>Discutons</h2>
-<div id="log" class="log" role="log" aria-live="polite" aria-relevant="additions"><p class="bubble bot">Bonjour ! Mon petit cerveau reconnaît quelques phrases seulement. Si je ne sais pas, je te le dirai.</p></div>
-<p id="experts-state" class="muted">Je prépare mes petits experts…</p>
-<label class="check" for="neural"><input type="checkbox" id="neural" checked> Utiliser le vrai modèle neuronal embarqué (Android uniquement)</label>
-<p id="brain-status" class="muted" role="status">Dans la WebApp, dialogue léger sans modèle de langage.</p>
-<form id="chat" class="line"><label class="sr" for="message">Ton message</label>
-<input id="message" maxlength="600" autocomplete="off" placeholder="Parle à Bonze…"><button>Envoyer</button></form></section>
-<section class="panel"><h2>Mes ressources</h2>
-<p>La reconnaissance vocale ne fonctionne que sur Android si un moteur français <strong>strictement embarqué</strong> est disponible. Elle reste désactivée tant que tu n'appuies pas sur le bouton.</p>
-  <button type="button" id="native-mic" hidden>🎙️ Écouter sur mon téléphone</button>
-  <p id="native-status" class="muted" role="status">Écoute désactivée.</p>
-<label for="pressure">Simuler la pression mémoire (pas une mesure du téléphone)</label>
-<select id="pressure"><option value="normal">Normale</option><option value="high">Élevée</option><option value="critical">Critique</option></select><p id="policy" class="muted"></p>
-<label class="check"><input type="checkbox" id="voice"> Lire mes réponses si une voix française locale existe</label>
-<p id="voice-status" class="muted">Voix désactivée.</p></section>
-<footer>Version Android avec neurones LFM2.5-230M et micro-MoE de 8 experts entraînés. La WebApp reste en mode léger. Aucune mission privilégiée. Microphone seulement à la demande sur Android, si moteur local disponible. L'identification sécurisée du propriétaire reste à réaliser.</footer>
-</main><script type="module" src="./app.js"></script></body></html>
+<link rel="stylesheet" href="./style.css">
+</head><body>
+<main class="app">
+<header class="topbar">
+ <span class="brand">🌱 Bonze AI <small>Prototype 0.3</small></span>
+ <button type="button" id="settings-open" class="quiet-button" aria-controls="settings" aria-expanded="false">⚙️ Options</button>
+</header>
+<section class="stage" aria-label="Visage expressif de Bonze AI">
+ <button type="button" id="face-touch" class="face-touch" aria-label="Toucher le visage de Bonze pour démarrer ou arrêter la conversation vocale">
+  <div id="face" class="face calme" role="img" aria-label="Bonze est calme">
+   <div class="sprout"></div>
+   <div class="brows"><span></span><span></span></div>
+   <div class="eyes"><span><i></i></span><span><i></i></span></div>
+   <div class="cheeks"><span></span><span></span></div>
+   <div class="mouth"></div>
+  </div>
+ </button>
+ <div class="moodline"><span id="mood">Je suis curieux !</span></div>
+</section>
+<section class="conversation" aria-label="Conversation et sous-titres">
+ <p id="conversation-state" class="state" role="status" aria-live="polite">● Prêt à discuter</p>
+ <div class="captions" aria-live="polite" aria-atomic="true">
+  <div class="caption-person"><span class="speaker">Toi</span><p id="heard">Je t'écoute quand tu le souhaites.</p></div>
+  <div class="caption-bonze"><span class="speaker">Bonze</span><p id="answer">Coucou ! Tu peux me parler ou utiliser le clavier.</p></div>
+ </div>
+ <button id="native-mic" type="button" class="primary-button" hidden aria-pressed="false">🎙️ Démarrer la conversation</button>
+ <button id="open-keyboard" type="button" class="secondary-button" aria-controls="keyboard-panel" aria-expanded="false">⌨️ Écrire plutôt que parler</button>
+ <p id="native-status" class="hint" role="status">Micro désactivé. La voix n'est jamais activée sans ton accord.</p>
+ <div id="keyboard-panel" hidden>
+  <form id="chat" class="compose">
+    <label for="message">Ton message à Bonze</label>
+    <textarea id="message" rows="2" maxlength="600" placeholder="Écris-moi quelque chose…"></textarea>
+    <button type="submit" id="send-message" class="primary-button">💬 Dire à Bonze</button>
+  </form>
+ </div>
+</section>
+<aside id="settings" class="settings" hidden aria-label="Options et historique">
+ <h2>Mes réglages</h2>
+ <label class="check" for="neural"><input type="checkbox" id="neural" checked> Utiliser mes neurones locaux sur Android</label>
+ <p id="brain-status" class="hint" role="status">La WebApp utilise le moteur textuel léger.</p>
+ <label class="check" for="voice"><input type="checkbox" id="voice"> Lire les réponses avec une voix locale, si disponible</label>
+ <p id="voice-status" class="hint">Voix du navigateur désactivée.</p>
+ <label for="caption-size">Taille des sous-titres</label>
+ <input id="caption-size" type="range" min="1" max="3" step="1" value="2" aria-label="Taille des sous-titres, de normal à très grand">
+ <label for="nickname">Comment veux-tu que je t'appelle ?</label>
+ <form id="intro" class="compose">
+   <input id="nickname" maxlength="40" autocomplete="off" placeholder="Ton surnom">
+   <button type="submit" class="secondary-button">Enregistrer mon surnom</button>
+ </form>
+ <p id="profile-status" class="hint">Surnom conservé dans l'appareil, sans authentification.</p>
+ <details><summary>Mes petits experts et ressources</summary>
+  <p id="experts-state" class="hint">Poids émotionnels en cours de chargement…</p>
+  <label for="pressure">Simulation de pression mémoire (pas une mesure de RAM)</label>
+  <select id="pressure"><option value="normal">Normale</option><option value="high">Élevée</option><option value="critical">Critique</option></select>
+  <p id="policy" class="hint"></p>
+ </details>
+ <details><summary>Historique des derniers échanges</summary>
+  <div id="log" role="log" aria-label="Historique de la conversation"></div>
+ </details>
+ <p class="hint">Le modèle linguistique LFM2.5-230M est dense : nos huit petits experts émotionnels ne forment pas encore le MoE neuronal complet envisagé. La reconnaissance vocale et la voix nécessitent des moteurs réellement locaux sur Android. Pas d'authentification du propriétaire dans ce prototype. N'entre pas de données sensibles.</p>
+</aside>
+</main>
+<script type="module" src="./app.js"></script>
+</body></html>

@@ -1,32 +1,57 @@
-:root{color-scheme:dark;font:16px/1.45 system-ui,sans-serif;--txt:#f2fbf9;--mint:#a9f5ce;--muted:#c3d2d3}
-*{box-sizing:border-box}body{margin:0;color:var(--txt);background:radial-gradient(circle at top,#296568,#10232d 65%)}
-.shell{max-width:730px;margin:auto;padding:18px 16px 48px}header,.line{display:flex;align-items:center;justify-content:space-between;gap:10px}
-header{flex-wrap:wrap}.brand{font-size:1.5rem;font-weight:800}small{display:block;font-weight:400;color:var(--muted);font-size:.75rem}
-.pill{border:1px solid #609e8a;border-radius:22px;padding:6px 10px;font-size:.78rem;color:#c8ffe0}
-.hero{text-align:center;padding:22px 0 14px}.hero h1{font-size:1.5rem;margin:14px 0 0}.hero p,.muted,footer{color:var(--muted)}
-.face{--brow:0deg;--eyescale:1;--smile:12px;position:relative;margin:auto;width:198px;height:180px;border-radius:44% 44% 37% 37%;background:linear-gradient(145deg,#7de4ba,#35a1a3);border:6px solid #a7f9ce;box-shadow:inset -12px -10px #277c84,0 10px 29px #0b1d24;animation:float 3s ease-in-out infinite}
-.sprout{position:absolute;width:32px;height:24px;left:calc(50% - 16px);top:-28px;border:6px solid #b3ffd6;border-bottom:0;border-radius:22px 22px 0 0;background:#53af98}
-.brows,.eyes,.cheeks{position:absolute;left:10px;right:10px;display:flex;justify-content:space-evenly}
-.brows{top:40px}.brows span{width:42px;height:7px;background:#1b404b;border-radius:5px;transform:rotate(var(--brow));transition:transform .25s}.brows span:last-child{transform:rotate(calc(var(--brow)*-1))}
-.eyes{top:62px}.eyes span{width:40px;height:47px;border-radius:13px;background:#173b49;position:relative;transform:scaleY(var(--eyescale));transition:transform .25s;animation:blink 7s infinite}
-.eyes i{position:absolute;right:7px;top:7px;background:white;border-radius:5px;width:13px;height:14px}
-.cheeks{top:119px}.cheeks span{width:28px;height:14px;border-radius:50%;background:#ffa4bd;opacity:.18}
-.mouth{position:absolute;bottom:28px;left:calc(50% - 19px);width:38px;height:var(--smile);border-bottom:6px solid #183b46;border-radius:0 0 50% 50%;transition:height .25s}
-.face.joie{--brow:12deg;--eyescale:.8;--smile:20px}.face.curiosite{--brow:-19deg;--eyescale:1.15;--smile:6px}.face.reflexion{--brow:18deg;--eyescale:.8;--smile:4px}
-.panel{border:1px solid #47717a;border-radius:22px;padding:20px;margin:17px 0;background:#1b3943}h2{font-size:1.15rem;margin:0 0 8px}p{margin:7px 0 12px}
-label{display:block;margin:10px 0 7px;font-weight:600}input:not([type=checkbox]),select{width:100%;min-width:0;background:#112a34;border:1px solid #819fa7;color:var(--txt);border-radius:11px;padding:13px;font:inherit}
-button{background:var(--mint);color:#17363b;border:0;border-radius:11px;padding:13px 17px;font:inherit;font-weight:800;cursor:pointer}
-:focus-visible{outline:3px solid #b8ffe0;outline-offset:2px}.log{display:flex;flex-direction:column;align-items:start;gap:9px;min-height:94px;max-height:250px;overflow:auto;margin:14px 0}
-.bubble{max-width:94%;padding:10px 13px;border-radius:15px;background:#29535b;overflow-wrap:anywhere;margin:0}.bubble.human{align-self:end;background:#366655}
-.check{display:flex;gap:10px;align-items:center;font-weight:500}.check input{width:20px;height:20px}footer{text-align:center;font-size:.84rem;margin-top:20px}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
-@media(max-width:400px){.panel{padding:14px}.line{flex-wrap:wrap}.line button{flex-grow:1}}
+:root{color-scheme:dark;--bg:#10232d;--panel:#17343c;--ink:#f7ffff;--accent:#b9ffd8;--soft:#d2e7e8;--subtitle:1.68rem;font-family:system-ui,-apple-system,Roboto,sans-serif}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink)}
+body{background:radial-gradient(ellipse at 50% 24%,#28676a 0,#143941 49%,#10232d 100%)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.52;cursor:not-allowed}
+:focus-visible{outline:4px solid #f9ef8b;outline-offset:4px}
+.app{min-height:100dvh;height:100dvh;display:flex;flex-direction:column;max-width:760px;margin:0 auto;padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom);position:relative;overflow:hidden}
+.topbar{display:flex;justify-content:space-between;align-items:center;min-height:58px;padding:8px 0;gap:10px}
+.brand{font-size:1.38rem;font-weight:850}.brand small{font-size:.75rem;color:var(--soft);font-weight:400}
+.quiet-button,.secondary-button{background:#20464e;border:2px solid #9abfc5;border-radius:16px;color:var(--ink);padding:10px 14px;font-weight:700;min-height:50px}
+.stage{flex:1 1 auto;min-height:165px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;overflow:hidden}
+.face-touch{display:flex;align-items:center;justify-content:center;width:min(62vw,260px);height:min(53vw,240px);max-height:100%;min-height:145px;background:none;border:0;border-radius:42%;padding:0;flex-shrink:1}
+.face{--brow:0deg;--eyescale:1;--smile:15px;position:relative;width:89%;height:85%;min-height:133px;border-radius:45% 45% 38% 38%;background:linear-gradient(145deg,#91f3cd,#3aa5a8);border:6px solid #c1ffe0;box-shadow:inset -12px -8px #248189,0 12px 30px #061921;animation:bob 3.4s ease-in-out infinite}
+.sprout{position:absolute;width:20%;height:17%;left:40%;top:-18%;border:6px solid #baffd6;border-bottom:0;border-radius:50% 50% 0 0;background:#53b49d}
+.brows,.eyes,.cheeks{position:absolute;left:6%;right:6%;display:flex;justify-content:space-evenly}
+.brows{top:23%}.brows span{width:27%;height:7px;background:#153640;border-radius:6px;transform:rotate(var(--brow));transition:transform .28s}
+.brows span:last-child{transform:rotate(calc(var(--brow)*-1))}
+.eyes{top:36%}.eyes span{width:23%;height:29%;min-height:35px;border-radius:11px;background:#153941;position:relative;transform:scaleY(var(--eyescale));transition:transform .3s;animation:blink 7s infinite}
+.eyes i{position:absolute;width:28%;height:26%;top:14%;right:14%;background:white;border-radius:4px}
+.cheeks{top:68%}.cheeks span{width:18%;height:12px;background:#ff8da9;border-radius:40%;opacity:.20;transition:opacity .3s}
+.mouth{position:absolute;bottom:14%;left:40%;width:20%;height:var(--smile);border-bottom:6px solid #153941;border-radius:0 0 50% 50%;transition:height .3s}
+.face.curiosite{--brow:-18deg;--eyescale:1.13;--smile:7px}.face.joie{--brow:12deg;--eyescale:.85;--smile:21px}
+.face.reflexion{--brow:17deg;--eyescale:.82;--smile:5px}.face.calme{--brow:0deg;--eyescale:.83;--smile:13px}
+.face.peur{--brow:-23deg;--eyescale:1.19;--smile:5px}.face.colere{--brow:21deg;--eyescale:.8;--smile:4px}
+.face.empathie{--brow:-9deg;--eyescale:1.03;--smile:16px}.face.humour{--brow:12deg;--eyescale:.85;--smile:23px}
+.face.peur .cheeks span,.face.empathie .cheeks span{opacity:.7}
+.face.listening .eyes span{animation:blink 7s infinite,listen-pulse 2s ease-in-out infinite}
+.face.thinking .brows span{animation:ponder 1.6s ease-in-out infinite alternate}
+.face.speaking .mouth{animation:talk .22s ease-in-out infinite alternate}
+.moodline{font-weight:750;text-align:center;font-size:1.14rem;min-height:28px}
+.conversation{flex:0 1 auto;min-height:0;display:flex;flex-direction:column;gap:7px;background:#0d2934ee;border:1px solid #4a8589;border-radius:24px 24px 12px 12px;padding:12px 12px 14px;box-shadow:0 -5px 22px #0b1a2066}
+.state{margin:0;text-align:center;font-size:1.05rem;color:#d1ffb0;font-weight:850}
+.captions{display:grid;grid-template-columns:1fr;gap:7px;min-height:0}
+.caption-person,.caption-bonze{background:#19414b;border-radius:14px;padding:7px 12px;min-height:54px}
+.caption-bonze{background:#24534c}.speaker{font-weight:850;font-size:.86rem;color:#bbffdd}
+.caption-person p,.caption-bonze p{font-size:var(--subtitle);font-weight:720;line-height:1.2;margin:3px 0;overflow-wrap:anywhere;max-height:4.8em;overflow:auto}
+.primary-button{width:100%;min-height:64px;border:0;background:var(--accent);color:#12323b;border-radius:17px;font-weight:900;font-size:1.18rem;padding:11px 16px}
+.primary-button[aria-pressed=true]{background:#ffe0a4;color:#312200}
+#open-keyboard{width:100%;min-height:44px;padding:7px 10px}.hint{font-size:.91rem;color:var(--soft);line-height:1.3;margin:3px 0 5px}
+#native-status{text-align:center}#keyboard-panel{max-height:35dvh;overflow:auto}
+.compose{display:flex;flex-direction:column;gap:8px}.compose label,.settings label{font-weight:800}
+input:not([type=checkbox],[type=range]),textarea,select{width:100%;background:#0c2831;border:2px solid #9abfc5;color:#fff;border-radius:12px;padding:11px;font-size:1.1rem}
+textarea{resize:vertical}.settings{position:absolute;z-index:20;top:56px;left:7px;right:7px;bottom:max(8px,env(safe-area-inset-bottom));overflow:auto;background:#102d39f9;border:2px solid #99cfc2;border-radius:23px;padding:17px 16px 28px;box-shadow:0 0 0 100vmax #06151c70}
+.settings[hidden],#keyboard-panel[hidden],#native-mic[hidden]{display:none!important}
+.settings h2{margin:0 0 12px}.settings label{display:block;margin:15px 0 6px}
+.check{display:flex!important;gap:11px;align-items:center;font-weight:650!important}
+.check input{width:24px;height:24px;flex:none}
+#caption-size{width:100%;height:38px;accent-color:#b9ffd8}
+.settings details{border-top:1px solid #65989b;padding:14px 0}.settings summary{font-size:1.07rem;font-weight:750;cursor:pointer}
+#log{display:flex;flex-direction:column;gap:9px;max-height:30dvh;overflow:auto;margin-top:14px}
+.bubble{background:#20464e;border-radius:12px;padding:10px 12px;margin:0;overflow-wrap:anywhere}
+.bubble.human{background:#315b48;text-align:right}
+@media(min-height:800px){.face-touch{width:min(72vw,310px);height:min(55vw,280px)}.stage{min-height:235px}.conversation{padding:18px}}
+@media(max-height:680px){.topbar{min-height:44px}.stage{min-height:120px}.face-touch{width:170px;height:150px;min-height:108px}.face{min-height:105px}.conversation{padding:8px}.caption-person p,.caption-bonze p{max-height:2.5em}.primary-button{min-height:50px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
-@keyframes float{50%{translate:0 -5px}}@keyframes blink{0%,34%,36%,100%{scale:1 1}35%{scale:1 .1}}
-
-.face.peur{--brow:-20deg;--eyescale:1.15;--smile:3px}
-.face.peur .cheeks span{opacity:.6}
-.face.colere{--brow:22deg;--eyescale:.75;--smile:3px}
-.face.empathie{--brow:-10deg;--eyescale:1.08;--smile:13px}
-.face.calme{--brow:0deg;--eyescale:.8;--smile:12px}
-.face.humour{--brow:14deg;--eyescale:.9;--smile:22px}
+@keyframes bob{50%{translate:0 -5px}}@keyframes blink{0%,34%,36%,100%{scale:1 1}35%{scale:1 .1}}
+@keyframes listen-pulse{50%{filter:brightness(1.5)}}@keyframes ponder{to{transform:rotate(-7deg)}}
+@keyframes talk{to{height:23px}}
