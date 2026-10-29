@@ -20,3 +20,10 @@
 - [ ] Faire accepter le premier prototype par Fab avant merge dans main.
 
 - [x] Réparer le blocage de préparation SDK GitHub Actions (legacy 'tools').
+
+## Livraison 0.2.0 micro-MoE / LLM
+- [x] Apprentissage supervisé 8 experts et sélection parcimonieuse top2, tests unitaires.
+- [x] Pont Kotlin pour un modèle de langage local partagé et réutilisé, intégration UI et désactivation manuelle.
+- [ ] Vérifier CI Kotlin/Gradle, téléchargement modèle (SHA-256) et génération de l'APK volumineux.
+- [ ] Installer sur Android 16, mesurer RAM réelle, latence 1re phrase, stabilité, erreurs de transcription et hallucinations.
+- [ ] Audit licences tiers AAR et LiquidAI pour diffusion au-delà de la phase de recherche ; reporter la signature production.

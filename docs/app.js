@@ -1,6 +1,8 @@
 import {answer,listening} from "../core/bonze.mjs";
+import {inferExperts,evolveForces} from "../core/experts.mjs";
 const el=id=>document.getElementById(id),KEY="bonze-proto-01";
-let profile=null,history=[],speaking=false;
+let profile=null,history=[],speaking=false,trainedWeights=null,forces={},pendingInput=null;
+fetch('../core/weights/expert-router-v1.json').then(r=>r.ok?r.json():Promise.reject(new Error('404'))).then(w=>{trainedWeights=w;el('experts-state').textContent='8 experts émotionnels entraînés prêts.'}).catch(()=>{el('experts-state').textContent='Poids des experts indisponibles : mode simple.'});
 try{
  const d=JSON.parse(localStorage.getItem(KEY)||"null");
  if(d&&typeof d==="object"){
@@ -31,11 +33,54 @@ el("intro").addEventListener("submit",e=>{
  e.preventDefault();const nickname=el("nickname").value.trim().slice(0,40);if(!nickname)return;
  profile={nickname};el("profile-status").textContent="Enchanté, "+nickname+" ! Profil local non authentifié.";save();mood("joie");
 });
+function finishReply(text,emotion="reflexion"){
+  bubble(text,"bot");mood(emotion);speak(text);
+  history.push({role:"bot",text});history=history.slice(-30);save();
+  pendingInput=null;
+  el("message").disabled=false;el("message").focus();
+}
+window.BonzeAIResult=text=>{
+  const emotion=pendingInput?.emotion||"reflexion";
+  el("brain-status").textContent="Réponse générée par les poids locaux LFM2.5 + routeur micro-MoE.";
+  finishReply(String(text).slice(0,1200),emotion);
+};
+window.BonzeAIError=message=>{
+  el("brain-status").textContent=String(message);
+  if(pendingInput){
+    const f=answer(pendingInput.text,profile||{});
+    finishReply(f.text,f.emotion);
+  }
+};
 el("chat").addEventListener("submit",e=>{
- e.preventDefault();const text=el("message").value.trim();if(!text)return;el("message").value="";bubble(text,"human");
- const r=answer(text,profile||{});bubble(r.text,"bot");mood(r.emotion);speak(r.text);
- history.push({role:"human",text},{role:"bot",text:r.text});history=history.slice(-30);save();
+  e.preventDefault();
+  if(pendingInput)return;
+  const text=el("message").value.trim();if(!text)return;
+  el("message").value="";bubble(text,"human");
+  history.push({role:"human",text});history=history.slice(-30);save();
+  let emotion="reflexion",summary="Pas de routage : poids indisponibles.";
+  if(trainedWeights){
+    try{
+      const routed=inferExperts(text,trainedWeights);
+      forces=evolveForces(forces,routed);
+      emotion=routed.top2[0].name;
+      summary="Micro-MoE (poids entraînés) : "+routed.top2.map(x=>x.name+" "+Math.round(x.weight*100)+" %").join(" · ");
+    }catch(err){summary="Routeur indisponible : "+err.message}
+  }
+  el("experts-state").textContent=summary;mood(emotion);
+  if(window.BonzeAndroid && el("neural").checked && window.BonzeAndroid.hasBundledWeights()){
+    pendingInput={text,emotion};el("message").disabled=true;
+    el("brain-status").textContent="J'active mes neurones locaux… Première réponse plus lente (chargement du modèle).";
+    window.BonzeAndroid.generateLocalReply(text,emotion);
+  }else{
+    const r=answer(text,profile||{});
+    el("brain-status").textContent=window.BonzeAndroid?"Modèle désactivé ou poids absents : réponse légère.":"Navigateur : réponse légère, sans LLM.";
+    finishReply(r.text,emotion);
+  }
 });
+el("neural").addEventListener("change",()=>{
+  if(window.BonzeAndroid)window.BonzeAndroid.setNeuralEnabled(el("neural").checked);
+});
+if(!window.BonzeAndroid){el("neural").checked=false;el("neural").disabled=true;}
 function policy(){
  const p=listening({disabled:false,pressure:el("pressure").value});
  el("policy").textContent="Simulation : mode "+p.mode+" ("+p.reason+"). Aucune RAM réelle mesurée.";

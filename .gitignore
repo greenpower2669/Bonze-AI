@@ -1,0 +1,6 @@
+# Modèle tiers ~153 Mo : téléchargé puis vérifié SHA-256 en CI, jamais commité.
+android/app/src/main/assets/models/
+.gradle/
+**/build/
+.idea/
+*.iml

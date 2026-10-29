@@ -18,6 +18,9 @@ import android.graphics.Color;
 import androidx.webkit.WebViewAssetLoader;
 import org.json.JSONObject;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Thin, offline-only Android shell. The cognition stays in /core/bonze.mjs.
@@ -29,6 +32,9 @@ public final class MainActivity extends Activity {
     private SpeechRecognizer recognizer;
     private boolean recording = false;
     private boolean memoryWarning = false;
+    private final ExecutorService inferenceQueue = Executors.newSingleThreadExecutor();
+    private final AtomicBoolean generating = new AtomicBoolean(false);
+    private volatile boolean neuralEnabled = true;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -88,6 +94,40 @@ public final class MainActivity extends Activity {
                     requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, MIC_PERMISSION);
                 } else startRecognizer();
             });
+        }
+        @JavascriptInterface public void generateLocalReply(String text, String mood) {
+            if (!neuralEnabled) {
+                send("BonzeAIError", "Modèle neuronal désactivé par l'humain.");
+                return;
+            }
+            if (memoryWarning) {
+                send("BonzeAIError", "Mémoire chargée : j'utilise le mode léger.");
+                return;
+            }
+            if (!generating.compareAndSet(false, true)) {
+                send("BonzeAIError", "Je réfléchis déjà. Attends un petit instant.");
+                return;
+            }
+            inferenceQueue.execute(() -> {
+                try {
+                    String result = BonzeInference.reply(
+                        getApplicationContext(), text, mood);
+                    send("BonzeAIResult", result);
+                } catch (Exception | LinkageError error) {
+                    send("BonzeAIError", "Impossible de charger les neurones locaux : "
+                        + error.getClass().getSimpleName() + ". Mode léger disponible.");
+                } finally {
+                    generating.set(false);
+                }
+            });
+        }
+        @JavascriptInterface public void setNeuralEnabled(boolean enabled) {
+            neuralEnabled = enabled;
+            if (!enabled) inferenceQueue.execute(BonzeInference::release);
+        }
+        @JavascriptInterface public boolean hasBundledWeights() {
+            try (java.io.InputStream input = getAssets().open("models/LFM2.5-230M-Q4_K_M.gguf")) { return input != null; }
+            catch (Exception e) { return false; }
         }
         @JavascriptInterface public void stopLocalSpeech() {
             runOnUiThread(() -> cancelRecognizer("Écoute arrêtée."));
@@ -157,6 +197,7 @@ public final class MainActivity extends Activity {
             memoryWarning = true;
             cancelRecognizer("Mémoire critique : écoute désactivée. Je reste disponible par écrit.");
             send("BonzeMemoryNotice", "critical");
+            inferenceQueue.execute(BonzeInference::release);
         } else if (level >= TRIM_MEMORY_RUNNING_LOW && level != TRIM_MEMORY_UI_HIDDEN) {
             memoryWarning = true;
             cancelRecognizer("Mémoire chargée : le clavier reste disponible.");
@@ -173,6 +214,8 @@ public final class MainActivity extends Activity {
     }
     @Override public void onDestroy() {
         cancelRecognizer("Écoute arrêtée.");
+        inferenceQueue.execute(BonzeInference::release);
+        inferenceQueue.shutdown();
         if (web != null) { web.destroy(); web = null; }
         super.onDestroy();
     }

@@ -23,3 +23,10 @@ button{background:var(--mint);color:#17363b;border:0;border-radius:11px;padding:
 @media(max-width:400px){.panel{padding:14px}.line{flex-wrap:wrap}.line button{flex-grow:1}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 @keyframes float{50%{translate:0 -5px}}@keyframes blink{0%,34%,36%,100%{scale:1 1}35%{scale:1 .1}}
+
+.face.peur{--brow:-20deg;--eyescale:1.15;--smile:3px}
+.face.peur .cheeks span{opacity:.6}
+.face.colere{--brow:22deg;--eyescale:.75;--smile:3px}
+.face.empathie{--brow:-10deg;--eyescale:1.08;--smile:13px}
+.face.calme{--brow:0deg;--eyescale:.8;--smile:12px}
+.face.humour{--brow:14deg;--eyescale:.9;--smile:22px}

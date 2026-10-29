@@ -16,4 +16,7 @@ jobs:
       - run: node --check core/bonze.mjs
       - run: node --check docs/app.js
       - run: node --check docs/sw.js
+      - run: node --check core/experts.mjs
+      - run: node scripts/train-experts.mjs
+      - run: git diff --exit-code -- core/weights/expert-router-v1.json
       - run: node --test tests/*.test.mjs

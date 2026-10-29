@@ -7,6 +7,7 @@ on:
       - 'android/**'
       - 'docs/**'
       - 'core/**'
+      - 'scripts/**'
       - 'build.gradle'
       - 'settings.gradle'
       - 'gradle.properties'
@@ -33,31 +34,42 @@ jobs:
           SDKMANAGER="$(find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools" -type f -name sdkmanager | head -n 1)"
           test -x "$SDKMANAGER"
           "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
+      - name: Download verified GGUF model weights and license (build time only)
+        run: |
+          mkdir -p android/app/src/main/assets/models
+          curl --fail --location --retry 4 --retry-delay 3 \\
+            "https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LFM2.5-230M-Q4_K_M.gguf" \\
+            --output android/app/src/main/assets/models/LFM2.5-230M-Q4_K_M.gguf
+          echo "7bbd90384d3deffe4c646ec9643b212802d32d4ce417c90a1ec9282100650062  android/app/src/main/assets/models/LFM2.5-230M-Q4_K_M.gguf" | sha256sum -c
+          curl --fail --location --retry 4 \\
+            "https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LICENSE" \\
+            --output android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt
+          test -s android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt
       - name: Compile installable debug APK
         run: gradle --no-daemon :androidApp:assembleDebug
       - name: Rename APK and check output
         run: |
           APK="$(find android/app/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' -print -quit)"
           test -n "$APK"
-          cp "$APK" Bonze-AI-v0.1.0-debug.apk
-          test -s Bonze-AI-v0.1.0-debug.apk
-          sha256sum Bonze-AI-v0.1.0-debug.apk
+          cp "$APK" Bonze-AI-v0.2.0-MoE-debug.apk
+          test -s Bonze-AI-v0.2.0-MoE-debug.apk
+          sha256sum Bonze-AI-v0.2.0-MoE-debug.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: Bonze-AI-v0.1.0-debug
-          path: Bonze-AI-v0.1.0-debug.apk
+          name: Bonze-AI-v0.2.0-MoE-debug
+          path: Bonze-AI-v0.2.0-MoE-debug.apk
           if-no-files-found: error
       - name: Publish direct APK in prerelease (not main)
         if: github.ref == 'refs/heads/feature/offline-bonsaiv1'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="bonze-ai-v0.1.0-poc"
+          tag="bonze-ai-v0.2.0-moe"
           if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" Bonze-AI-v0.1.0-debug.apk --clobber
+            gh release upload "$tag" Bonze-AI-v0.2.0-MoE-debug.apk --clobber
           else
-            gh release create "$tag" Bonze-AI-v0.1.0-debug.apk \
+            gh release create "$tag" Bonze-AI-v0.2.0-MoE-debug.apk \
               --target "$GITHUB_SHA" --prerelease \
-              --title "🌱 Bonze AI 0.1.0 · APK expérimental" \
-              --notes "APK de test signé avec la clé debug Android. WebView hors ligne, visage, texte et reconnaissance vocale locale Android 12+ uniquement si moteur on-device disponible. Aucun LLM ou authentification propriétaire. Branche de développement, main inchangée."
+              --title "🌱 Bonze AI 0.2.0 · Neurones locaux + micro-MoE" \
+              --notes "APK de test avec vrais poids LFM2.5-230M Q4 (dense, 153 Mo) et micro-MoE émotionnel entraîné (304 paramètres). Inférence locale llama.cpp via AAR, sans Internet runtime. Licence LFM Open License v1.0 incluse dans APK. Pas un grand MoE transformeur natif. Aucune authentification propriétaire ; tests Android réels en attente."
           fi

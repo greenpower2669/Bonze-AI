@@ -1,4 +1,4 @@
-plugins { id 'com.android.application' }
+plugins { id 'com.android.application'; id 'org.jetbrains.kotlin.android' }
 android {
     namespace 'fr.bonzeai.companion'
     compileSdk 35
@@ -6,16 +6,22 @@ android {
         applicationId 'fr.bonzeai.companion'
         minSdk 26
         targetSdk 35
-        versionCode 1
-        versionName '0.1.0'
+        versionCode 2
+        versionName '0.2.0'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    sourceSets.main.assets.srcDirs(layout.buildDirectory.dir('generated/bonzeAssets'))
+    sourceSets.main.assets.srcDirs('src/main/assets', layout.buildDirectory.dir('generated/bonzeAssets'))
+    androidResources { noCompress += ['gguf'] }
+    ndk { abiFilters += ['arm64-v8a'] }
 }
-dependencies { implementation 'androidx.webkit:webkit:1.12.1' }
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'dev.ffmpegkit-maintained:llama-android:0.1.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0'
+}
 tasks.register('copyBonzeAssets', Copy) {
     from(rootProject.file('docs')) { into 'docs' }
     from(rootProject.file('core')) { into 'core' }
