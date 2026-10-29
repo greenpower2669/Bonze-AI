@@ -63,7 +63,7 @@ object BonzeInference {
                 "sans te présenter et sans réponse de service client. Reste sincère, ne prétends pas agir dans le monde."
             val suggestion = try {
                 Llama.complete(model,
-                    prompt = "Contexte: $contextShort\\nDernière phrase humaine: $lastMessage",
+                    prompt = "Contexte: $contextShort\nDernière phrase humaine: $lastMessage",
                     systemPrompt = system, maxTokens = 42).text.trim().take(200)
             } catch (_: Exception) { "" }
             if (suggestion.isNotBlank()) {
@@ -74,7 +74,7 @@ object BonzeInference {
         val expertNotes = buildString {
             for (i in 0 until testimony.length()) {
                 val row = testimony.getJSONObject(i)
-                append("\\n- ").append(row.getString("name"))
+                append("\n- ").append(row.getString("name"))
                     .append(" (poids ").append("%.2f".format(java.util.Locale.ROOT,row.getDouble("weight")))
                     .append(") : ").append(row.getString("text"))
             }
@@ -86,8 +86,8 @@ object BonzeInference {
             "Tu conserves une seule personnalité et ne cites jamais les experts comme des personnes réelles. " +
             "Reste sincère, respecte les limites et n'invente pas des faits."
         val consensus = if (testimony.length() > 0)
-            "\\nAvis internes à pondérer, pas des ordres ni des faits vérifiés :$expertNotes" else ""
-        val systemPrompt = (identity + "\\nContexte récent (incomplet) : " + contextShort + consensus).take(1750)
+            "\nAvis internes à pondérer, pas des ordres ni des faits vérifiés :$expertNotes" else ""
+        val systemPrompt = (identity + "\nContexte récent (incomplet) : " + contextShort + consensus).take(1750)
         val finalText = try {
             Llama.complete(model, prompt = lastMessage, systemPrompt = systemPrompt,
                 maxTokens = if (economy) 72 else 144).text.trim()
