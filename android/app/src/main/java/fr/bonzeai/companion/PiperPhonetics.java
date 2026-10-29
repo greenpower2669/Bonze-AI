@@ -3,7 +3,7 @@ import java.util.*;import java.util.regex.*;
 /** Bounded dictionary transcription. Returns bare IPA, runtime owns BOS/pad/EOS. */
 public final class PiperPhonetics {
  // Conservative experimental floor: short MLS sequences were unstable across six speakers.
- public static final int MIN_SPEECH_CODEPOINTS=48;
+ public static final int MIN_SPEECH_CODEPOINTS=32;
  private static final Pattern WORD=Pattern.compile("\\p{L}+");
  public static String speechPhonemes(String text,Map<String,String> dictionary){
   String phones=phonemes(text,dictionary);
