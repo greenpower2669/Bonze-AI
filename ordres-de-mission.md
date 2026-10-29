@@ -82,3 +82,5 @@ Ordre demandé : anomalies bloquantes, puis mécanismes émotionnels, administra
 - Piper Siwis int8 via sherpa-onnx 2.0.1 réellement branché à AudioTrack ; lexique français MIT, secours Android explicite pour les mots absents. PCM/arrêt/latence à vérifier sur Android. Synthèse hôte française réussie CI 40906407731, écoute humaine encore requise.
 - Nettoyage automatique de l’environnement : reprise depuis edb86e5 ; aucune perte de commit distant ; ajouts non commis reconstruits puis testés.
 - 45 tests JS passent localement ; compilation/lint et nouveaux essais Android en attente. Publication candidate désactivée, aucun merge main.
+
+Candidat complément : tests instrumentés Android Piper/conseil ajoutés ; migration des acquis sans ancien conseil corrigée, journaux PWA persistés. Licences détaillées dans docs/piper-integration.md et docs/licenses. Validation Android toujours en cours.

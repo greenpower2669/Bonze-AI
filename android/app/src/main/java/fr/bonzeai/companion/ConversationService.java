@@ -146,7 +146,7 @@ public final class ConversationService extends Service {
   if(fromVoice)session.awaiting();setState("thinking","Je réfléchis à ce que tu viens de me dire.");holdCpu();
   if(!neural||!Arrays.asList("precise","eco").contains(mode)){complete(epoch,lightReply(text),fromVoice);return;}
   if(!generating.compareAndSet(false,true)){complete(epoch,"Ma précédente pensée se termine encore. Redis-moi ta phrase dans un instant ?",fromVoice);return;}
-  final boolean eco=economy;final String currentMood=mood;
+  final boolean eco=economy;
   inference.execute(()->{
    String result,errorName="";long began=SystemClock.elapsedRealtime(),cpuBegan=SystemClock.currentThreadTimeMillis();
    try{BonzeInference.setEconomy(eco);result=BonzeInference.reply(getApplicationContext(),prompt,contextData,hint);}
@@ -323,7 +323,7 @@ public final class ConversationService extends Service {
   String nextMode=n.getString("mode");JSONArray rows=n.getJSONArray("history"),trace=root.getJSONArray("journal");
   if(n.getInt("schema")!=1||!Arrays.asList("precise","eco","light","text","off").contains(nextMode)||rows.length()>30||trace.length()>200||trace.toString().length()>1000000)throw new IllegalArgumentException("data");
   for(int j=0;j<rows.length();j++){JSONObject r=rows.getJSONObject(j);if(!Arrays.asList("human","bot").contains(r.getString("role"))||r.getString("text").length()>1200)throw new IllegalArgumentException("history");}
-  JSONObject nextWeights=root.optJSONObject("weights"),nextCouncil=council==null?null:council.validate(root.optJSONObject("council")==null?new JSONObject():root.getJSONObject("council"),nextWeights);
+  JSONObject nextWeights=root.optJSONObject("weights");if(nextWeights!=null&&nextWeights.length()==0)nextWeights=null;JSONObject backupCouncil=root.optJSONObject("council");if(backupCouncil==null)backupCouncil=DiagnosticJournal.fields("state",DiagnosticJournal.fields("version",1,"forces",identity.getJSONObject("acquired").getJSONObject("forces"),"globalEndurance",identity.getJSONObject("acquired").optDouble("endurance",.85)));JSONObject nextCouncil=council==null?null:council.validate(backupCouncil,nextWeights);
   // Validate everything before stopping/writing. One preferences transaction is canonical;
   // restoredWeb stays pending until the WebView acknowledges its own durable write.
   JSONObject old=backupData();String previousWeb=prefs.getString("lastWeb","{}");

@@ -6,9 +6,10 @@ android {
         applicationId 'fr.bonzeai.companion'
         minSdk 26
         targetSdk 35
-        versionCode 5
-        versionName '0.5.0'
-        ndk { abiFilters += ['arm64-v8a'] }
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        versionCode 6
+        versionName '0.6.0'
+        ndk { abiFilters += [project.findProperty('bonzeTestAbi') ?: 'arm64-v8a'] }
     }
     signingConfigs {
         debug { storeFile file(System.getenv('ANDROID_USER_HOME') ? System.getenv('ANDROID_USER_HOME') + '/debug.keystore' : System.getProperty('user.home') + '/.android/debug.keystore') }
@@ -21,6 +22,8 @@ android {
     androidResources { noCompress += ['gguf','onnx'] }
 }
 dependencies {
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'junit:junit:4.13.2'
     implementation 'org.mozilla:rhino:1.7.15.1'
     implementation files('libs/sherpa-onnx-2.0.1.aar')
     implementation 'androidx.webkit:webkit:1.12.1'

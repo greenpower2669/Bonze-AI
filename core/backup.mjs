@@ -20,7 +20,7 @@ export function validateBackup(input){
  if(input.native!=null){const n=input.native;if(!plain(n)||n.schema!==1||!modes.includes(n.mode))fail();native={schema:1,history:rows(n.history),scene:String(n.scene||'').slice(0,360),mode:n.mode,neural:n.neural===true,readText:n.readText===true,voice:String(n.voice||'').slice(0,200),mood:String(n.mood||'curiosite').slice(0,30)};}
  let weights=null;if(input.weights!=null){inferExperts('',input.weights);weights=JSON.parse(JSON.stringify(input.weights));}
  const journal=input.journal??[];if(!Array.isArray(journal)||journal.length>200||JSON.stringify(journal).length>1000000)fail();
- let council=null;
+ let council=null;if(!input.council?.state){const migrated=JSON.parse(globalThis.BonzeCouncil.run(JSON.stringify({state:{version:1,forces:web.identity.acquired.forces,globalEndurance:web.identity.acquired.endurance},seconds:0})));input={...input,council:{state:migrated.state,params:migrated.params}};}
  if(input.council?.state){const c=input.council;if(c.state.version!==1)fail();for(const group of ['forces','endurances'])for(const key of globalThis.BonzeCouncil.names)if(!Number.isFinite(c.state[group]?.[key])||c.state[group][key]<0||c.state[group][key]>1)fail();if(!Number.isFinite(c.state.globalEndurance)||c.state.globalEndurance<0||c.state.globalEndurance>1)fail();
  const result=JSON.parse(globalThis.BonzeCouncil.run(JSON.stringify({state:c.state,params:c.params,weights,seconds:0})));council={state:result.state,params:result.params};web.councilState=result.state;web.councilParams=result.params;}
  return {council,schema:1,createdAt:Number.isFinite(input.createdAt)?input.createdAt:0,web,native,weights,journal};

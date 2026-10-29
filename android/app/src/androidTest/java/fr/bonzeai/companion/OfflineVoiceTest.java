@@ -1,0 +1,22 @@
+package fr.bonzeai.companion;
+import androidx.test.platform.app.InstrumentationRegistry;
+import org.junit.Test;import static org.junit.Assert.*;
+import java.util.*;import java.util.concurrent.*;import java.util.concurrent.atomic.*;import org.json.*;
+public class OfflineVoiceTest {
+ @Test public void frenchPiperPlaysOfflineAndStops()throws Exception{
+  android.content.Context app=InstrumentationRegistry.getInstrumentation().getTargetContext();
+  PiperVoice voice=new PiperVoice(app);CountDownLatch done=new CountDownLatch(1),started=new CountDownLatch(1);AtomicInteger levels=new AtomicInteger();AtomicReference<String> error=new AtomicReference<>();
+  PiperVoice.Events events=new PiperVoice.Events(){public void start(String id,String text){started.countDown();}public void level(String id,double value,int frame){if(value>0)levels.incrementAndGet();}public void done(){done.countDown();}public void failed(String reason,boolean hadAudio){error.set(reason);done.countDown();}};
+  try{voice.speak(Arrays.asList("Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?"),"test_",.98f,events);assertTrue("French PCM playback completes",done.await(90,TimeUnit.SECONDS));assertNull(error.get());assertEquals(0,started.getCount());assertTrue("nonzero played PCM",levels.get()>10);
+   CountDownLatch speaking=new CountDownLatch(1);AtomicBoolean completed=new AtomicBoolean();
+   voice.speak(Arrays.asList("Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?"),"cancel_",.98f,new PiperVoice.Events(){public void start(String id,String text){speaking.countDown();}public void level(String i,double v,int f){}public void done(){completed.set(true);}public void failed(String r,boolean h){error.set(r);}});
+   assertTrue(speaking.await(30,TimeUnit.SECONDS));long before=android.os.SystemClock.elapsedRealtime();voice.stop();assertTrue(android.os.SystemClock.elapsedRealtime()-before<1000);Thread.sleep(500);assertFalse("cancel cannot finish/resume listening",completed.get());assertNull(error.get());
+  }finally{voice.close();}
+ }
+ @Test public void sharedCouncilExecutesAndRestoresOnAndroid()throws Exception{
+  android.content.Context app=InstrumentationRegistry.getInstrumentation().getTargetContext();android.content.SharedPreferences p=app.getSharedPreferences("council-test",0);p.edit().clear().commit();
+  EmotionalCouncil c=new EmotionalCouncil(app,p);JSONObject r=c.run("On joue au dragon",new JSONObject(),1,"thinking"),trace=r.getJSONObject("trace");assertEquals(8,trace.getJSONArray("contributions").length());
+  for(int a=0;a<6;a++){double sum=0;for(int i=0;i<8;i++)sum+=trace.getJSONArray("contributions").getJSONObject(i).getJSONArray("vector").getDouble(a);assertEquals(sum,trace.getJSONArray("totals").getDouble(a),1e-9);}
+  JSONObject before=c.snapshot();EmotionalCouncil restarted=new EmotionalCouncil(app,p);assertEquals(before.toString(),restarted.snapshot().toString());assertTrue(r.getString("hint").contains("scène"));
+ }
+}
