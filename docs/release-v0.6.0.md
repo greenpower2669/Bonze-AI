@@ -14,7 +14,7 @@ APK arm64 directement téléchargeable. Même application `fr.bonzeai.companion`
 
 La qualité conversationnelle du LFM2.5-230M reste insuffisante dans nos probes français : modifier le contexte ou recréer le moteur ne règle pas tout. Cette version corrige des causes prouvées dans l'application ; elle ne garantit pas un jeu de rôle convaincant. Le modèle reste dense. Les experts émotionnels associent des poids linéaires entraînés à des politiques écrites à la main ; ce n'est pas un MoE linguistique complet.
 
-Le lexique Piper ne couvre pas tous les mots/noms/nombres/élisions. Dans ces cas, Android prend le relais avant le début de lecture et la raison est journalisée. Seuls débit et pauses sont modulés, pas une prosodie émotionnelle apprise. La bouche suit l'amplitude, pas les phonèmes.
+Le lexique Piper ne couvre pas tous les mots/noms/nombres/élisions. Les séquences très courtes restent aussi instables avec cette voix MLS ; elles sont refusées avant lecture (seuil expérimental : moins de48codepoints phonétiques non blancs). Dans ces cas, Android prend le relais avant le début de lecture et la raison est journalisée. Seuls débit et pauses sont modulés, pas une prosodie émotionnelle apprise. La bouche suit l'amplitude, pas les phonèmes.
 
 Les tests instrumentés vérifient réellement le PCM, l'arrêt, le conseil et la restauration sur émulateur Android hors connexion. L'écoute et les mesures du Samsung de Fab restent nécessaires : **Piper n'est pas déclaré terminé avant cette évaluation**. Vérifier aussi veille, casque, absence d'écho et TalkBack sur ce téléphone. Les historiques et journaux ont des limites de taille ; l'export contient les données actuellement conservées.
 

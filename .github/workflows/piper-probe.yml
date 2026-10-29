@@ -2,7 +2,7 @@ name: Bonze Piper compatibility probe
 on:
   push:
     branches: [feature/offline-bonsaiv1]
-    paths: ['.github/workflows/piper-probe.yml','scripts/prepare-piper-mls.py','scripts/prepare-piper-lexicon.py']
+    paths: ['android/**','docs/**','core/**','tests/**','scripts/**','build.gradle','settings.gradle','gradle.properties','.github/workflows/android-apk.yml','.github/workflows/piper-probe.yml']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -26,38 +26,34 @@ jobs:
           tts=sherpa_onnx.OfflineTts(sherpa_onnx.OfflineTtsConfig(model=sherpa_onnx.OfflineTtsModelConfig(vits=sherpa_onnx.OfflineTtsVitsModelConfig(model=str(root/'voice.onnx'),tokens=str(root/'tokens.txt'),lexicon='',noise_scale=.333,noise_scale_w=.333),num_threads=2)))
           model=WhisperModel('base',device='cpu',compute_type='int8')
           dictionary={line.split(' || ',1)[0]:line.split(' || ',1)[1].replace(' ','') for line in (root/'lexicon.txt').read_text().splitlines()}
-          phrases=['Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?','Bonjour mon ami. Comment vas tu ?','Je suis calme et content. Tu peux me raconter une histoire ?']
-          all_heard={}
-          for variant in ['plain','final-stress']:
-            heard=[]
-            for index,phrase in enumerate(phrases):
-              # SpeechPlan.piperChunks keeps these bounded replies as a single segment.
-              assert len(phrase)<=220
-              words=re.findall(r"[^\W\d_]+",phrase.lower())
-              units=[dictionary[w] for w in words]
-              if variant=='final-stress' and 'ˈ' not in units[-1] and 'ˌ' not in units[-1]:
-                for pos in range(len(units[-1])-1,-1,-1):
-                  if units[-1][pos] in 'aeiouyøœɛɔɑɐɒɨʌə':
-                    units[-1]=units[-1][:pos]+'ˈ'+units[-1][pos:];break
-              phones=' '.join(units)
-              print('PHONETIC_INPUT',variant,index,phones,flush=True)
-              cfg=sherpa_onnx.GenerationConfig();cfg.sid=0;cfg.speed=.98;cfg.phoneme_codepoints=[[ord(c) for c in phones]]
-              begin=time.monotonic();audio=tts.generate(phrase,cfg);samples=audio.samples
-              assert len(samples)>1000 and audio.sample_rate==22050
-              peak=max(abs(x) for x in samples);assert peak>.00001
-              gain=min(20,.6/peak);path=f'voice-{variant}-{index}-production.wav'
-              sf.write(path,[x*gain for x in samples],audio.sample_rate)
-              print('PCM',index,'seconds',len(samples)/audio.sample_rate,'generationSeconds',time.monotonic()-begin,'gain',gain,flush=True)
-              segments,info=model.transcribe(path,language='fr',beam_size=3)
-              transcript=' '.join(s.text for s in segments).lower();heard.append(transcript)
-              print('ASR_EXPECTED',phrase,flush=True);print('ASR_HEARD',variant,index,transcript,flush=True)
-            all_heard[variant]=heard
-          print("ALL_VARIANTS",all_heard,flush=True)
-          heard=all_heard['final-stress']
+          phrases=['Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?','Je suis calme et content. Tu peux me raconter une histoire ?','On joue ensemble et on imagine une forêt avec des dragons.']
+          # Same preflight floor as PiperPhonetics.speechPhonemes; short words are not misreported as successful Piper speech.
+          import re as regex
+          source=pathlib.Path('android/app/src/main/java/fr/bonzeai/companion/PiperPhonetics.java').read_text()
+          minimum=int(regex.search(r'MIN_SPEECH_CODEPOINTS=(\d+)',source).group(1))
+          def phonemes(phrase):return ' '.join(dictionary[w] for w in re.findall(r"[^\W\d_]+",phrase.lower()))
+          short=phonemes('Bonjour mon ami. Comment vas tu ?')
+          assert len(short.replace(' ',''))<minimum
+          print('FALLBACK_EXPECTED piper-short-unstable: Bonjour mon ami. Comment vas tu ?',flush=True)
+          heard=[]
+          for index,phrase in enumerate(phrases):
+            # SpeechPlan.piperChunks keeps these bounded replies as a single segment.
+            assert len(phrase)<=220
+            phones=phonemes(phrase);assert len(phones.replace(' ',''))>=minimum
+            cfg=sherpa_onnx.GenerationConfig();cfg.sid=0;cfg.speed=.98;cfg.phoneme_codepoints=[[ord(c) for c in phones]]
+            begin=time.monotonic();audio=tts.generate(phrase,cfg);samples=audio.samples
+            assert len(samples)>1000 and audio.sample_rate==22050
+            peak=max(abs(x) for x in samples);assert peak>.00001
+            gain=min(20,.6/peak);path=f'voice-{index}-production.wav'
+            sf.write(path,[x*gain for x in samples],audio.sample_rate)
+            print('PCM',index,'seconds',len(samples)/audio.sample_rate,'generationSeconds',time.monotonic()-begin,'gain',gain,flush=True)
+            segments,info=model.transcribe(path,language='fr',beam_size=3)
+            transcript=' '.join(s.text for s in segments).lower();heard.append(transcript)
+            print('ASR_EXPECTED',phrase,flush=True);print('ASR_HEARD',index,transcript,flush=True)
           # Coarse regression guards, not a human-listening or naturalness evaluation.
           assert sum(w in heard[0] for w in ['petit','compagnon','jouer','moi'])>=3,heard[0]
-          assert 'comment' in heard[1],heard[1]
-          assert all(w in heard[2] for w in ['calme','content','histoire']),heard[2]
+          assert all(w in heard[1] for w in ['calme','content','histoire']),heard[1]
+          assert sum(w in heard[2] for w in ['ensemble','imagine','forêt','dragon'])>=3,heard[2]
           PYTHON
       - uses: actions/upload-artifact@v4
         if: always()

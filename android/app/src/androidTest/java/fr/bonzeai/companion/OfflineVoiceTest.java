@@ -11,6 +11,9 @@ public class OfflineVoiceTest {
    CountDownLatch speaking=new CountDownLatch(1);AtomicBoolean completed=new AtomicBoolean();
    voice.speak(Arrays.asList("Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?"),"cancel_",.98f,new PiperVoice.Events(){public void start(String id,String text){speaking.countDown();}public void level(String i,double v,int f){}public void done(){completed.set(true);}public void failed(String r,boolean h){error.set(r);}});
    assertTrue(speaking.await(30,TimeUnit.SECONDS));long before=android.os.SystemClock.elapsedRealtime();voice.stop();assertTrue(android.os.SystemClock.elapsedRealtime()-before<1000);Thread.sleep(500);assertFalse("cancel cannot finish/resume listening",completed.get());assertNull(error.get());
+   CountDownLatch refused=new CountDownLatch(1);AtomicReference<String> refusal=new AtomicReference<>();AtomicBoolean shortPlayed=new AtomicBoolean();
+   voice.speak(Arrays.asList("Bonjour mon ami. Comment vas tu ?"),"short_",.98f,new PiperVoice.Events(){public void start(String i,String t){shortPlayed.set(true);}public void level(String i,double v,int f){}public void done(){refused.countDown();}public void failed(String r,boolean h){refusal.set(r);if(h)shortPlayed.set(true);refused.countDown();}});
+   assertTrue(refused.await(10,TimeUnit.SECONDS));assertEquals("piper-short-unstable",refusal.get());assertFalse("short fallback must precede any audio",shortPlayed.get());
   }finally{voice.close();}
  }
  @Test public void sharedCouncilExecutesAndRestoresOnAndroid()throws Exception{

@@ -42,7 +42,7 @@ class PiperVoice(private val app: Context) {
             try {
                 loadDictionary()
                 // Verify every chunk before the first sound, then pass bare IPA directly.
-                val phoneticPlan=chunks.map { PiperPhonetics.phonemes(it,dictionary!!) }
+                val phoneticPlan=chunks.map { PiperPhonetics.speechPhonemes(it,dictionary!!) }
                 val tts=prepare()
                 for ((part, text) in chunks.withIndex()) {
                     if (serial.get() != token) return@execute
