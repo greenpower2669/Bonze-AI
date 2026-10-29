@@ -1,5 +1,15 @@
 # Ordres de mission Bonze AI — ouverts jusqu'à validation utilisateur
 
+## IMMUTABLE / À PRÉSERVER
+
+- Android application ID et namespace existants : `fr.bonzeai.companion` ; ne pas renommer.
+- Branche de travail : `feature/offline-bonsaiv1`, PR #1 ; aucun merge main sans accord explicite de Fab.
+- Android sans permission INTERNET ; modèle embarqué et aucun fallback cloud vocal.
+- Clé de stockage existante `bonze-proto-01` : migrer sans effacer l'historique.
+- APKs nommés Bonze-AI-vVERSION-debug.apk et directement accessibles en Release. Signature debug de test ; aucune identité Play/clé de production enregistrée dans le dépôt audité.
+
+## Missions
+
 - [ ] BONZE-001 : curiosité, respect et apprentissage invariants ; émotions et attitude évolutives.
 - [ ] BONZE-002 : rencontre réciproque et propriétaire unique par instance, enfant compris ; autres utilisateurs autorisés à converser sans modifier ses missions.
 - [ ] BONZE-003 : petit bonze expressif, yeux, sourcils, sourires, rougeurs, skins.
@@ -19,3 +29,16 @@ Des briques existent en prototype, mais aucun ordre global n'est clôturé avant
 BONZE-011 progression : micro-MoE 8 experts/304 poids, LFM2.5-230M GGUF 153 Mo, inférence Kotlin llama.cpp, APK CI et Release produits ; reste tests Android réel et validation par Fab.
 
 - [ ] BONZE-012 : écran fondé sur visage toujours visible, effets corporels des émotions, grandes légendes pour enfant/malvoyant, conversation mains libres à activation unique, envoi automatique des phrases et clavier facultatif. Prototype 0.3 construit ; validation sur appareil et par Fab encore requise.
+
+
+
+## Avenant global Fab — 29 octobre 2026
+
+- [ ] BONZE-013 : graine locale unique durable et diversité innée d'apparence/tempérament ; trois couches innée/personnalisée/acquise séparées, historique des origines. Implémentation 0.4 en validation, mission ouverte jusqu'à essai Fab.
+- [ ] BONZE-014 : éditeur accessible et facultatif, presets/skins, description vocalisable, fort contraste ; personnaliser sans effacer souvenirs ni personnalité. Implémentation 0.4 en validation.
+- [ ] BONZE-015 : huit tendances persistantes et interconnectées, visage continuellement proportionnel à leurs mélanges, traits innés et corps expressif. Implémentation explicite 0.4 ; neurones émotionnels contextuels plus riches restent à développer.
+- [ ] BONZE-016 : Piper français léger, moteur/poids/licences vérifiés, identité vocale stable, variation limitée aux paramètres réels. Étude faite, moteur non embarqué.
+- [ ] BONZE-017 : endurance globale, modes précis/éco/léger/texte/désactivé, décharge de modules et mesures réelles Android. Première implémentation 0.4 ; profils de performance appareil encore ouverts.
+- [ ] BONZE-018 : personnalité spontanée et sincère avec nom Bonze AI ; rencontre progressive, mémoire sociale et personnelle, miroir de compétences avec preuves, consolidation/oubli/archives et protections familiales. Prompt allégé ; les autres sous-missions demeurent ouvertes.
+
+Le contrat global de Fab est décrit dans brain.md et le plan de reprise dans docs/development-2026-10-29.md. Les études ne valent ni intégration Piper ni réalisation du MoE linguistique. Aucun ordre global précédent n'est clos automatiquement.

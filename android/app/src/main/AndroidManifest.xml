@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Intentionally NO INTERNET permission: the APK cannot make network requests. -->
-    <queries><intent><action android:name="android.speech.RecognitionService" /></intent></queries>
+    <queries><intent><action android:name="android.speech.RecognitionService" /></intent><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries>
     <application android:label="Bonze AI" android:icon="@drawable/bonze_icon"
         android:roundIcon="@drawable/bonze_icon" android:allowBackup="false"
         android:supportsRtl="true" android:theme="@android:style/Theme.Material.Light.NoActionBar"
@@ -16,3 +16,4 @@
         </activity>
     </application>
 </manifest>
+

@@ -9,12 +9,14 @@ export function createConversationSession() {
     get busy(){ return busy; },
     get turn(){ return turn; },
     start(){ enabled=true; },
-    stop(){ enabled=false; },
+    stop(){ enabled=false; busy=false; turn+=1; },
+    isCurrent(id){ return busy && id===turn; },
     accept(text,source="text"){
       if(typeof text!=="string" || !text.trim() || busy) return false;
       if(source==="voice" && !enabled) return false;
       busy=true; turn+=1; return true;
     },
-    finish(){ if(!busy)return false; busy=false;return enabled; }
+    finish(id=turn){ if(!busy||id!==turn)return false; busy=false;return enabled; }
   };
 }
+

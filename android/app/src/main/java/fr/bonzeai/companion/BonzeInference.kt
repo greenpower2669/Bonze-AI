@@ -16,6 +16,9 @@ import java.io.FileOutputStream
 object BonzeInference {
     private const val MODEL = "LFM2.5-230M-Q4_K_M.gguf"
     private var loaded: LlamaModel? = null
+    @Volatile private var economy = false
+
+    @JvmStatic fun setEconomy(enabled: Boolean) { economy = enabled }
 
     @JvmStatic @Synchronized
     fun reply(context: Context, text: String, mood: String): String = runBlocking {
@@ -27,14 +30,11 @@ object BonzeInference {
                     topP = 0.9f, topK = 50, gpuLayers = 0)
             ).also { loaded = it }
         }
-        val personality = "Tu es Bonze AI, petit compagnon francophone hors ligne, bienveillant, " +
-            "curieux et respectueux. Tu es un programme, pas une personne. " +
-            "Réponds en français en deux phrases maximum. Si tu ne sais pas, dis-le " +
-            "clairement et propose d'apprendre ou de demander à quelqu'un de compétent. " +
-            "N'invente pas de faits sur la famille ni de réussites. " +
-            "État émotionnel simulé actuel : " + mood.take(70) + "."
+        val personality = "Tu t'appelles Bonze AI. Parle français avec curiosité, gentillesse et respect. " +
+            "Réponds brièvement et sincèrement ; reconnais tes incertitudes. " +
+            "Ton humeur simulée : " + mood.take(30) + "."
         val result = Llama.complete(model, prompt = text.take(600),
-            systemPrompt = personality, maxTokens = 96)
+            systemPrompt = personality, maxTokens = if (economy) 48 else 96)
         result.text.trim().ifEmpty {
             "Je n'ai pas réussi à formuler une réponse. Tu veux me réexpliquer ?"
         }.take(1200)
@@ -68,3 +68,4 @@ object BonzeInference {
         loaded = null
     }
 }
+

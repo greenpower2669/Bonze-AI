@@ -11,7 +11,8 @@
 </head><body>
 <main class="app">
 <header class="topbar">
- <span class="brand">🌱 Bonze AI <small>Prototype 0.3</small></span>
+ <span class="brand">🌱 Bonze AI <small>0.4.0 · Éveil singulier</small></span>
+ <button id="stop-all" type="button" class="stop-button">⏹ Tout arrêter</button>
  <button type="button" id="settings-open" class="quiet-button" aria-controls="settings" aria-expanded="false">⚙️ Options</button>
 </header>
 <section class="stage" aria-label="Visage expressif de Bonze AI">
@@ -45,10 +46,15 @@
 </section>
 <aside id="settings" class="settings" hidden aria-label="Options et historique">
  <h2>Mes réglages</h2>
+ <button id="settings-close" type="button" class="secondary-button">Fermer les options</button>
+ <label for="resource-mode">Mode de fonctionnement</label>
+ <select id="resource-mode"><option value="precise">Précis · neurones et voix locale</option><option value="eco">Économique · réponses courtes</option><option value="light">Léger · réponses simples et voix</option><option value="text">Texte · sans voix ni modèle de langage</option><option value="off">En pause</option></select>
  <label class="check" for="neural"><input type="checkbox" id="neural" checked> Utiliser mes neurones locaux sur Android</label>
  <p id="brain-status" class="hint" role="status">La WebApp utilise le moteur textuel léger.</p>
  <label class="check" for="voice"><input type="checkbox" id="voice"> Lire les réponses avec une voix locale, si disponible</label>
  <p id="voice-status" class="hint">Voix du navigateur désactivée.</p>
+ <label class="check" for="contrast"><input id="contrast" type="checkbox"> Contraste renforcé</label>
+ <label class="check" for="reduce-motion"><input id="reduce-motion" type="checkbox"> Réduire les mouvements</label>
  <label for="caption-size">Taille des sous-titres</label>
  <input id="caption-size" type="range" min="1" max="3" step="1" value="2" aria-label="Taille des sous-titres, de normal à très grand">
  <label for="nickname">Comment veux-tu que je t'appelle ?</label>
@@ -57,8 +63,20 @@
    <button type="submit" class="secondary-button">Enregistrer mon surnom</button>
  </form>
  <p id="profile-status" class="hint">Surnom conservé dans l'appareil, sans authentification.</p>
+ <details id="avatar-editor"><summary>🌱 Personnaliser mon Bonze</summary>
+  <p id="avatar-description" class="hint" role="status"></p>
+  <button id="avatar-read" type="button" class="secondary-button">Lire la description</button>
+  <label for="avatar-preset">Apparence prédéfinie</label>
+  <select id="avatar-preset"><option value="">Choisir une apparence…</option><option value="garden">Jardin menthe</option><option value="night">Nuit étoilée</option><option value="sunrise">Aurore dorée</option></select>
+  <details><summary>Personnalisation avancée</summary><div id="avatar-fields"></div></details>
+  <button id="avatar-reset" type="button" class="secondary-button">Retrouver son apparence de naissance</button>
+  <p class="hint">Ces choix gardent les souvenirs et le tempérament acquis.</p>
+ </details>
  <details><summary>Mes petits experts et ressources</summary>
   <p id="experts-state" class="hint">Poids émotionnels en cours de chargement…</p>
+  <p id="organism-status" class="hint"></p>
+  <button id="resources-refresh" type="button" class="secondary-button">Mesurer les ressources</button>
+  <p id="resources-real" class="hint" role="status">Aucune mesure de RAM effectuée.</p>
   <label for="pressure">Simulation de pression mémoire (pas une mesure de RAM)</label>
   <select id="pressure"><option value="normal">Normale</option><option value="high">Élevée</option><option value="critical">Critique</option></select>
   <p id="policy" class="hint"></p>
@@ -71,3 +89,4 @@
 </main>
 <script type="module" src="./app.js"></script>
 </body></html>
+

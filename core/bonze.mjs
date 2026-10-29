@@ -36,10 +36,11 @@ export function answer(input,profile={}){
   const name=String(profile.nickname||"toi").slice(0,40);
   if(!raw)return{text:"Je t'écoute.",emotion:"calme"};
   if(/\b(coucou|bonjour|salut)\b/.test(norm))return{text:"Coucou "+name+" ! Qu'allons-nous découvrir ?",emotion:"joie"};
-  if(/comment tu t.appelles/.test(norm))return{text:"Je m'appelle Bonze AI, un tout petit compagnon en apprentissage.",emotion:"joie"};
+  if(/comment tu t.appelles/.test(norm))return{text:"Je m'appelle Bonze AI ! Et toi ?",emotion:"joie"};
   if(/pas compris|ne comprends pas|comprends pas/.test(norm))return{text:"Tu as raison, mon prototype comprend encore très peu. Peux-tu reformuler ?",emotion:"reflexion"};
   if(/merci|bravo|super/.test(norm))return{text:"Merci ! Apprenons quelque chose ensemble.",emotion:"joie"};
   if(raw.includes("?")||/\b(comment|pourquoi|combien|quand|qui)\b/.test(norm))
     return{text:"Je ne sais pas encore répondre avec fiabilité. Veux-tu m'apprendre ou connais-tu quelqu'un qui pourrait nous aider ?",emotion:"curiosite"};
   return{text:"J'ai bien reçu tes mots, mais je ne sais pas encore les interpréter. Peux-tu m'expliquer ?",emotion:"reflexion"};
 }
+

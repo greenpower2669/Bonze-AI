@@ -18,3 +18,18 @@ Ne jamais confondre simulateur RAM, conversation scriptée et moteur cognitif ac
 - docs/ : visage central permanent, sous-titres adaptables, réglages en tiroir bas, mode clavier secondaire, historique et profils hors de l'écran principal ; bouton de discussion tactile sur visage.
 - android MainActivity.java : session conversation à activation explicite ; STT on-device Android, TTS français non réseau quand disponible, alternance de tours, arrêt sur pause et pression mémoire. Interface WebView partagée.
 - tests/conversation.test.mjs : garde-fous du tour de parole et vérification de présence des contrôles accessibles.
+
+
+## Architecture 0.4
+
+- `core/identity.mjs` : seed cryptographique, PRNG déterministe, schéma v1, morphologie/tempérament innés ; validation et fusion parcimonieuse de personnalisation, acquis séparés, journal borné. Ne contient ni permissions ni preuves de compétence.
+- `core/organism.mjs` : intégration temporelle par pas bornés, influences asymétriques, endurance globale, contexte d'échange et adaptation ; `expression()` projette les huit forces vers les paramètres du visage. Aucun accès micro ni réseau.
+- `docs/avatar.js` : paramètres graphiques CSS, variantes de morphologie/skin, descriptions, formulaires labellisés/presets/reset. Aucun reset de mémoire.
+- `docs/app.js` : migration du stockage `bonze-proto-01`, persistance immédiate à la naissance + après événement + toutes les 10 s + arrêt ; tick 200 ms au premier plan, pas de rattrapage non borné après suspension ; état vocal et numéro de session/génération séparés. Les états d'affichage ne doivent jamais activer le microphone.
+- `core/conversation.mjs` : stop invalide le tour et libère busy ; `isCurrent` et `finish(token)` rejettent les résultats anciens.
+- `VoiceSession.java` : garde pure de premier plan/activation/tour/parole et époque ; `MainActivity.java` : propriétaire de chaque reconnaisseur, permissions liées à la session, identifiants TTS uniques, invalidation des générations et métriques Android. Une seule file de génération native et un seul LFM chargé.
+- `BonzeInference.kt` : prompt raccourci, budget de 48 tokens en économie / 96 précis ; arrêt du calcul natif en cours non implémenté, résultat rejeté par l'appelant.
+- `docs/sw.js` : cache v4 incluant noyau identité/organisme et éditeur. Servir la racine du dépôt, pas uniquement docs/, pour que les imports ../core soient accessibles. Pas d'hébergement PWA nouveau dans cette mission.
+- `tests/identity.test.mjs`, `organism.test.mjs`, `stop-race.test.mjs` : persistence, invariants, expressions, absence de stimulus, endurance et interruption. `VoiceSessionTest.java` : garde native sur JVM. `tests/browser.mjs` : intégration réelle de l'UI avec pont Android simulé, rechargement, arrêt/tours anciens, cache SW hors ligne et petits écrans ; ne prouve pas les services Android réels.
+- Workflow Android : validation JS/JVM/navigateur requise avant assemble + lint ; inspection permissions/version/signature compilées, prérelease versionnée et empreinte SHA-256. Cache de clé debug à rétention limitée, jamais traité comme sauvegarde de production.
+- `docs/development-2026-10-29.md` : audit et plan de la reprise ; `docs/moe-piper-study.md` : étude sourcée et preuves manquantes ; `docs/release-v0.4.0.md` : notes livrables et limites.

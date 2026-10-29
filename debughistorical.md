@@ -24,3 +24,14 @@ CI #40837391687 du commit fb0eda03b4637a107f8c8bbe6e701e488b9e0c89 : SUCCESS. AP
 29/10/2026, accessibilité 0.3 : correction course d'arrêt : résultats STT toujours traités comme source 'voice' (ignorés par la session après Stop). Libération naturelle du SpeechRecognizer via destroy() sans cancel() pouvant déclencher un onError tardif ; cancel réservé à l'arrêt utilisateur. Options désormais en tiroir bas (visage reste visible).
 
 29/10/2026 — GitHub Actions #40843431509 : succès. APK Bonze-AI-v0.3.0-accessible-debug.apk publié sous la prérelease bonze-ai-v0.3.0-accessible, 161176337 octets, sha256:b7b18688cea3b9d7771f0eda02bc7954c368ccee8d894b09e2021f22b2bef938. Visage permanent, transcription automatique depuis l'écoute explicite et réponses vocalisées via TTS local ; vérification sur appareil physique NON faite, donc comportement STT/TTS dépend de l'installation Android et ne peut être garanti. Le badge de build ne prouve pas un dialogue complet sur téléphone. Attention : LFM2.5-230M est dense ; le micro-MoE de huit experts entraînés n'est pas le MoE multi-réseaux autonome du contrat.
+
+
+## 29/10 — reprise 0.4 et courses de conversation
+
+Causes vérifiées par lecture et tests : stop JS laissait le tour occupé ; résultats LLM sans token ; permission acceptée sans vérifier activation/premier plan ; écoute ancienne capable de libérer le reconnaisseur courant ; identifiant TTS constant. Correctifs : tour invalidé/libéré, tokens de génération et session JS/native, garde pure VoiceSession, comparaison d'instance avant callback, époque de permission et identifiant de chaque énoncé. Stop/background invalident avant cancel/destroy. Le retour en premier plan ne relance jamais l'écoute.
+
+Tests JS : échec reproduit puis corrigé pour stop occupé ; nouveaux modules identité/organisme testés ; absent stimulus ne doit pas devenir -.3 (test RED puis GREEN). Forces persistantes influencent le visage continuellement, sans retirer ses classes d'activité.
+
+Distribution auditée : la Release 0.3 a été écrasée par plusieurs runs avec --clobber ; son asset actuellement annoncé par GitHub a le digest cd6b3e639ca0754a2f8a474af402e8d45a4712a1c7f19d318ea3bb9d4282f6bc, différent de l'ancien digest de ce journal. Les futures Releases sont figées par version/commit ; pas de remplacement silencieux d'un asset existant. Les clés debug précédentes n'ont pas été conservées, donc mise à jour directe non garantie. Nouveau cache de clé debug = commodité de test seulement, aucune garantie de rétention ni clé de production.
+
+Aucun JDK complet ni Chromium installés dans le workspace : tests JVM/navigateur et compilation/lint confiés à la CI. Les 25 tests JS locaux passent ; les tests réels STT/TTS/mode avion/écho/TalkBack sur Samsung restent NON effectués. Piper et MoE linguistique restent NON implémentés ; étude et prérequis documentés.

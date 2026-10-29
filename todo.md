@@ -42,3 +42,24 @@
 - [x] Tests de la session anti-doublon, sécurité après stop, boutons et légendes : GitHub CI verte.
 - [ ] Essai réel avec TalkBack / très gros caractères, moteur STT français local, moteur TTS français local, mode avion et pause/reprise sur Samsung.
 - [ ] Enquêter sur une architecture véritablement MoE indépendante des petits routeurs émotionnels actuels (demande de Fab toujours ouverte).
+
+
+## Reprise globale du 29 octobre — 0.4.0
+
+- [x] Lire AGENTS et les cinq mémoires, auditer sources/poids/branches/CI/Releases ; 17 tests initiaux verts.
+- [x] Créer identité innée déterministe et persistante + personnalisation séparée + acquis ; migration de l'historique conservée.
+- [x] Huit forces persistantes et influences directionnelles, endurance globale, projection continue du visage.
+- [x] Éditeur accessible, presets, descriptions vocalisables via voix locale disponible, contraste et mouvements réduits.
+- [x] Invalidation des générations/sessions et callbacks anciens, garde de permission/premier plan et TTS unique, bouton Stop toujours accessible.
+- [x] Désactivation des neurones persistante, cinq modes, métriques réelles Android à la demande, prompt court.
+- [x] 25 tests JS locaux verts ; tests JVM et navigateur écrits (encore à exécuter en CI).
+- [x] Étude primaire Piper/MoE, critères d'ablation/qualité/ressources et limites de licences documentés.
+- [ ] Exécuter validation navigateur/JVM, build Android, lint, manifeste compilé et signature via CI.
+- [ ] Publier et vérifier la prérelease 0.4.0 et son APK direct après réussite de tous les contrôles.
+- [ ] Essai Samsung : première permission puis Stop, stop pendant génération/TTS, fond/reprise, mode avion, écho, pauses longues, TalkBack et grossissement.
+- [ ] Piper français : build d'étude avec notices complètes, tests interruption/latence et écoute de la voix par Fab ; pas intégré dans 0.4.
+- [ ] Véritable MoE linguistique : backend/adaptateurs experts/routeur entraînés au sein de l'inférence, corpus et évaluations tenues à l'écart ; pas réalisé dans 0.4.
+- [ ] Mémoire sociale chiffrée et autorisations familiales fortes, consolidation/oubli/archives, miroir de compétences enrichi : commandes maintenues ouvertes.
+- [ ] Stabiliser durablement la signature de test et préparer clé de production sauvegardée avant distribution stable. Ancienne clé debug absente ; ne pas recommander de désinstaller si données à préserver.
+
+État de reprise : source distante vérifiée 9d7c9d5 ; modifications préparées sur la même branche via commit atomique, aucun merge main. Prochain geste : contrôler la CI du commit de reprise et corriger toute régression avant de donner un lien installable.
