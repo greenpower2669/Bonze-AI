@@ -160,7 +160,7 @@ jobs:
 
   publish-test-release:
     needs: [android-debug, android-offline-test]
-    if: github.ref == 'refs/heads/feature/offline-bonsaiv1' # gated by all three Android tests and native APK verification
+    if: github.ref == 'refs/heads/feature/offline-bonsaiv1' && false # intelligibility comparison in progress
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
