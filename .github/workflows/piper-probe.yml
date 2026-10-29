@@ -43,9 +43,15 @@ jobs:
           text='Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?'
           reference=subprocess.check_output(['espeak-ng','-q','-v','fr-fr','--ipa',text],text=True).strip()
           print('REFERENCE_PHONEMES',reference)
-          for sid in [0,1,25,50]:
-            for frontend in ['lexicon','reference']:
+          import re
+          dictionary={line.split(' || ',1)[0]:line.split(' || ',1)[1].replace(' ','') for line in (root/'lexicon.txt').read_text().splitlines()}
+          for word in re.findall(r"[^\W\d_]+",text.lower()):print('WORD_PHONEMES',word,dictionary.get(word))
+          lexical=' '.join(dictionary.get(word,word) for word in re.findall(r"[^\W\d_]+|[,.!?]",text.lower()))
+          print('LEXICAL_PHONEMES',lexical)
+          for sid in [0]:
+            for frontend in ['lexicon','lexical-codepoints','reference']:
               cfg=sherpa_onnx.GenerationConfig();cfg.sid=sid
+              if frontend=='lexical-codepoints':cfg.phoneme_codepoints=[[ord(c) for c in lexical]]
               if frontend=='reference':cfg.phoneme_codepoints=[[ord(c) for c in reference.replace('\n',' ')]]
               audio=tts.generate(text.lower(),cfg);samples=audio.samples;gain=min(20,.6/max(abs(x) for x in samples))
               path=f'voice-{sid}-{frontend}.wav';sf.write(path,[x*gain for x in samples],audio.sample_rate)
