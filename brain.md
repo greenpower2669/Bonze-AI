@@ -20,10 +20,13 @@ Reprise globale : véritable MoE avec tronc partagé et sous-réseaux experts en
 
 L'apparence innée varie par seed durable : yeux (forme/taille/espacement), sourcils, sourire, couleur, joues, corps, pousse/décoration, mouvement. Le tempérament varie légèrement et peut évoluer ; curiosité, respect, gentillesse et protections essentielles restent invariants. Éditeur accessible facultatif, presets, skins, contraste renforcé et descriptions vocalisables. Personnaliser ou revenir à l'apparence de naissance préserve les acquis et souvenirs. Le retour aux dispositions de repos tient compte des adaptations individuelles.
 
-### 0.4.0 — implémenté, validation CI en cours
+### 0.4.0 — prérelease construite et vérifiée en CI
 
 Identité versionnée avec graine 128 bits générée une fois, morphologie et tempérament déterministes ; trois couches distinctes et historique borné des changements. Migration de la clé 0.3 sans effacer surnom/historique. Forces et endurance persistées, évolution continue durant l'activité de premier plan ; adaptations bornées par échanges, sans preuve de vérité. Projection graphique continue indépendante de l'étiquette de la dernière phrase. Presets/éditeur avancé, retour à la naissance, contraste et mouvements réduits.
 
 Sessions vocales et générations identifiées, callbacks périmés rejetés, bouton d'arrêt global permanent, annulation du tour JS et arrêt TTS/micro au fond. Un calcul llama.cpp déjà lancé n'est pas préempté : son résultat est invalidé. Modes précis/éco/léger/texte/pause et désactivation neuronale persistante. Métriques Android demandées explicitement : mémoire système, PSS du processus, durée et CPU du thread appelant de la dernière génération ; aucune valeur prédite n'est présentée comme mesure.
 
 Prompt court avec nom et valeurs essentielles. LFM dense inchangé, Piper absent. Étude primaire et critères de preuve dans docs/moe-piper-study.md. Voix Android locale et STT dépendent des paquets installés ; aucune validation physique n'est acquise. Authentification familiale et mémoire sociale chiffrée restent absentes.
+
+
+Validation du commit e60d8876d1e997c031c788fdbd82663124a614aa : workflow 40858508226 réussi, 27 tests JS, garde Java, 28 assertions navigateur, assembleDebug + lintDebug, inspection du package fr.bonzeai.companion / code4 / version0.4.0, permission RECORD_AUDIO seule dans le manifeste compilé. Signature APK vérifiée par apksigner. Asset Release de 161191354 octets, SHA-256 4e74415462df28060a30ef116b6a0ceccc9ffeda84da8fe7cf431391fcf8850d. Tests Samsung physiques et réalisation du reste du contrat toujours ouverts. Main reste f5910311f903d8ae4378d62d100129b690fc0e85.

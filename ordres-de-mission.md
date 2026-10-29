@@ -34,11 +34,14 @@ BONZE-011 progression : micro-MoE 8 experts/304 poids, LFM2.5-230M GGUF 153 Mo, 
 
 ## Avenant global Fab — 29 octobre 2026
 
-- [ ] BONZE-013 : graine locale unique durable et diversité innée d'apparence/tempérament ; trois couches innée/personnalisée/acquise séparées, historique des origines. Implémentation 0.4 en validation, mission ouverte jusqu'à essai Fab.
-- [ ] BONZE-014 : éditeur accessible et facultatif, presets/skins, description vocalisable, fort contraste ; personnaliser sans effacer souvenirs ni personnalité. Implémentation 0.4 en validation.
+- [ ] BONZE-013 : graine locale unique durable et diversité innée d'apparence/tempérament ; trois couches innée/personnalisée/acquise séparées, historique des origines. Implémentation 0.4 livrée en prérelease, mission ouverte jusqu'à essai Fab.
+- [ ] BONZE-014 : éditeur accessible et facultatif, presets/skins, description vocalisable, fort contraste ; personnaliser sans effacer souvenirs ni personnalité. Implémentation 0.4 livrée en prérelease ; validation humaine ouverte.
 - [ ] BONZE-015 : huit tendances persistantes et interconnectées, visage continuellement proportionnel à leurs mélanges, traits innés et corps expressif. Implémentation explicite 0.4 ; neurones émotionnels contextuels plus riches restent à développer.
 - [ ] BONZE-016 : Piper français léger, moteur/poids/licences vérifiés, identité vocale stable, variation limitée aux paramètres réels. Étude faite, moteur non embarqué.
 - [ ] BONZE-017 : endurance globale, modes précis/éco/léger/texte/désactivé, décharge de modules et mesures réelles Android. Première implémentation 0.4 ; profils de performance appareil encore ouverts.
 - [ ] BONZE-018 : personnalité spontanée et sincère avec nom Bonze AI ; rencontre progressive, mémoire sociale et personnelle, miroir de compétences avec preuves, consolidation/oubli/archives et protections familiales. Prompt allégé ; les autres sous-missions demeurent ouvertes.
 
 Le contrat global de Fab est décrit dans brain.md et le plan de reprise dans docs/development-2026-10-29.md. Les études ne valent ni intégration Piper ni réalisation du MoE linguistique. Aucun ordre global précédent n'est clos automatiquement.
+
+
+Livraison de reprise : prérelease 0.4.0, commit e60d887, run 40858508226, tests automatisés et APK vérifiés. Les missions globales restent ouvertes pour validation humaine et éléments manquants ; aucun merge main effectué. Piper, MoE linguistique et mémoire sociale sécurisée restent expressément à réaliser.

@@ -35,3 +35,6 @@ Ne jamais confondre simulateur RAM, conversation scriptée et moteur cognitif ac
 - `docs/development-2026-10-29.md` : audit et plan de la reprise ; `docs/moe-piper-study.md` : étude sourcée et preuves manquantes ; `docs/release-v0.4.0.md` : notes livrables et limites.
 
 La capture d'époque et la réservation de génération sont sérialisées sur le thread UI (`generateReplyOnMain`), avec les arrêts et callbacks de permission ; le calcul lourd reste sur la file d'inférence. `tests/native-bridge.test.mjs` protège cette frontière de threads, en complément des tests JVM.
+
+
+Canal de preuve 0.4.0 : tag bonze-ai-v0.4.0 → e60d887 ; workflow 40858508226, jobs validate puis android-debug ; 27 tests JS, test JVM, 28 assertions navigateur, lint et APK. Capture de contrôle navigateur inspectée visuellement (mode fort contraste) ; aucune capture d'appareil réel. Le cache de keystore debug n'a pas été alimenté (chemin absent) : tâche signature durable ouverte.

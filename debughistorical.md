@@ -39,3 +39,12 @@ Aucun JDK complet ni Chromium installés dans le workspace : tests JVM/navigateu
 CI 40858005363 : JS et test JVM VoiceSession verts ; navigateur bloqué avant lancement parce que ubuntu-latest est devenu Ubuntu 26.04, non supporté par Playwright 1.56.1. Runner fixé à ubuntu-24.04. Revue indépendante : sérialiser aussi la capture d'époque de génération sur le thread UI, sinon stop natif en file pouvait invalider une nouvelle demande texte et laisser les champs occupés. Régression structurelle ajoutée ; 26 tests JS passent après correction. Les tests physiques restent ouverts.
 
 CI 40858286078 : installation Chromium réussie ; test navigateur attendait la visibilité des contrôles avancés, pourtant repliés volontairement. Attendre leur présence DOM puis ouvrir l'éditeur dans les scénarios. Capture d'écran conservée aussi en cas d'échec. Correction compatibilité Android 12 : trim().isEmpty() remplace String.isBlank(), API 33 ; garde SDK31 annotée pour lint. 27 tests JS passent.
+
+
+## 0.4.0 — livraison vérifiée
+
+Run 40858508226 au commit e60d8876d1e997c031c788fdbd82663124a614aa : validate et android-debug = success. 27 tests JS et garde VoiceSession JVM verts, 28 assertions navigateur (persistance, personnalisation, reset conservant acquis, ancien tour/ancienne voix, désactivation persistante, hors ligne SW, visage/Stop sur 4 tailles). Capture UI 57489 octets inspectée, pas d'erreur JavaScript.
+
+Gradle assembleDebug + lintDebug : BUILD SUCCESSFUL. aapt : fr.bonzeai.companion, versionCode4, versionName0.4.0 ; seule permission compilée RECORD_AUDIO, pas INTERNET. apksigner : signature vérifiée, certificat public SHA-256 d30a6cc0ca0b20cae35ee82a82bf162561ae5eae6c42b24f6a20d53c58fc3c14. Release bonze-ai-v0.4.0, asset Bonze-AI-v0.4.0-debug.apk : 161191354 octets, SHA-256 4e74415462df28060a30ef116b6a0ceccc9ffeda84da8fe7cf431391fcf8850d ; digest GitHub identique au sha256sum CI, tag pointant au même commit. Main vérifiée inchangée f5910311f903d8ae4378d62d100129b690fc0e85.
+
+Limite de distribution constatée : le post-job de cache debug.keystore signale Path Validation Error (chemin absent), aucune clé sauvegardée. Le cache n'établit donc aucune continuité de signature ; garder cette tâche ouverte. Ne pas faire perdre l'identité locale par une consigne de désinstallation. Aucun test d'installation Samsung, mode avion/STT/TTS/écho/TalkBack ou performance physique ; Piper et MoE linguistique absents, études seulement.

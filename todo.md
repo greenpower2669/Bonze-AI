@@ -52,18 +52,18 @@
 - [x] Éditeur accessible, presets, descriptions vocalisables via voix locale disponible, contraste et mouvements réduits.
 - [x] Invalidation des générations/sessions et callbacks anciens, garde de permission/premier plan et TTS unique, bouton Stop toujours accessible.
 - [x] Désactivation des neurones persistante, cinq modes, métriques réelles Android à la demande, prompt court.
-- [x] 25 tests JS locaux verts ; tests JVM et navigateur écrits (encore à exécuter en CI).
+- [x] 27 tests JS, test JVM et 28 assertions navigateur validés en CI 40858508226.
 - [x] Étude primaire Piper/MoE, critères d'ablation/qualité/ressources et limites de licences documentés.
-- [ ] Exécuter validation navigateur/JVM, build Android, lint, manifeste compilé et signature via CI.
-- [ ] Publier et vérifier la prérelease 0.4.0 et son APK direct après réussite de tous les contrôles.
+- [x] Validation navigateur/JVM, build Android, lint, manifeste compilé et signature : run 40858508226 réussi.
+- [x] Prérelease bonze-ai-v0.4.0 et APK direct vérifiés, tag au commit e60d887 ; 161191354 octets ; SHA-256 4e74415462df28060a30ef116b6a0ceccc9ffeda84da8fe7cf431391fcf8850d.
 - [ ] Essai Samsung : première permission puis Stop, stop pendant génération/TTS, fond/reprise, mode avion, écho, pauses longues, TalkBack et grossissement.
 - [ ] Piper français : build d'étude avec notices complètes, tests interruption/latence et écoute de la voix par Fab ; pas intégré dans 0.4.
 - [ ] Véritable MoE linguistique : backend/adaptateurs experts/routeur entraînés au sein de l'inférence, corpus et évaluations tenues à l'écart ; pas réalisé dans 0.4.
 - [ ] Mémoire sociale chiffrée et autorisations familiales fortes, consolidation/oubli/archives, miroir de compétences enrichi : commandes maintenues ouvertes.
 - [ ] Stabiliser durablement la signature de test et préparer clé de production sauvegardée avant distribution stable. Ancienne clé debug absente ; ne pas recommander de désinstaller si données à préserver.
 
-État de reprise : source distante vérifiée 9d7c9d5 ; modifications préparées sur la même branche via commit atomique, aucun merge main. Prochain geste : contrôler la CI du commit de reprise et corriger toute régression avant de donner un lien installable.
+État courant : 0.4.0 livrée sur feature/offline-bonsaiv1, PR #1 en brouillon, main inchangée. Preuves CI et incidents intermédiaires conservés dans debughistorical.md. La revue indépendante a produit deux corrections appliquées : ordre des threads stop/génération et compatibilité String Android 12. Aucun autre défaut important confirmé par cette revue.
 
-Candidat e640023 : JS + JVM validés par CI, navigateur bloqué par incompatibilité runner/outillage. Correctif runner Ubuntu 24.04 et ordre UI stop→génération préparé ; attendre le nouveau run avant Release.
+Prochain geste : installer et tester l'APK sur Samsung sans effacer les données de l'ancienne installation ; si Android refuse la signature de mise à jour, conserver l'installation et traiter la migration avant toute désinstallation. Après retour de Fab, poursuivre le build d'étude Piper et l'adaptation MoE linguistique selon docs/moe-piper-study.md.
 
-Revue indépendante terminée : course stop→génération corrigée et protégée, appel String Android 33 remplacé pour Android 12, 27 tests locaux verts. Scénario navigateur corrigé pour les champs avancés masqués par défaut ; relancer la chaîne complète.
+Blocage signature durable : le cache de clé debug a signalé un chemin absent lors du run 40858508226 et n'a rien sauvegardé. Ne pas annoncer une clé stabilisée ; rechercher le keystore réellement utilisé et mettre en place une sauvegarde privée avant la prochaine distribution. Certificat public 0.4 : SHA-256 d30a6cc0ca0b20cae35ee82a82bf162561ae5eae6c42b24f6a20d53c58fc3c14. Aucun secret ou keystore privé n'est enregistré dans les mémoires.
