@@ -79,3 +79,5 @@ Fab a autorisé le développement, les tests et une prérelease directement tél
 
 ### État vérifiable avant publication 0.6
 BONZE-023 : affichage/disposition corrigés ; qualité répétitive du 230M reste ouverte. BONZE-024..028 : mécanismes, traces, console et sauvegardes implémentés/testés, sans prétendre au MoE linguistique ni à une autorisation familiale complète. BONZE-029 : Piper MLS réellement produit/joué/arrêté hors connexion sur émulateur (40961214052), filiation de licences résolue ; chemin phonétique et regroupement des segments contrôlés. Publication de test après CI finale, écoute physique Samsung indispensable : mission non close. Détails expérimentaux archivés dans sauvegarde.md ; aucune mission retirée ni fusion main autorisée.
+
+Contrôle vocal final 40962604934 : les phrases 0 (petit compagnon/jouer) et 2 (calme/content/histoire) sont reconnues, mais « Bonjour mon ami. Comment vas tu ? » reste déformée ; garde de publication refuse donc le candidat. Comparaison isolée de six locuteurs MLS avec les mêmes phonèmes et trois phrases avant toute décision ; écoute humaine toujours ouverte.

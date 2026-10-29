@@ -112,3 +112,5 @@ Prochain geste : essai humain Samsung avec conversation lancée avant verrouilla
 - [ ] Sauvegarde privée durable de la clé de test/production ; le cache CI v2 n’est pas une garantie de rétention.
 
 Publication conditionnée aux tests Android et au probe vocal vert au même SHA. Pas de prétention à une écoute humaine ni à des mesures Samsung. Notes intermédiaires archivées dans sauvegarde.md et docs/history/avenant-0.6-worklog.md.
+
+Contrôle vocal final 40962604934 : les phrases 0 (petit compagnon/jouer) et 2 (calme/content/histoire) sont reconnues, mais « Bonjour mon ami. Comment vas tu ? » reste déformée ; garde de publication refuse donc le candidat. Comparaison isolée de six locuteurs MLS avec les mêmes phonèmes et trois phrases avant toute décision ; écoute humaine toujours ouverte.

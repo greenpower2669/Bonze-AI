@@ -27,21 +27,26 @@ jobs:
           model=WhisperModel('base',device='cpu',compute_type='int8')
           dictionary={line.split(' || ',1)[0]:line.split(' || ',1)[1].replace(' ','') for line in (root/'lexicon.txt').read_text().splitlines()}
           phrases=['Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?','Bonjour mon ami. Comment vas tu ?','Je suis calme et content. Tu peux me raconter une histoire ?']
-          heard=[]
-          for index,phrase in enumerate(phrases):
-            # SpeechPlan.piperChunks keeps these bounded replies as a single segment.
-            assert len(phrase)<=220
-            phones=' '.join(dictionary[w] for w in re.findall(r"[^\W\d_]+",phrase.lower()))
-            cfg=sherpa_onnx.GenerationConfig();cfg.sid=0;cfg.speed=.98;cfg.phoneme_codepoints=[[ord(c) for c in phones]]
-            begin=time.monotonic();audio=tts.generate(phrase,cfg);samples=audio.samples
-            assert len(samples)>1000 and audio.sample_rate==22050
-            peak=max(abs(x) for x in samples);assert peak>.00001
-            gain=min(20,.6/peak);path=f'voice-{index}-production.wav'
-            sf.write(path,[x*gain for x in samples],audio.sample_rate)
-            print('PCM',index,'seconds',len(samples)/audio.sample_rate,'generationSeconds',time.monotonic()-begin,'gain',gain,flush=True)
-            segments,info=model.transcribe(path,language='fr',beam_size=3)
-            transcript=' '.join(s.text for s in segments).lower();heard.append(transcript)
-            print('ASR_EXPECTED',phrase,flush=True);print('ASR_HEARD',index,transcript,flush=True)
+          all_heard={}
+          for sid in [0,1,2,3,25,50]:
+            heard=[]
+            for index,phrase in enumerate(phrases):
+              # SpeechPlan.piperChunks keeps these bounded replies as a single segment.
+              assert len(phrase)<=220
+              phones=' '.join(dictionary[w] for w in re.findall(r"[^\W\d_]+",phrase.lower()))
+              cfg=sherpa_onnx.GenerationConfig();cfg.sid=sid;cfg.speed=.98;cfg.phoneme_codepoints=[[ord(c) for c in phones]]
+              begin=time.monotonic();audio=tts.generate(phrase,cfg);samples=audio.samples
+              assert len(samples)>1000 and audio.sample_rate==22050
+              peak=max(abs(x) for x in samples);assert peak>.00001
+              gain=min(20,.6/peak);path=f'voice-{sid}-{index}-production.wav'
+              sf.write(path,[x*gain for x in samples],audio.sample_rate)
+              print('PCM',index,'seconds',len(samples)/audio.sample_rate,'generationSeconds',time.monotonic()-begin,'gain',gain,flush=True)
+              segments,info=model.transcribe(path,language='fr',beam_size=3)
+              transcript=' '.join(s.text for s in segments).lower();heard.append(transcript)
+              print('ASR_EXPECTED',phrase,flush=True);print('ASR_HEARD',sid,index,transcript,flush=True)
+            all_heard[sid]=heard
+          print("ALL_SPEAKERS",all_heard,flush=True)
+          heard=all_heard[0]
           # Coarse regression guards, not a human-listening or naturalness evaluation.
           assert sum(w in heard[0] for w in ['petit','compagnon','jouer','moi'])>=3,heard[0]
           assert 'comment' in heard[1],heard[1]
