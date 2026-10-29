@@ -18,9 +18,9 @@ int main(int argc,char** argv){
  llama_backend_init();auto mp=llama_model_default_params();mp.n_gpu_layers=0;auto model=llama_model_load_from_file(argv[1],mp);if(!model)return 2;auto cp=llama_context_default_params();cp.n_ctx=2048;cp.n_batch=2048;cp.n_threads=3;cp.n_threads_batch=3;auto ctx=llama_init_from_model(model,cp);if(!ctx)return 3;
  const std::string sys="Tu es Bonze AI, petit compagnon curieux, chaleureux et joueur. Parle naturellement en français et participe aux histoires de ton humain. Continue la scène et les échanges donnés en contexte. Réponds en une à trois phrases. Reste sincère quand on te questionne sur tes capacités. Humeur : curiosite.";
  std::vector<std::string> questions={"Bonjour, comment tu t'appelles ?","On joue dans une forêt magique. Notre dragon s'appelle Pipo. Tu es son ami. Dis bonjour à Pipo.","Comment s'appelle notre dragon ?","Maintenant, compte simplement de un à trois."};
- for(auto mode:{"flattened","roles"}){std::vector<Row> history;std::string scene;std::cout<<"\nMODE "<<mode<<std::endl;for(auto q:questions){std::vector<Row> input={{"system",sys}};if(std::string(mode)=="flattened"){
- std::string recent;int remaining=1050;for(int i=history.size()-1;i>=0&&remaining>40;i--){auto r=history[i];std::string line=(r.first=="user"?"Humain : ":"Bonze : ")+r.second.substr(0,std::min(280,remaining-15))+"\n";recent=line+recent;remaining-=line.size();}
- input.push_back({"user","Conversation en cours.\n"+(scene.empty()?"":"Contexte de jeu proposé par l'humain : "+scene+"\n")+"Échanges récents :\n"+recent+"Réponds au nouveau message de l'humain :\n"+q});
+ for(auto mode:{"short_roles","current_context"}){std::vector<Row> history;std::string scene;std::cout<<"\nMODE "<<mode<<std::endl;for(auto q:questions){std::string concise="Tu t’appelles Bonze AI. Réponds en français, brièvement, au dernier message.";std::vector<Row> input={{"system",concise}};if(std::string(mode)=="current_context"){
+ if(!scene.empty())input[0].second+="\nScène imaginaire en cours : "+scene;
+ input.push_back({"user",q});
  }else{for(auto& r:history)input.push_back(r);input.push_back({"user",q});}
  auto a=generate(model,ctx,input);std::cout<<"QUESTION: "<<q<<"\nANSWER: "<<a<<"\nEND_ANSWER"<<std::endl;history.push_back({"user",q});history.push_back({"assistant",a});if(q.find("On joue")!=std::string::npos)scene=q;}}
  llama_free(ctx);llama_model_free(model);llama_backend_free();

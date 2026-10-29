@@ -11,9 +11,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: /tmp/llama
+          key: bonze-llama-probe-2da6686
       - name: Build exact llama.cpp revision used by Android AAR
         run: |
-          git clone https://github.com/ggml-org/llama.cpp /tmp/llama
+          if ! test -d /tmp/llama/.git; then git clone https://github.com/ggml-org/llama.cpp /tmp/llama; fi
           git -C /tmp/llama checkout 2da668617612d2df773f966e3b0ee22dc2beef7b
           cmake -S /tmp/llama -B /tmp/llama/build -DBUILD_SHARED_LIBS=OFF -DGGML_NATIVE=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=OFF -DLLAMA_BUILD_TOOLS=OFF -DLLAMA_CURL=OFF
           cmake --build /tmp/llama/build --target llama -j 4
