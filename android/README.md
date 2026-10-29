@@ -26,3 +26,9 @@ Taille 1 169 364 octets. SHA-256 : 08f5780c42003579b2c6b46f711a66936d8d2c1a44748
 Aucune pression sur Entrée ou Envoyer pour les phrases dictées. Appuyer sur le grand bouton ou le visage pour démarrer la session vocale ; stop identique, arrêt au passage en arrière-plan, refus micro, mémoire saturée ou après 3 silences. Audio Android : createOnDeviceSpeechRecognizer (API31+) et sélection d'une voix TTS française !isNetworkConnectionRequired(). La reconnaissance se suspend pendant la génération et la synthèse vocale pour éviter l'écho.
 Sous-titres très contrastés (police réglable, 3 tailles), visage permanent, clavier facultatif et options en tiroir.
 Si STT/TTS locaux ne sont pas disponibles, Bonze doit dire qu'il ne peut pas converser oralement et conserver le clavier. Pas de commande à la voix quand l'app est en arrière-plan.
+
+### Livraison 0.3.0 vérifiée
+Téléchargement direct : https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.3.0-accessible/Bonze-AI-v0.3.0-accessible-debug.apk
+Taille : 161176337 octets. Empreinte : sha256:b7b18688cea3b9d7771f0eda02bc7954c368ccee8d894b09e2021f22b2bef938.
+CI Android : https://github.com/greenpower2669/Bonze-AI/actions/runs/40843431509 (succès).
+L'APK est signé avec la clé de debug de GitHub Actions, différente d'un autre build : si l'installation en mise à jour échoue, sauvegarder les données locales désirées avant désinstallation. Les données ne migrent pas automatiquement. Aucun test d'installation réel réalisé pour l'instant.

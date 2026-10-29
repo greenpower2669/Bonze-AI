@@ -27,3 +27,5 @@ Branche de développement uniquement ; pas de merge dans main sans validation.
 ## Prototype 0.3 — expérience vocale accessible
 Écran centré sur le visage de Bonze, sous-titres réglables, état clair écoute/réflexion/parole ; les options et le clavier ne prennent plus la place du personnage.
 La conversation automatique est une session activée par l'humain, réservée à l'APK Android disposant de moteurs STT et TTS strictement locaux. Il faut tester le comportement réel sur appareil. La PWA reste entièrement navigable au clavier, aucune capture vocale Web ne s'active implicitement.
+
+Téléchargement APK 0.3.0 : https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.3.0-accessible/Bonze-AI-v0.3.0-accessible-debug.apk (GitHub Actions #40843431509 ; testé en compilation, pas encore sur smartphone). Les poids de 153 Mo demeurent intégrés. La voix française nécessite STT et TTS locaux Android installés ; pas de wake word, pas de microphone permanent en arrière-plan.

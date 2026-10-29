@@ -36,3 +36,9 @@
 - [ ] Mesurer sur Android 16 le STT hors ligne et le TTS français réellement disponibles, interruptions, pauses, pressions mémoire.
 - [ ] Tester des échanges longs avec le modèle 230M ; corriger rapidement toute fermeture ou hallucination.
 - [ ] Respecter le contrat MoE complet : micro-MoE actuel n'est pas le MoE expert multiréseaux envisagé ; auditer les architectures de vrais experts avant nouvelle promesse.
+
+## Livraison vérifiée 0.3.0
+- [x] GitHub Actions #40843431509 : compilation Android réussie, APK direct signé debug publié.
+- [x] Tests de la session anti-doublon, sécurité après stop, boutons et légendes : GitHub CI verte.
+- [ ] Essai réel avec TalkBack / très gros caractères, moteur STT français local, moteur TTS français local, mode avion et pause/reprise sur Samsung.
+- [ ] Enquêter sur une architecture véritablement MoE indépendante des petits routeurs émotionnels actuels (demande de Fab toujours ouverte).
