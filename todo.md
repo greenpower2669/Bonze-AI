@@ -152,3 +152,12 @@ Constats fondés sur la capture d'essai et la lecture de `BonzeInference.kt`, `D
 - [ ] Publier seulement après tests Android vérifiés et retour Fab ; ne jamais déclarer le MoE livré tant que le code d'inférence spécialisée et les évaluations ne le prouvent.
 
 Référence : Liquid AI recommande le LFM2.5-230M pour extraction / agents légers et déconseille l'écriture créative : https://huggingface.co/LiquidAI/LFM2.5-230M . Le 1.2B est un candidat dense de comparaison : https://huggingface.co/LiquidAI/LFM2.5-1.2B-Instruct-GGUF . Aucune intégration MoE linguistique dans l'APK 0.6.
+
+## Demande urgente Fab — export direct et consultation des traces (30 octobre 2026)
+
+- [ ] **BONZE-033 — exporter facilement les conversations et les traces réelles** : remplacer le parcours caché par des commandes accessibles avec grand texte. La version 0.6 sauvegarde actuellement au maximum 30 entrées de dialogue et 120 événements du journal ; elle ne peut pas reconstituer les événements supprimés ou les « pensées internes » non enregistrées.
+- [x] Sur branche de travail `feature/diagnostic-export-v1` : raccourcis visibles en haut des Options vers l'export chiffré `.bonze` et la console authentifiée ; refuser une phrase secrète trop courte **avant** d'arrêter la conversation ; tests UI statiques ajoutés.
+- [x] API native `ConversationService.diagnosticExport()` préparée : snapshot lecture seule des données encore conservées ; ne prétend pas enregistrer des raisonnements internes. **Non reliée à un bouton Android dans ce candidat.**
+- [ ] Terminer une voie d'export JSON lisible depuis Android en conservant la confirmation du verrouillage du téléphone et le choix explicite du fichier, avertir que le JSON n'est pas chiffré ; ou privilégier l'export `.bonze` chiffré si la confidentialité familiale ne peut pas être garantie.
+- [ ] Diagnostiquer le blocage concret rencontré par Fab sur Samsung (authentification, phrase secrète, ouverture du sélecteur de fichier, écriture Android SAF) et couvrir erreurs/cancel/retour depuis arrière-plan.
+- [ ] Tests JS/JVM et CI Android complets, essais sur Samsung, vérification Release/signature puis APK direct avant d'annoncer un export corrigé. **La 0.6.0 en ligne reste inchangée ; aucun APK nouveau, aucune fusion dans main.**
