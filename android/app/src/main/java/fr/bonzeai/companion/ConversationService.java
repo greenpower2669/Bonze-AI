@@ -309,6 +309,23 @@ public final class ConversationService extends Service {
  private void councilTick(){if(disposed)return;if(session.active()||listener!=null){updateCouncil("");if(listener!=null&&council!=null){JSONObject e=base("emotion-state");try{e.put("council",council.snapshot());listener.onEvent(e.toString());}catch(JSONException ignored){}}}main.postDelayed(this::councilTick,10000);}
  public void configureCouncil(String json)throws JSONException{if(council==null)throw new IllegalStateException();council.configure(new JSONObject(json));journal.add("admin-council",diagnosticTurn,council.snapshot());publish();}
  public JSONObject diagnostics(){return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"journal",journal.copy(),"resources",resourceObject(),"engine",speechEngine,"preferredVoice",voiceName,"model","LFM2.5-230M dense");}
+ /** Explicit, read-only export of retained events. This is NOT a hidden thought trace.
+  * No microphone, UI session or stored data is modified during export.
+  */
+ public JSONObject diagnosticExport(){
+  JSONArray history=new JSONArray();
+  for(DialogueMemory.Entry e:memory.entries())
+   history.put(DiagnosticJournal.fields("id",e.id,"role",e.role,"text",e.text));
+  return DiagnosticJournal.fields(
+   "format","bonze-diagnostics-export","schema",1,"exportedAt",System.currentTimeMillis(),
+   "privacy","Unencrypted readable JSON: keep private; do not share without review.",
+   "limits","Only retained entries: at most 30 dialogue messages and 120 recent journal events. Unrecorded internal model computations cannot be recovered.",
+   "history",history,"journal",journal.copy(),
+   "council",council==null?JSONObject.NULL:council.snapshot(),
+   "resources",resourceObject(),"speechEngine",speechEngine,
+   "preferredVoice",voiceName,"model","LFM2.5-230M dense");
+ }
+
  private JSONObject resourceObject(){try{return new JSONObject(resources());}catch(JSONException e){return new JSONObject();}}
  public JSONObject backupData(){
   JSONArray rows=new JSONArray();for(DialogueMemory.Entry e:memory.entries())rows.put(DiagnosticJournal.fields("id",e.id,"role",e.role,"text",e.text));
