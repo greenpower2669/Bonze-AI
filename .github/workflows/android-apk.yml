@@ -142,15 +142,22 @@ jobs:
             adb shell svc wifi disable
             adb shell svc data disable
             adb shell settings put global airplane_mode_on 1
+            adb logcat -c
             adb shell am instrument -w fr.bonzeai.companion.test/androidx.test.runner.AndroidJUnitRunner | tee android-offline-test.txt
+            adb logcat -d > android-logcat.txt
+            tail -150 android-logcat.txt
             grep -q 'OK (3 tests)' android-offline-test.txt
       - uses: actions/upload-artifact@v4
         if: always()
-        with: {name: bonze-android-offline-test, path: android-offline-test.txt}
+        with:
+          name: bonze-android-offline-test
+          path: |
+            android-offline-test.txt
+            android-logcat.txt
 
   publish-test-release:
     needs: [android-debug, android-offline-test]
-    if: github.ref == 'refs/heads/feature/offline-bonsaiv1' # requires every validation job to succeed
+    if: github.ref == 'refs/heads/feature/offline-bonsaiv1' && false # voice provenance under review
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4

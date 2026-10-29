@@ -126,3 +126,5 @@ Sauvegarde/admin/journal : code local et3tests crypto verts, branchement natif e
 - [ ] Corriger/améliorer la qualité neuronale française et du jeu de rôle (modèle/quantification/runtime à comparer sur un corpus mesurable). Les défauts de flux prouvés sont corrigés, pas toute la qualité du dialogue.
 - [ ] Étendre la phonémisation Piper (noms, nombres, élisions) pour réduire le secours Android.
 - [ ] Sous-réseaux spécialisés et véritable MoE linguistique, compétences/mémoire sociale progressive, benchmark ressources sur téléphone. Les politiques actuelles ne satisfont pas ce contrat complet.
+
+Blocages supplémentaires à résoudre avant publication : crash natif pendant le test Piper (40956583835), logcat ajouté pour le diagnostic ; la voix Siwis dérive de Lessac medium dont le corpus source a une licence de recherche non commerciale. Ne pas confondre l’étiquette MIT du dépôt de voix et cette filiation. Publication suspendue pendant vérification/remplacement.

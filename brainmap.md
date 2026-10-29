@@ -76,3 +76,5 @@ Candidat `BackupBridge.java` : gate Android credential, pickerSAF, I/O bornées,
 - Sauvegarde : core/backup.mjs, docs/backup-ui.js, BackupBridge.java, PendingDocument.java ; curseurs : docs/admin-ui.js.
 - Preuves reproductibles : .github/probes/dialogue.cpp et workflows dialogue-probe/piper-probe/android-apk. Tests instrumentés OfflineVoiceTest (voix, conseil, restauration).
 - Étapes intermédiaires archivées : docs/history/avenant-0.6-worklog.md. État opérationnel et limites dans brain.md ; tâches ouvertes dans todo.md. Main reste f5910311.
+
+Blocages supplémentaires à résoudre avant publication : crash natif pendant le test Piper (40956583835), logcat ajouté pour le diagnostic ; la voix Siwis dérive de Lessac medium dont le corpus source a une licence de recherche non commerciale. Ne pas confondre l’étiquette MIT du dépôt de voix et cette filiation. Publication suspendue pendant vérification/remplacement.

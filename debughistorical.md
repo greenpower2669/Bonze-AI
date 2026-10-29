@@ -92,3 +92,5 @@ Probe Piper #40905257759 : chargement sherpa2.0.1 + Siwis mediumINT8 + lexique f
 - CI instrumentée 40954882209 : clé debug absente dans le runner de tests ; création dédiée éphémère pour l'émulateur, clé de livraison inchangée.
 - CI 40955614739 : 45 JS, 6 JVM, navigateur et APK/lint/signature réussis ; conseil Rhino réellement exécuté sur Android ; Piper rejeté par ART VerifyError (retour depuis synchronized inline dans finally). Correction : méthodes synchronisées distinctes, pas de retour non local sous moniteur ; relance de trois essais Android avant publication.
 - Les scénarios navigateurs utilisent le vrai bouton Importer et son sélecteur, plutôt qu'une injection contournant la capture du mot de passe.
+
+Blocages supplémentaires à résoudre avant publication : crash natif pendant le test Piper (40956583835), logcat ajouté pour le diagnostic ; la voix Siwis dérive de Lessac medium dont le corpus source a une licence de recherche non commerciale. Ne pas confondre l’étiquette MIT du dépôt de voix et cette filiation. Publication suspendue pendant vérification/remplacement.
