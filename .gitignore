@@ -4,3 +4,7 @@ android/app/src/main/assets/models/
 **/build/
 .idea/
 *.iml
+
+
+node_modules/
+android/test-signing/

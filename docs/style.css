@@ -94,3 +94,15 @@ textarea{resize:vertical}.settings{position:absolute;z-index:20;top:auto;left:7p
 @media(max-width:360px){.topbar{gap:5px}.brand{font-size:.9rem}.quiet-button,.stop-button{font-size:.85rem;padding:8px}}
 
 .topbar{height:66px;min-height:66px}.brand{min-width:0;line-height:1.1}.stop-button{white-space:nowrap}
+/* 0.5: a readable character, with motion driven by actual playback events. */
+.stage{flex-basis:clamp(140px,37dvh,330px)}
+.face-touch{width:clamp(150px,58vw,340px)}
+.settings{top:calc(clamp(140px,37dvh,330px) + 69px)}
+.face.speaking .mouth{animation:none!important}
+.face.is-talking .mouth{height:calc(5px + var(--speech-open,0)*35px);width:calc(21% - var(--speech-round,0)*6%);left:calc(39.5% + var(--speech-round,0)*3%);background:#153941;border:3px solid #153941;border-radius:40% 40% 48% 48%;transition:height 50ms linear,width 65ms linear}
+.face.is-talking{rotate:var(--talk-tilt,0deg)}
+.face .mouth{transition:height 80ms,width 80ms,background 80ms}
+.high-contrast .eyes span{background:#000;box-shadow:0 0 0 3px #fff}
+.high-contrast .brows span{filter:drop-shadow(0 1px #fff) drop-shadow(0 -1px #fff)}
+.high-contrast .mouth{filter:drop-shadow(0 1px #fff) drop-shadow(0 -1px #fff)}
+@media(max-height:560px){.stage{flex-basis:115px;min-height:110px}.face-touch{width:145px}.settings{top:184px}}

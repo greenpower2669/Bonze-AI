@@ -35,7 +35,7 @@ test("always visible face and controls, accessible captions",()=>{
     assert.ok(html.includes(key),key);
   assert.ok(html.includes('aria-live="polite"'));
   assert.ok(html.includes('id="keyboard-panel" hidden'));
-  assert.match(script,/BonzeNativeResult=\(text,run\)=>.*handleText\(text,"voice"\)/);
-  assert.match(script,/window\.BonzeAndroid\.speakReply\(content,describedMood,String\(voiceRun\)\)/);
+  assert.ok(script.includes('window.BonzeNativeEvent='));
+  assert.ok(script.includes("nativeCommand('start')"));
+  assert.ok(script.includes("nativeCommand('stop')"));
 });
-

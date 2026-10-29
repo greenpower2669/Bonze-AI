@@ -22,18 +22,20 @@ jobs:
       - name: Test native session lifecycle without Android services
         run: |
           mkdir -p /tmp/bonze-java
-          javac -d /tmp/bonze-java android/app/src/main/java/fr/bonzeai/companion/VoiceSession.java tests/VoiceSessionTest.java
+          javac -d /tmp/bonze-java android/app/src/main/java/fr/bonzeai/companion/VoiceSession.java android/app/src/main/java/fr/bonzeai/companion/DialogueMemory.java android/app/src/main/java/fr/bonzeai/companion/SpeechPlan.java tests/VoiceSessionTest.java tests/DialogueMemoryTest.java tests/SpeechPlanTest.java
           java -cp /tmp/bonze-java VoiceSessionTest
+          java -cp /tmp/bonze-java DialogueMemoryTest
+          java -cp /tmp/bonze-java SpeechPlanTest
       - name: Install browser for integration checks
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Verify conversation, personalization, layout and offline cache
-        env: {BONZE_SCREENSHOT: bonze-v040.png}
+        env: {BONZE_SCREENSHOT: bonze-v050.png}
         run: node tests/browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
-        with: {name: bonze-ui-check, path: bonze-v040.png, if-no-files-found: ignore}
+        with: {name: bonze-ui-check, path: bonze-v050.png, if-no-files-found: ignore}
   android-debug:
     needs: validate
     runs-on: ubuntu-24.04
@@ -46,8 +48,8 @@ jobs:
       - name: Reuse test signing key when cache is available
         uses: actions/cache@v4
         with:
-          path: ~/.android/debug.keystore
-          key: bonze-ai-debug-signing-v1
+          path: android/test-signing/debug.keystore
+          key: bonze-ai-debug-signing-v2
       - name: Install Android SDK 35
         run: |
           SDKMANAGER="$(find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools" -type f -name sdkmanager | head -n 1)"
@@ -61,7 +63,17 @@ jobs:
           curl --fail --location --retry 4 --output android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt "https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LICENSE"
           test -s android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt
       - name: Compile APK and run Android lint
-        run: gradle --no-daemon :androidApp:assembleDebug :androidApp:lintDebug
+        env:
+          ANDROID_USER_HOME: ${{ runner.temp }}/bonze-android-user
+        run: |
+          mkdir -p "$ANDROID_USER_HOME" android/test-signing
+          if test -s android/test-signing/debug.keystore; then cp android/test-signing/debug.keystore "$ANDROID_USER_HOME/debug.keystore"; fi
+          if ! test -s "$ANDROID_USER_HOME/debug.keystore"; then
+            keytool -genkeypair -keystore "$ANDROID_USER_HOME/debug.keystore" -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          fi
+          cp "$ANDROID_USER_HOME/debug.keystore" android/test-signing/debug.keystore
+          gradle --no-daemon :androidApp:assembleDebug :androidApp:lintDebug :androidApp:signingReport
+          if test -s "$ANDROID_USER_HOME/debug.keystore"; then cp "$ANDROID_USER_HOME/debug.keystore" android/test-signing/debug.keystore; fi
       - name: Inspect compiled permission, version and signature
         run: |
           APK="$(find android/app/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' -print -quit)"
@@ -71,16 +83,16 @@ jobs:
           if grep -q 'android.permission.INTERNET' permissions.txt; then exit 1; fi
           "$AAPT" dump badging "$APK" | head -n 1 | tee package.txt
           grep -q "name='fr.bonzeai.companion'" package.txt
-          grep -q "versionName='0.4.0'" package.txt
+          grep -q "versionName='0.5.0'" package.txt
           "${ANDROID_HOME}/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK" | tee signature.txt
-          cp "$APK" Bonze-AI-v0.4.0-debug.apk
-          sha256sum Bonze-AI-v0.4.0-debug.apk | tee Bonze-AI-v0.4.0.sha256
+          cp "$APK" Bonze-AI-v0.5.0-debug.apk
+          sha256sum Bonze-AI-v0.5.0-debug.apk | tee Bonze-AI-v0.5.0.sha256
       - uses: actions/upload-artifact@v4
         with:
-          name: Bonze-AI-v0.4.0-debug
+          name: Bonze-AI-v0.5.0-debug
           path: |
-            Bonze-AI-v0.4.0-debug.apk
-            Bonze-AI-v0.4.0.sha256
+            Bonze-AI-v0.5.0-debug.apk
+            Bonze-AI-v0.5.0.sha256
             permissions.txt
             package.txt
             signature.txt
@@ -91,13 +103,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="bonze-ai-v0.4.0"
+          tag="bonze-ai-v0.5.0"
           if gh release view "$tag" >/dev/null 2>&1; then
             existing="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq '.object.sha')"
             test "$existing" = "$GITHUB_SHA" || { echo 'Version already published at another commit; increment version.'; exit 1; }
             exit 0
           fi
-          gh release create "$tag" Bonze-AI-v0.4.0-debug.apk Bonze-AI-v0.4.0.sha256 \
+          gh release create "$tag" Bonze-AI-v0.5.0-debug.apk Bonze-AI-v0.5.0.sha256 \
             --target "$GITHUB_SHA" --prerelease \
-            --title "🌱 Bonze AI 0.4.0 · Chaque Bonze naît différent" \
-            --notes-file docs/release-v0.4.0.md
+            --title "🌱 Bonze AI 0.5.0 · Notre histoire continue écran éteint" \
+            --notes-file docs/release-v0.5.0.md

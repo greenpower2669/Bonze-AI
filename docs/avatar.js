@@ -12,9 +12,10 @@ export function renderAppearance(face,identity){
  for(const key of Object.keys(OPTIONS))face.dataset[key]=a[key];
  for(const [key,value] of Object.entries({color:a.color,'cheek-color':a.cheekColor,'eye-size':a.eyeSize,'eye-gap':a.eyeSpacing,'brow-weight':`${7*a.browThickness}px`}))face.style.setProperty('--'+key,value);
 }
-export function renderExpression(face,identity,mode){
+export function renderExpression(face,identity,mode,speech={open:0,round:false,emphasis:0}){
  const e=expression(identity,identity.acquired,mode);
- const vars={eyescale:e.eyeOpen,brow:e.brow+'deg',smile:e.smile+'px',blush:e.blush,'gaze-x':e.gazeX+'px','gaze-y':e.gazeY+'px',sway:e.sway+'px',tempo:e.tempo+'s',blink:e.blink+'s','mouth-open':e.mouth+'px'};
+ const vars={eyescale:e.eyeOpen,brow:(e.brow+(speech.emphasis||0)*5)+'deg',smile:e.smile+'px',blush:e.blush,'gaze-x':e.gazeX+'px','gaze-y':e.gazeY+'px',sway:e.sway+'px',tempo:e.tempo+'s',blink:e.blink+'s','mouth-open':e.mouth+'px','speech-open':speech.open||0,'speech-round':speech.round?1:0,'talk-tilt':((speech.emphasis||0)-.2)+'deg'};
+ face.classList.toggle('is-talking',(speech.open||0)>0);
  for(const [key,v] of Object.entries(vars))face.style.setProperty('--'+key,v);
  return e;
 }

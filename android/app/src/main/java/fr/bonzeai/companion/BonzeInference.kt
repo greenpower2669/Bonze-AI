@@ -26,15 +26,16 @@ object BonzeInference {
             val path = ensureModel(context)
             Llama.loadModel(
                 path.absolutePath,
-                LlamaConfig(contextSize = 1024, threads = 3, temperature = 0.1f,
+                LlamaConfig(contextSize = 2048, threads = 3, temperature = 0.45f,
                     topP = 0.9f, topK = 50, gpuLayers = 0)
             ).also { loaded = it }
         }
-        val personality = "Tu t'appelles Bonze AI. Parle français avec curiosité, gentillesse et respect. " +
-            "Réponds brièvement et sincèrement ; reconnais tes incertitudes. " +
-            "Ton humeur simulée : " + mood.take(30) + "."
-        val result = Llama.complete(model, prompt = text.take(600),
-            systemPrompt = personality, maxTokens = if (economy) 48 else 96)
+        val personality = "Tu es Bonze AI, petit compagnon curieux, chaleureux et joueur. " +
+            "Parle naturellement en français et participe aux histoires de ton humain. " +
+            "Continue la scène et les échanges donnés en contexte. Réponds en une à trois phrases. " +
+            "Reste sincère quand on te questionne sur tes capacités. Humeur : " + mood.take(30) + "."
+        val result = Llama.complete(model, prompt = text.take(2200),
+            systemPrompt = personality, maxTokens = if (economy) 72 else 144)
         result.text.trim().ifEmpty {
             "Je n'ai pas réussi à formuler une réponse. Tu veux me réexpliquer ?"
         }.take(1200)

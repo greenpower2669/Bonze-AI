@@ -46,3 +46,12 @@ Canal de preuve 0.4.0 : tag bonze-ai-v0.4.0 → e60d887 ; workflow 40858508226, 
 - CSS final `.stage/.face-touch/.face` : scène 27dvh, largeur38vw puis89 %, donc petit personnage ; tests de visibilité ne prouvent pas la lisibilité.
 - `expression().mouth` + `speaktalk` : 8px puis13px, boucle sans chronologie audio. `UtteranceProgressListener` actuel début/fin/erreur uniquement. Voix navigateur et description hors session ont une liaison avatar incomplète.
 - TTS Android : voix locale choisie par disponibilité, modulation du débit seulement ; Piper absent. Diagnostic détaillé et sources : `audit-2026-10-29-veille-dialogue-visage.md`.
+
+## Architecture cible 0.5 — boucle hors écran
+
+- `ConversationService.java` : propriétaire unique de session/permission consommable, STT on-device, file d'inférence, TTS, notification, focus audio/casque, wake lock borné et historique SharedPreferences. Service privé, START_NOT_STICKY ; fermeture de tâche et Stop terminent la session.
+- `MainActivity.java` : coquille WebView et liaison au service. Pause = détachement de l'observateur, aucune fin de conversation. `command` est sérialisée sur UI ; démarrage différé par permission invalidable par Stop et autorisation consommée dans onStartCommand.
+- `VoiceSession.java` : époque de service indépendante de l'UI, garde des callbacks et consommation unique d'un démarrage autorisé. `DialogueMemory.java` :30 entrées/rôles, contexte de scène et prompt limité ; `SpeechPlan.java` : phrases ≤220 caractères.
+- `core/native-view.mjs` : barrière des commandes UI, numéros de séquence et processus retraités ; bloque les événements périmés. `core/speech.mjs` : début/plage/fin/arrêt de lecture, repli approximatif, maintien d'une bouche visible en mouvement réduit.
+- `docs/app.js` : rendu et persistance identité ; conversation Android reçoit des snapshots (état/dialogue/voix) et événements de parole. Veille Android ne fait que sauvegarder/détacher le rendu. Web conserve l'arrêt quand masqué. Les échanges natifs importés ne sont pas recomptés en apprentissages acquis.
+- `docs/avatar.js` et CSS : bouche ouverte et formes/mouvements proportionnels, visage58vw en portrait (avant38), mise en page adaptée aux faibles hauteurs et aux réglages.

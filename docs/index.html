@@ -11,7 +11,7 @@
 </head><body>
 <main class="app">
 <header class="topbar">
- <span class="brand">🌱 Bonze AI <small>0.4.0 · Éveil singulier</small></span>
+ <span class="brand">🌱 Bonze AI <small>0.5.0 · On continue notre histoire</small></span>
  <button id="stop-all" type="button" class="stop-button">⏹ Tout arrêter</button>
  <button type="button" id="settings-open" class="quiet-button" aria-controls="settings" aria-expanded="false">⚙️ Options</button>
 </header>
@@ -51,8 +51,10 @@
  <select id="resource-mode"><option value="precise">Précis · neurones et voix locale</option><option value="eco">Économique · réponses courtes</option><option value="light">Léger · réponses simples et voix</option><option value="text">Texte · sans voix ni modèle de langage</option><option value="off">En pause</option></select>
  <label class="check" for="neural"><input type="checkbox" id="neural" checked> Utiliser mes neurones locaux sur Android</label>
  <p id="brain-status" class="hint" role="status">La WebApp utilise le moteur textuel léger.</p>
- <label class="check" for="voice"><input type="checkbox" id="voice"> Lire les réponses avec une voix locale, si disponible</label>
- <p id="voice-status" class="hint">Voix du navigateur désactivée.</p>
+ <label class="check" for="voice"><input type="checkbox" id="voice"> Lire aussi les réponses écrites avec une voix locale</label>
+ <p id="voice-status" class="hint">Lecture des réponses écrites désactivée.</p>
+ <div id="native-voice-row" hidden><label for="native-voice">Ma voix française locale</label><select id="native-voice" aria-describedby="voice-status"></select></div>
+ <p class="hint">Sur Android, une conversation démarrée continue écran éteint. Tu peux l'arrêter ici ou dans sa notification.</p>
  <label class="check" for="contrast"><input id="contrast" type="checkbox"> Contraste renforcé</label>
  <label class="check" for="reduce-motion"><input id="reduce-motion" type="checkbox"> Réduire les mouvements</label>
  <label for="caption-size">Taille des sous-titres</label>
