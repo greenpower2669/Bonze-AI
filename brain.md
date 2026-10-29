@@ -37,10 +37,13 @@ Fab demande maintenant la continuité d'une conversation déjà activée lorsque
 
 Retour d'expérience : langage trop auto-descriptif et participation insuffisante au jeu de rôle, tête trop petite et bouche peu visible pendant la parole, voix robotique. Priorités : contexte de scène/historique, incarnation faciale et taille, voix locale plus naturelle. Les rappels identitaires répétés ne sont pas un objectif de sincérité. Rapport d'audit ciblé à la racine ; aucune nouvelle réalisation revendiquée avant tests.
 
-## Correction autorisée par Fab — 0.5 en construction
+## Correction autorisée par Fab — 0.5.0 livrée en prérelease
 
 Boucle STT/inférence/TTS/historique portée par ConversationService (service Android au premier plan), indépendante de la visibilité de l'Activity. Démarrage app visible après action/permissions, notification Arrêter ; aucun redémarrage système automatique. L'arrêt invalide les autorisations en file, reconnaissances et générations. Dix minutes de silence mettent la conversation en pause. Wake lock CPU de 120s renouvelé seulement durant la session autorisée et libéré à l'arrêt. Autorisations FGS micro/lecture, notifications et wake lock ajoutées ; aucune permission Internet.
 
 Historique natif limité à30 entrées, migration unique depuis0.4 et réconciliation sans recompter les échanges existants. Le modèle reçoit les échanges récents et un contexte de jeu bornés ; prompt plus incarné et température0.45, contexte2048. Ce réglage ne prouve pas encore une meilleure qualité réelle du langage français, à évaluer sur appareil.
 
 Visage élargi en portrait ; bouche remplie et visible pilotée par événements de lecture et plages de mots quand le moteur en fournit, repli animé approximatif sinon. Les descriptions vocales et la voix navigateur utilisent le même moteur graphique. Choix d'une voix française locale déterministe et conservé ; segmentation des phrases, pauses et modulation douce du débit/hauteur. Piper n'est pas embarqué dans cette correction.
+
+
+Preuves de livraison 0.5 : commit ff04ec4203bb7cfe9ca412d8814a09b16643bb8c, workflow #40868793495 réussi ;35 tests JS,4 programmes de tests JVM et34 assertions navigateur, compilation+lint. APK code5/version0.5.0,161213280 octets, SHA-256 e5d12f3357e463232db7d2dea94663c53cf0ffd8cbdb99a89efff05572eacdee. Certificat public 128b1bb0d488f33dd9075888ee15d6ff943136d657018026d1e0b22d9c35991d, différent de0.4 ; continuité de mise à jour depuis0.4 impossible sans migration/retrait préalable de l'ancienne app. Ne pas faire perdre les données sans consentement. Clé de test désormais sauvée en cacheCI v2 (rétention limitée), aucune clé de production.

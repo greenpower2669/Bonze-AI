@@ -57,3 +57,6 @@ Canal de preuve 0.4.0 : tag bonze-ai-v0.4.0 → e60d887 ; workflow 40858508226, 
 - `docs/avatar.js` et CSS : bouche ouverte et formes/mouvements proportionnels, visage58vw en portrait (avant38), mise en page adaptée aux faibles hauteurs et aux réglages.
 
 `PendingStart.java` conserve la demande explicite à travers la pause du dialogue de permission, sans donner d'autorité à onResume. L'inférence libère son drapeau atomique dans le worker, même si la réponse devient périmée ; l'époque protège uniquement sa publication. Le choix de voix UI attend l'accusé natif pour résister aux anciens snapshots d'arrêt.
+
+
+Preuves0.5 : tag bonze-ai-v0.5.0→ff04ec4 ; run #40868793495 :35 tests JS, VoiceSession/DialogueMemory/SpeechPlan/PendingStart sur JVM,34 assertions navigateur (masquage/réveil simulés, dialogue, bouchevisible/description sansmicro, choix de voix asynchrone/persistant, horsligne et tailles), puis assembleDebug/lintDebug et inspection APK. Capture navigateur du personnage agrandi inspectée, aucun test d'appareil réel. Cache keystore désormais explicite android/test-signing/debug.keystore, ignoré parGit, alimenté viaANDROID_USER_HOME dédié et effectivement sauvé enCI ; certificat différent des versions précédentes, cache pas sauvegarde de production.

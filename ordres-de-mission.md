@@ -56,3 +56,6 @@ Livraison de reprise : prérelease 0.4.0, commit e60d887, run 40858508226, tests
 Audit ciblé demandé et réalisé : audit-2026-10-29-veille-dialogue-visage.md. Causes de code, hypothèses et corrections à produire séparées. Aucune correction applicative livrée à l'occasion de cet audit.
 
 29/10 — Fab autorise les corrections de l'audit (« Ok, corrige ça »). Réalisation 0.5 en cours pour BONZE-019/020/021/022 : service écran éteint, contexte de dialogue, visage et animation de parole, voix Android locale mieux réglée. Piper reste ouvert comme intégration distincte ; aucune clôture avant les vérifications et l'essai humain.
+
+
+Livraison de correction29/10 : prérelease0.5.0, commit ff04ec4, run #40868793495 vert. BONZE-019/020/021 et la partie voix Android de BONZE-022 sont produits pour essai humain : service écran éteint, contexte de jeu/dialogue, visage agrandi, parole animée et voix locale choisie. La qualité réelle sur Samsung et l'intégration Piper restent ouvertes. Aucun merge main. La clé de signature de test0.5 diffère de0.4 ; ne pas supprimer les données existantes sans décision de Fab.
