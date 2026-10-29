@@ -130,3 +130,15 @@ Prochain geste humain : installer en mise à jour de0.5, Options → « MLS · m
 - [ ] Prototyper, tester et instrumenter le rappel local sans accès GitHub ni Internet, puis évaluer pertinence/latence/consommation et non-régression sur Samsung avec Fab. Aucune modification de moteur ni APK supplémentaire dans cette seule étape de cadrage.
 
 Spécification : `docs/architecture-memoire-a-tiroirs.md`. Cette tâche étend BONZE-007/BONZE-018 et ne les clôt pas. L'APK 0.6.0 ne contient pas cette nouvelle mémoire à tiroirs.
+
+## Retour d'essai Samsung 0.6.0 — 30 octobre 2026 : Bonze trop protocolaire
+
+- [ ] **BONZE-031 — dialogue naturel et spontané (priorité UX)** : Fab observe sur Samsung une réponse artificielle à « tu peux manger du granité à l'huile » : « Bonjour Bonze AI. Voici une suggestion… Je suis là pour vous aider… », plutôt qu'une réplique joueuse adaptée à la situation.
+- [ ] Réviser et tester la consigne de personnalité de `BonzeInference.kt` (répondre au sens, tutoiement cohérent, échange bref, humour/curiosité opportun, continuité de jeu, sans introduction de service client ni changement d'identité). Ne pas compter sur le prompt seul pour compenser les limites du modèle.
+- [ ] Diagnostiquer `DialogueMemory.context()` : il n'envoie actuellement que les précédentes entrées `human`, pas les réponses `bot`. Étudier un contexte chronologique à rôles explicites, borné et filtré, compatible avec le template chat du modèle, en préservant mémoire/migrations et droits.
+- [ ] Comparer des paramètres de génération mesurés sur mêmes tests (actuel : température 0,45, topK 50, topP 0,9 ; carte LFM2.5-230M : température 0,1, topK 50, repetition_penalty 1,05), sans prétendre qu'une température plus élevée crée une personnalité. Évaluer également un modèle local plus adapté à la conversation, seulement après mesures qualité/français/RAM/latence/licence et compatibilité.
+- [ ] Construire un banc de tests français avec phrases absurdes, plaisanteries, jeu de rôle, suites de dialogue, questions sérieuses, demandes incertaines, répétitions, stop et veille ; évaluer naturel, cohérence, redondances, factualité, sécurité et latence sur appareil. Maintenir les tests 0.6 et aucune permission INTERNET.
+- [ ] Déplacer/compacter l'avertissement technique statique de `docs/index.html` (LFM dense, droits, voix, etc.) dans les informations techniques ou Options, sans supprimer ses avertissements de sécurité ; il est **indépendant** du contenu généré.
+- [ ] Garder le texte et la TTS distincts dans le diagnostic : Piper lit la réponse mais ne crée pas ses formulations. Demander validation Fab avant déclarer l'UX naturelle.
+
+Constats fondés sur la capture d'essai et la lecture de `BonzeInference.kt`, `DialogueMemory.java`, `docs/index.html` sur `feature/offline-bonsaiv1`. Liquid AI classe explicitement le 230M comme non recommandé pour l'écriture créative : https://huggingface.co/LiquidAI/LFM2.5-230M/blob/main/README.md . **Documenté seulement ; aucun code ni APK modifié, aucun merge main.**
