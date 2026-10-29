@@ -23,5 +23,5 @@ if __name__=='__main__':
  source=(root/'lexicon.txt').read_text().splitlines();result=convert(source,alphabet)
  assert len(result)>70000
  for word in 'bonjour je suis ton petit compagnon tu veux jouer avec moi bonze'.split():assert word in result,word
- (root/'lexicon.txt').write_text(''.join(word+'\t'+' '.join(tokens)+'\n' for word,tokens in result.items()))
+ (root/'lexicon.txt').write_text(''.join(word+' || '+' '.join(tokens)+'\n' for word,tokens in result.items()))
  print('PIPER_LEXICON',len(source),'source entries;',len(result),'model-compatible entries; others fall back')

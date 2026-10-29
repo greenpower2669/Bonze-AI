@@ -2,7 +2,7 @@ name: Bonze Piper compatibility probe
 on:
   push:
     branches: [feature/offline-bonsaiv1]
-    paths: ['.github/workflows/piper-probe.yml','scripts/prepare-piper-mls.py']
+    paths: ['.github/workflows/piper-probe.yml','scripts/prepare-piper-mls.py','scripts/prepare-piper-lexicon.py']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
