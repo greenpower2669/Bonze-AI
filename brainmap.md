@@ -38,3 +38,11 @@ La capture d'époque et la réservation de génération sont sérialisées sur l
 
 
 Canal de preuve 0.4.0 : tag bonze-ai-v0.4.0 → e60d887 ; workflow 40858508226, jobs validate puis android-debug ; 27 tests JS, test JVM, 28 assertions navigateur, lint et APK. Capture de contrôle navigateur inspectée visuellement (mode fort contraste) ; aucune capture d'appareil réel. Le cache de keystore debug n'a pas été alimenté (chemin absent) : tâche signature durable ouverte.
+
+## Carte de causes — audit veille / incarnation 29/10
+
+- `MainActivity.onPause` + `VoiceSession.pause/active` + `docs/app.js visibilitychange` : trois points qui interdisent actuellement de poursuivre en veille. Aucune déclaration de service dans le manifeste. Le service de conversation est une évolution à réaliser, pas une capacité actuelle.
+- `BonzeInference.reply` : prompt bref et humeur dominante, sans historique/scène explicitement transmis ; le stockage JS ne prouve pas une mémoire de dialogue active dans le modèle.
+- CSS final `.stage/.face-touch/.face` : scène 27dvh, largeur38vw puis89 %, donc petit personnage ; tests de visibilité ne prouvent pas la lisibilité.
+- `expression().mouth` + `speaktalk` : 8px puis13px, boucle sans chronologie audio. `UtteranceProgressListener` actuel début/fin/erreur uniquement. Voix navigateur et description hors session ont une liaison avatar incomplète.
+- TTS Android : voix locale choisie par disponibilité, modulation du débit seulement ; Piper absent. Diagnostic détaillé et sources : `audit-2026-10-29-veille-dialogue-visage.md`.

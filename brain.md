@@ -30,3 +30,9 @@ Prompt court avec nom et valeurs essentielles. LFM dense inchangé, Piper absent
 
 
 Validation du commit e60d8876d1e997c031c788fdbd82663124a614aa : workflow 40858508226 réussi, 27 tests JS, garde Java, 28 assertions navigateur, assembleDebug + lintDebug, inspection du package fr.bonzeai.companion / code4 / version0.4.0, permission RECORD_AUDIO seule dans le manifeste compilé. Signature APK vérifiée par apksigner. Asset Release de 161191354 octets, SHA-256 4e74415462df28060a30ef116b6a0ceccc9ffeda84da8fe7cf431391fcf8850d. Tests Samsung physiques et réalisation du reste du contrat toujours ouverts. Main reste f5910311f903d8ae4378d62d100129b690fc0e85.
+
+## Avenant Fab après essai 0.4 — 29 octobre
+
+Fab demande maintenant la continuité d'une conversation déjà activée lorsque le téléphone passe en veille. L'ancien arrêt systématique à tout arrière-plan devient une limite à corriger ; l'arrêt humain reste absolu et aucune nouvelle écoute ne doit naître d'une simple extinction/réouverture. Architecture cible : service Android au premier plan avec arrêt accessible, état et cognition indépendants de la WebView. Ce comportement n'est pas encore implémenté.
+
+Retour d'expérience : langage trop auto-descriptif et participation insuffisante au jeu de rôle, tête trop petite et bouche peu visible pendant la parole, voix robotique. Priorités : contexte de scène/historique, incarnation faciale et taille, voix locale plus naturelle. Les rappels identitaires répétés ne sont pas un objectif de sincérité. Rapport d'audit ciblé à la racine ; aucune nouvelle réalisation revendiquée avant tests.

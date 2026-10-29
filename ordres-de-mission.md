@@ -45,3 +45,12 @@ Le contrat global de Fab est décrit dans brain.md et le plan de reprise dans do
 
 
 Livraison de reprise : prérelease 0.4.0, commit e60d887, run 40858508226, tests automatisés et APK vérifiés. Les missions globales restent ouvertes pour validation humaine et éléments manquants ; aucun merge main effectué. Piper, MoE linguistique et mémoire sociale sécurisée restent expressément à réaliser.
+
+## Retour d'essai Fab — 29/10/2026 : veille et incarnation
+
+- [ ] BONZE-019 : permettre à la conversation explicitement activée de continuer téléphone en veille/écran éteint. Cet ordre modifie l'ancien arrêt systématique au fond ; arrêt volontaire toujours prioritaire, aucun redémarrage autonome après Stop. Prévoir service Android de conversation et notification Arrêter.
+- [ ] BONZE-020 : langage naturel et participation au jeu de rôle, sans rappels identitaires/autopromotion hors sujet ; garder sincérité et respect. Diagnostiquer le contexte réellement envoyé au modèle et évaluer les scènes françaises.
+- [ ] BONZE-021 : agrandir le visage et renforcer son expressivité pendant la parole ; bouche lisible reliée à la lecture réelle, regard/sourcils/tête expressifs. Priorité au visage, mains remises à plus tard.
+- [ ] BONZE-022 : voix locale plus naturelle et cohérente avec le personnage, au-delà du seul débit ; poursuivre Piper avec écoute et validation réelles.
+
+Audit ciblé demandé et réalisé : audit-2026-10-29-veille-dialogue-visage.md. Causes de code, hypothèses et corrections à produire séparées. Aucune correction applicative livrée à l'occasion de cet audit.
