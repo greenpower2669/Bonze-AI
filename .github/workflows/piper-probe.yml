@@ -17,52 +17,41 @@ jobs:
         run: |
           bash scripts/fetch-piper.sh
           pip install sherpa-onnx==2.0.1 soundfile faster-whisper==1.2.0 requests==2.32.5
-      - name: Install reference phonemizer for build-only comparison
-        run: sudo apt-get update -qq && sudo apt-get install -y espeak-ng
-      - name: Synthesize actual French PCM
-        run: |
-          python - <<'PYTHON'
-          import pathlib,sherpa_onnx,soundfile as sf,time
-          root=pathlib.Path('android/app/src/main/assets/piper')
-          config=sherpa_onnx.OfflineTtsConfig(model=sherpa_onnx.OfflineTtsModelConfig(vits=sherpa_onnx.OfflineTtsVitsModelConfig(model=str(root/'voice.onnx'),tokens=str(root/'tokens.txt'),lexicon=str(root/'lexicon.txt'),noise_scale=.333,noise_scale_w=.333),num_threads=2))
-          tts=sherpa_onnx.OfflineTts(config);begin=time.monotonic()
-          audio=tts.generate('bonjour, je suis ton petit compagnon. tu veux jouer avec moi ?',sherpa_onnx.GenerationConfig())
-          assert len(audio.samples)>1000 and audio.sample_rate==22050 and max(abs(x) for x in audio.samples)>.01
-          gain=min(20,.6/max(abs(x) for x in audio.samples))
-          sf.write('Bonze-Piper-MLS-francais-essai.wav',[x*gain for x in audio.samples],audio.sample_rate)
-          print('PCM',len(audio.samples),'rate',audio.sample_rate,'generationSeconds',time.monotonic()-begin,'peak',max(abs(x) for x in audio.samples))
-          PYTHON
-      - name: Independent local transcription of generated sample (diagnostic, no human-listening claim)
+      - name: Synthesize production phonetic path and independently transcribe three phrases
         run: |
           python - <<'PYTHON'
           from faster_whisper import WhisperModel
-          import pathlib,sherpa_onnx,soundfile as sf,subprocess
+          import pathlib,sherpa_onnx,soundfile as sf,re,time
           root=pathlib.Path('android/app/src/main/assets/piper')
-          tts=sherpa_onnx.OfflineTts(sherpa_onnx.OfflineTtsConfig(model=sherpa_onnx.OfflineTtsModelConfig(vits=sherpa_onnx.OfflineTtsVitsModelConfig(model=str(root/'voice.onnx'),tokens=str(root/'tokens.txt'),lexicon=str(root/'lexicon.txt'),noise_scale=.333,noise_scale_w=.333),num_threads=2)))
+          tts=sherpa_onnx.OfflineTts(sherpa_onnx.OfflineTtsConfig(model=sherpa_onnx.OfflineTtsModelConfig(vits=sherpa_onnx.OfflineTtsVitsModelConfig(model=str(root/'voice.onnx'),tokens=str(root/'tokens.txt'),lexicon='',noise_scale=.333,noise_scale_w=.333),num_threads=2)))
           model=WhisperModel('base',device='cpu',compute_type='int8')
-          text='Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?'
-          reference=subprocess.check_output(['espeak-ng','-q','-v','fr-fr','--ipa',text],text=True).strip()
-          print('REFERENCE_PHONEMES',reference)
-          import re,numpy as np
           dictionary={line.split(' || ',1)[0]:line.split(' || ',1)[1].replace(' ','') for line in (root/'lexicon.txt').read_text().splitlines()}
-          phrases=[text,'Bonjour mon ami. Comment vas tu ?','Je suis calme et content. Tu peux me raconter une histoire ?']
+          phrases=['Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?','Bonjour mon ami. Comment vas tu ?','Je suis calme et content. Tu peux me raconter une histoire ?']
+          heard=[]
           for index,phrase in enumerate(phrases):
-            words=re.findall(r"[^\W\d_]+",phrase.lower())
-            word_phones=[subprocess.check_output(['espeak-ng','-q','-v','fr-fr','--ipa',w],text=True).strip().replace('\n',' ') for w in words]
-            for variant,phones in [('dictionary',' '.join(dictionary[w] for w in words)),('word-reference',' '.join(word_phones)),('sentence-reference',subprocess.check_output(['espeak-ng','-q','-v','fr-fr','--ipa',phrase],text=True).strip().replace('\n',' '))]:
-              print('PHONETIC_INPUT',index,variant,phones,flush=True)
-              cfg=sherpa_onnx.GenerationConfig();cfg.sid=0;cfg.phoneme_codepoints=[[ord(c) for c in phones]]
-              audio=tts.generate(phrase,cfg);samples=audio.samples;gain=min(20,.6/max(abs(x) for x in samples))
-              path=f'voice-{index}-{variant}.wav';sf.write(path,[x*gain for x in samples],audio.sample_rate)
-              segments,info=model.transcribe(path,language='fr',beam_size=3)
-              print('ASR_EXPECTED',phrase,flush=True);print('ASR_HEARD',index,variant,' '.join(s.text for s in segments),flush=True)
+            # SpeechPlan.piperChunks keeps these bounded replies as a single segment.
+            assert len(phrase)<=220
+            phones=' '.join(dictionary[w] for w in re.findall(r"[^\W\d_]+",phrase.lower()))
+            cfg=sherpa_onnx.GenerationConfig();cfg.sid=0;cfg.speed=.98;cfg.phoneme_codepoints=[[ord(c) for c in phones]]
+            begin=time.monotonic();audio=tts.generate(phrase,cfg);samples=audio.samples
+            assert len(samples)>1000 and audio.sample_rate==22050
+            peak=max(abs(x) for x in samples);assert peak>.00001
+            gain=min(20,.6/peak);path=f'voice-{index}-production.wav'
+            sf.write(path,[x*gain for x in samples],audio.sample_rate)
+            print('PCM',index,'seconds',len(samples)/audio.sample_rate,'generationSeconds',time.monotonic()-begin,'gain',gain,flush=True)
+            segments,info=model.transcribe(path,language='fr',beam_size=3)
+            transcript=' '.join(s.text for s in segments).lower();heard.append(transcript)
+            print('ASR_EXPECTED',phrase,flush=True);print('ASR_HEARD',index,transcript,flush=True)
+          # Coarse regression guards, not a human-listening or naturalness evaluation.
+          assert sum(w in heard[0] for w in ['petit','compagnon','jouer','moi'])>=3,heard[0]
+          assert 'comment' in heard[1],heard[1]
+          assert all(w in heard[2] for w in ['calme','content','histoire']),heard[2]
           PYTHON
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: bonze-piper-mls-sample
           path: |
-            Bonze-Piper-MLS-francais-essai.wav
             voice-*.wav
             android/app/src/main/assets/piper/MODEL_CARD
             android/app/src/main/assets/piper/LEXICON_NOTICE

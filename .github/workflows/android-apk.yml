@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  actions: read
 concurrency:
   group: bonze-android-${{ github.ref }}
   cancel-in-progress: true
@@ -162,7 +163,7 @@ jobs:
 
   publish-test-release:
     needs: [android-debug, android-offline-test]
-    if: github.ref == 'refs/heads/feature/offline-bonsaiv1' && false # intelligibility comparison in progress
+    if: github.ref == 'refs/heads/feature/offline-bonsaiv1'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -172,6 +173,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          voice_check="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$GITHUB_SHA&per_page=100" --jq '[.workflow_runs[] | select(.name == "Bonze Piper compatibility probe")] | sort_by(.run_number) | last | .conclusion')"
+          test "$voice_check" = success || { echo 'Piper phonetic/intelligibility probe must pass at this exact commit before publication.'; exit 1; }
           cd release-files
           sha256sum -c Bonze-AI-v0.6.0.sha256
           tag="bonze-ai-v0.6.0"

@@ -259,7 +259,7 @@ public final class ConversationService extends Service {
   if(disposed||epoch!=workEpoch)return;
   if(!acquireFocus()){stop(request,"Son indisponible pour le moment.");return;}
   releaseRecognizer(true);if(conversation)session.talking();speechConversation=conversation;
-  speechChunks=SpeechPlan.chunks(text);if(speechChunks.isEmpty()){stop(request,"Lecture vide.");return;}
+  speechChunks="piper-mls".equals(voiceName)?SpeechPlan.piperChunks(text):SpeechPlan.chunks(text);if(speechChunks.isEmpty()){stop(request,"Lecture vide.");return;}
   speechPrefix="BONZE_"+(++speechSerial)+"_";final String prefix=speechPrefix;final long voiceBegan=SystemClock.elapsedRealtime();
   if("piper-mls".equals(voiceName)){
    speechEngine="piper-mls";setState("waiting","Je prépare ma voix locale.");
