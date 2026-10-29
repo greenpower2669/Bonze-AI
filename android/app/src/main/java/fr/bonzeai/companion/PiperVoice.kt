@@ -44,10 +44,11 @@ class PiperVoice(private val app: Context) {
                 if (chunks.any { it.any(Char::isDigit) } || words.any { !dictionary!!.contains(it) }) throw IllegalArgumentException("lexicon-oov")
                 for ((part, text) in chunks.withIndex()) {
                     if (serial.get() != token) return@execute
-                    val generated = tts.generateWithCallback(text, speed = speed, callback = PiperCancellation(serial,token))
+                    val generated = tts.generateWithCallback(text.lowercase(Locale.FRANCE), speed = speed, callback = PiperCancellation(serial,token))
                     if (serial.get() != token) return@execute
                     val samples = generated.samples
                     check(samples.size > 100 && samples.size < generated.sampleRate * 45) { "invalid-pcm" }
+                    PiperAudio.normalize(samples)
                     val pcm = ShortArray(samples.size) { (samples[it].coerceIn(-1f,1f)*32767).toInt().toShort() }
                     val id = prefix + part
                     val minBuffer = AudioTrack.getMinBufferSize(generated.sampleRate,AudioFormat.CHANNEL_OUT_MONO,AudioFormat.ENCODING_PCM_16BIT)
@@ -62,8 +63,7 @@ class PiperVoice(private val app: Context) {
                             if(written<pcm.size){val n=player.write(pcm,written,min(2048,pcm.size-written),AudioTrack.WRITE_NON_BLOCKING);check(n>=0){"audio-write"};written+=n}
                             val frame=player.playbackHeadPosition.coerceIn(0,samples.size)
                             if(frame>0){if(!started){hadAudio=true;started=true;events.start(id,text)}
-                                var sum=0.0;val from=max(0,frame-441);for(i in from until frame)sum+=samples[i]*samples[i]
-                                events.level(id,min(1.0,sqrt(sum/max(1,frame-from))*5.0),frame)}
+                                events.level(id,PiperAudio.level(samples,frame),frame)}
                             Thread.sleep(20)
                         }
                     } finally { releasePlayer(player) }

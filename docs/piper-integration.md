@@ -4,7 +4,7 @@ Bonze utilise les poids Piper VITS **MLS medium (locuteur 0 fixe)**, interprét�
 
 Le moteur est chargé seulement à la première lecture Piper. La voix du locuteur 0 conserve son timbre ; seuls le débit (0,94 à 1,02) et les pauses entre segments changent modestement. Aucun contrôle d'émotion appris, de hauteur Piper ou de synchronisation phonémique n'est revendiqué.
 
-`PiperVoice` produit du PCM 22 050 Hz, le joue avec AudioTrack et relève sa tête de lecture. La bouche suit le RMS des 441 derniers échantillons effectivement consommés. C'est une animation par amplitude, pas des visèmes. L'arrêt invalide la génération, coupe/vidange AudioTrack et interdit la reprise d'écoute par un ancien callback.
+`PiperVoice` produit du PCM 22 050 Hz, ajuste son niveau par segment (gain plafonné à ×20, cible de crête 0,6), le joue avec AudioTrack et relève sa tête de lecture. La bouche suit le RMS des 441 derniers échantillons effectivement consommés. C'est une animation par amplitude, pas des visèmes. L'arrêt invalide la génération, coupe/vidange AudioTrack et interdit la reprise d'écoute par un ancien callback.
 
 Avant toute lecture, les mots de toute la réponse sont vérifiés dans le lexique. Les mots inconnus, nombres et erreurs avant lecture passent au moteur Android local ; la raison et le moteur réellement utilisé figurent dans le journal administrateur. Une erreur après le début du son arrête la lecture, sans rejouer la réponse. Les noms inventés et les élisions réduisent la couverture : un phonémiseur français plus complet reste à développer. Le sélecteur de voix permet aussi de choisir explicitement Android pour comparer.
 

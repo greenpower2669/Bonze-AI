@@ -29,6 +29,8 @@ jobs:
           java -cp /tmp/bonze-java SpeechPlanTest
           javac -d /tmp/bonze-java android/app/src/main/java/fr/bonzeai/companion/AdminGate.java tests/AdminGateTest.java
           javac -d /tmp/bonze-java android/app/src/main/java/fr/bonzeai/companion/PendingDocument.java tests/PendingDocumentTest.java
+          javac -d /tmp/bonze-java android/app/src/main/java/fr/bonzeai/companion/PiperAudio.java tests/PiperAudioTest.java
+          java -cp /tmp/bonze-java PiperAudioTest
           java -cp /tmp/bonze-java PendingDocumentTest
           java -cp /tmp/bonze-java AdminGateTest
           java -cp /tmp/bonze-java PendingStartTest

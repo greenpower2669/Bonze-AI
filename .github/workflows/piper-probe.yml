@@ -16,7 +16,7 @@ jobs:
       - name: Fetch pinned French MLS speech, runtime and lexicon
         run: |
           bash scripts/fetch-piper.sh
-          pip install sherpa-onnx==2.0.1 soundfile faster-whisper==1.2.0
+          pip install sherpa-onnx==2.0.1 soundfile faster-whisper==1.2.0 requests==2.32.5
       - name: Synthesize actual French PCM
         run: |
           python - <<'PYTHON'
@@ -26,7 +26,8 @@ jobs:
           tts=sherpa_onnx.OfflineTts(config);begin=time.monotonic()
           audio=tts.generate('bonjour, je suis ton petit compagnon. tu veux jouer avec moi ?',sherpa_onnx.GenerationConfig())
           assert len(audio.samples)>1000 and audio.sample_rate==22050 and max(abs(x) for x in audio.samples)>.01
-          sf.write('Bonze-Piper-MLS-francais-essai.wav',audio.samples,audio.sample_rate)
+          gain=min(20,.6/max(abs(x) for x in audio.samples))
+          sf.write('Bonze-Piper-MLS-francais-essai.wav',[x*gain for x in audio.samples],audio.sample_rate)
           print('PCM',len(audio.samples),'rate',audio.sample_rate,'generationSeconds',time.monotonic()-begin,'peak',max(abs(x) for x in audio.samples))
           PYTHON
       - name: Independent local transcription of generated sample (diagnostic, no human-listening claim)
