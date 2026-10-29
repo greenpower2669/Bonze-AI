@@ -165,7 +165,7 @@ window.BonzeNativeEvent=e=>{
   if(e.speech)speechMotion.resume(e.speech.id,e.speech.text,performance.now()-Math.min(60000,e.speech.ageMs||0));
   else if(e.state!=='speaking')speechMotion.stop();
   const select=el('native-voice');if(Array.isArray(e.voices)){
-   select.replaceChildren();for(const v of e.voices){const o=document.createElement('option');o.value=v.name;o.textContent=v.name==='piper-siwis'?'Siwis · ma voix Piper locale':v.name;select.append(o);}
+   select.replaceChildren();for(const v of e.voices){const o=document.createElement('option');o.value=v.name;o.textContent=v.name==='piper-mls'?'MLS · ma voix Piper locale':v.name;select.append(o);}
    const acknowledged=String(e.voice||'');
    if(pendingVoice===acknowledged||pendingVoice&&!e.voices.some(v=>v.name===pendingVoice))pendingVoice=null;
    nativeVoice=pendingVoice||acknowledged;select.value=nativeVoice;

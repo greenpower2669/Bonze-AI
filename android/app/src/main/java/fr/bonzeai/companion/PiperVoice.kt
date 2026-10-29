@@ -28,7 +28,7 @@ class PiperVoice(private val app: Context) {
                 lines.map { it.substringBefore('\t').substringBefore(' ') }.toSet()
             }
             engine = OfflineTts(app.assets, OfflineTtsConfig(model = OfflineTtsModelConfig(
-                vits = OfflineTtsVitsModelConfig(model = "piper/voice.onnx", tokens = "piper/tokens.txt", lexicon = "piper/lexicon.txt"),
+                vits = OfflineTtsVitsModelConfig(noiseScale = .333f, noiseScaleW = .333f, model = "piper/voice.onnx", tokens = "piper/tokens.txt", lexicon = "piper/lexicon.txt"),
                 numThreads = 2)))
         }
         return engine!!
@@ -44,7 +44,7 @@ class PiperVoice(private val app: Context) {
                 if (chunks.any { it.any(Char::isDigit) } || words.any { !dictionary!!.contains(it) }) throw IllegalArgumentException("lexicon-oov")
                 for ((part, text) in chunks.withIndex()) {
                     if (serial.get() != token) return@execute
-                    val generated = tts.generateWithCallback(text, speed = speed) { if (serial.get() == token) 1 else 0 }
+                    val generated = tts.generateWithCallback(text, speed = speed, callback = PiperCancellation(serial,token))
                     if (serial.get() != token) return@execute
                     val samples = generated.samples
                     check(samples.size > 100 && samples.size < generated.sampleRate * 45) { "invalid-pcm" }

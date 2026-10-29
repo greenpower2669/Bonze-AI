@@ -2,7 +2,7 @@ name: Bonze Piper compatibility probe
 on:
   push:
     branches: [feature/offline-bonsaiv1]
-    paths: ['.github/workflows/piper-probe.yml']
+    paths: ['.github/workflows/piper-probe.yml','scripts/prepare-piper-mls.py']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -13,44 +13,27 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
-      - name: Fetch pinned speech and lexicon assets
+      - name: Fetch pinned French MLS speech, runtime and lexicon
         run: |
-          curl -fL --retry 3 https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-fr_FR-siwis-medium-int8.tar.bz2 -o voice.tar.bz2
-          echo '3909cff9b3cfd4820c66aa13bf554315c82e34899c161f0b446ece372bc4b5ec  voice.tar.bz2' | sha256sum -c
-          curl -fL --retry 3 https://github.com/AACTools/voicegarden-lexicons/releases/download/v0.3.1/fr.tar.gz -o lexicon.tar.gz
-          echo 'bceed22dc3bcceaf922bec81e81bd7999e08f858bd04690c647d8b4e685fa7b4  lexicon.tar.gz' | sha256sum -c
-          mkdir voice lexicon
-          tar xf voice.tar.bz2 -C voice
-          tar xf lexicon.tar.gz -C lexicon
-          find voice lexicon -maxdepth 3 -type f | sort
-          find voice lexicon -type f \( -name NOTICE -o -name MODEL_CARD -o -name '*LICENSE*' \) -exec cat '{}' \;
+          bash scripts/fetch-piper.sh
           pip install sherpa-onnx==2.0.1 soundfile
-      - name: Synthesize real French PCM without network or GPL phonemizer
+      - name: Synthesize actual French PCM
         run: |
-          python - <<'PY'
-          import pathlib,json,sherpa_onnx,soundfile as sf,time
-          model=next(pathlib.Path('voice').rglob('*.onnx'));tokens=next(pathlib.Path('voice').rglob('tokens.txt'))
-          lex=next(pathlib.Path('lexicon').rglob('lexicon.txt'))
-          print('LEXICON EXAMPLES',lex.read_text().splitlines()[:5])
-          phonemes={}
-          for line in lex.read_text().splitlines():
-            parts=line.split('\t',1)
-            if len(parts)==2:phonemes[parts[0]]=parts[1]
-          print('LEXICON WORDS',len(phonemes))
-          text='Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?'
-          for w in ['bonjour','je','suis','ton','petit','compagnon','tu','veux','jouer','avec','moi']:
-            print('PHONEMES',w,phonemes.get(w))
-          config=sherpa_onnx.OfflineTtsConfig(model=sherpa_onnx.OfflineTtsModelConfig(vits=sherpa_onnx.OfflineTtsVitsModelConfig(model=str(model),tokens=str(tokens),lexicon=str(lex)),num_threads=2))
-          tts=sherpa_onnx.OfflineTts(config);begin=time.monotonic();audio=tts.generate(text,sherpa_onnx.GenerationConfig())
-          assert len(audio.samples)>1000 and audio.sample_rate==22050
-          sf.write('Bonze-Piper-francais-essai.wav',audio.samples,audio.sample_rate)
-          print('PCM',len(audio.samples),'rate',audio.sample_rate,'seconds',time.monotonic()-begin,'peak',max(abs(x) for x in audio.samples))
-          PY
+          python - <<'PYTHON'
+          import pathlib,sherpa_onnx,soundfile as sf,time
+          root=pathlib.Path('android/app/src/main/assets/piper')
+          config=sherpa_onnx.OfflineTtsConfig(model=sherpa_onnx.OfflineTtsModelConfig(vits=sherpa_onnx.OfflineTtsVitsModelConfig(model=str(root/'voice.onnx'),tokens=str(root/'tokens.txt'),lexicon=str(root/'lexicon.txt'),noise_scale=.333,noise_scale_w=.333),num_threads=2))
+          tts=sherpa_onnx.OfflineTts(config);begin=time.monotonic()
+          audio=tts.generate('Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?',sherpa_onnx.GenerationConfig(sid=0))
+          assert len(audio.samples)>1000 and audio.sample_rate==22050 and max(abs(x) for x in audio.samples)>.01
+          sf.write('Bonze-Piper-MLS-francais-essai.wav',audio.samples,audio.sample_rate)
+          print('PCM',len(audio.samples),'rate',audio.sample_rate,'generationSeconds',time.monotonic()-begin,'peak',max(abs(x) for x in audio.samples))
+          PYTHON
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: bonze-piper-sample
+          name: bonze-piper-mls-sample
           path: |
-            Bonze-Piper-francais-essai.wav
-            lexicon/**/NOTICE
-            voice/**/MODEL_CARD
+            Bonze-Piper-MLS-francais-essai.wav
+            android/app/src/main/assets/piper/MODEL_CARD
+            android/app/src/main/assets/piper/LEXICON_NOTICE

@@ -5,7 +5,7 @@ import java.util.*;import java.util.concurrent.*;import java.util.concurrent.ato
 public class OfflineVoiceTest {
  @Test public void frenchPiperPlaysOfflineAndStops()throws Exception{
   android.content.Context app=InstrumentationRegistry.getInstrumentation().getTargetContext();
-  PiperVoice voice=new PiperVoice(app);CountDownLatch done=new CountDownLatch(1),started=new CountDownLatch(1);AtomicInteger levels=new AtomicInteger();AtomicReference<String> error=new AtomicReference<>();
+  assertEquals(Integer.class,PiperCancellation.class.getMethod("invoke",float[].class).getReturnType());PiperVoice voice=new PiperVoice(app);CountDownLatch done=new CountDownLatch(1),started=new CountDownLatch(1);AtomicInteger levels=new AtomicInteger();AtomicReference<String> error=new AtomicReference<>();
   PiperVoice.Events events=new PiperVoice.Events(){public void start(String id,String text){started.countDown();}public void level(String id,double value,int frame){if(value>0)levels.incrementAndGet();}public void done(){done.countDown();}public void failed(String reason,boolean hadAudio){error.set(reason);done.countDown();}};
   try{voice.speak(Arrays.asList("Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?"),"test_",.98f,events);assertTrue("French PCM playback completes",done.await(90,TimeUnit.SECONDS));assertNull(error.get());assertEquals(0,started.getCount());assertTrue("nonzero played PCM",levels.get()>10);
    CountDownLatch speaking=new CountDownLatch(1);AtomicBoolean completed=new AtomicBoolean();
@@ -28,7 +28,7 @@ public class OfflineVoiceTest {
    JSONObject identity=DiagnosticJournal.fields("version",1,"seed","android-restore-fixture","acquired",DiagnosticJournal.fields("forces",state.getJSONObject("forces"),"endurance",.65));
    JSONObject web=DiagnosticJournal.fields("identity",identity,"history",new JSONArray(),"resourceMode","off","neuralEnabled",false);
    service.saveWebState(DiagnosticJournal.fields("web",web).toString());JSONObject previous=service.backupData().getJSONObject("native");
-   JSONObject nativeData=DiagnosticJournal.fields("schema",1,"mode","off","history",new JSONArray().put(DiagnosticJournal.fields("id",77,"role","human","text","Souvenir restauré")),"neural",false,"readText",false,"voice","piper-siwis");
+   JSONObject nativeData=DiagnosticJournal.fields("schema",1,"mode","off","history",new JSONArray().put(DiagnosticJournal.fields("id",77,"role","human","text","Souvenir restauré")),"neural",false,"readText",false,"voice","piper-mls");
    JSONObject backup=DiagnosticJournal.fields("schema",1,"web",web,"native",nativeData,"council",council,"journal",new JSONArray());service.restoreBackup(backup.toString());
    assertEquals("Souvenir restauré",service.backupData().getJSONObject("native").getJSONArray("history").getJSONObject(0).getString("text"));assertFalse(service.backupData().getJSONObject("native").getBoolean("neural"));
    String before=service.backupData().toString();nativeData.getJSONArray("history").getJSONObject(0).put("role","unknown");try{service.restoreBackup(backup.toString());throw new AssertionError("corrupt backup accepted");}catch(IllegalArgumentException expected){}assertEquals(before,service.backupData().toString());

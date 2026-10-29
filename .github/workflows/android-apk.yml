@@ -157,7 +157,7 @@ jobs:
 
   publish-test-release:
     needs: [android-debug, android-offline-test]
-    if: github.ref == 'refs/heads/feature/offline-bonsaiv1' && false # voice provenance under review
+    if: github.ref == 'refs/heads/feature/offline-bonsaiv1' # gated by all three Android tests and native APK verification
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4

@@ -47,7 +47,7 @@ public final class ConversationService extends Service {
  @Override public void onCreate(){
   super.onCreate();prefs=getSharedPreferences("bonze-conversation-v1",MODE_PRIVATE);
   mode=prefs.getString("mode","precise");neural=prefs.getBoolean("neural",true);readText=prefs.getBoolean("readText",false);economy="eco".equals(mode);
-  journal=new DiagnosticJournal(prefs);try{council=new EmotionalCouncil(this,prefs);}catch(Exception e){journal.add("council-error",0,DiagnosticJournal.fields("error",e.getClass().getSimpleName()));}councilAt=SystemClock.elapsedRealtime();main.postDelayed(this::councilTick,10000);piper=new PiperVoice(getApplicationContext());voiceName=prefs.getString("voiceChoiceV2","piper-siwis");loadMemory();audio=(AudioManager)getSystemService(AUDIO_SERVICE);
+  journal=new DiagnosticJournal(prefs);try{council=new EmotionalCouncil(this,prefs);}catch(Exception e){journal.add("council-error",0,DiagnosticJournal.fields("error",e.getClass().getSimpleName()));}councilAt=SystemClock.elapsedRealtime();main.postDelayed(this::councilTick,10000);piper=new PiperVoice(getApplicationContext());voiceName=prefs.getString("voiceChoiceV2","piper-mls");loadMemory();audio=(AudioManager)getSystemService(AUDIO_SERVICE);
   cpu=((PowerManager)getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"BonzeAI:Conversation");cpu.setReferenceCounted(false);
   ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).createNotificationChannel(new NotificationChannel("bonze-dialogue","Conversation Bonze",NotificationManager.IMPORTANCE_LOW));
   IntentFilter filter=new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
@@ -252,7 +252,7 @@ public final class ConversationService extends Service {
   for(Voice v:all)if(v.getName().equals(preferred)){choice=v;break;}
   if(choice==null&&!all.isEmpty())choice=all.get(0);
   localVoiceReady=choice!=null&&tts.setVoice(choice)==TextToSpeech.SUCCESS;
-  if("piper-siwis".equals(preferred))voiceName=preferred;else if(localVoiceReady)voiceName=choice.getName();prefs.edit().putString("voiceChoiceV2",voiceName).putString("voice",voiceName).apply();
+  if("piper-mls".equals(preferred))voiceName=preferred;else if(localVoiceReady)voiceName=choice.getName();prefs.edit().putString("voiceChoiceV2",voiceName).putString("voice",voiceName).apply();
  }
  public void describe(String text,String id){stop(id,"Lecture demandée.");if(!"off".equals(mode)&&!"text".equals(mode))speak(text,false,workEpoch,0);}
  private void speak(String text,boolean conversation,long epoch,int attempt){
@@ -261,10 +261,10 @@ public final class ConversationService extends Service {
   releaseRecognizer(true);if(conversation)session.talking();speechConversation=conversation;
   speechChunks=SpeechPlan.chunks(text);if(speechChunks.isEmpty()){stop(request,"Lecture vide.");return;}
   speechPrefix="BONZE_"+(++speechSerial)+"_";final String prefix=speechPrefix;final long voiceBegan=SystemClock.elapsedRealtime();
-  if("piper-siwis".equals(voiceName)){
-   speechEngine="piper-siwis";setState("waiting","Je prépare ma voix locale.");
+  if("piper-mls".equals(voiceName)){
+   speechEngine="piper-mls";setState("waiting","Je prépare ma voix locale.");
    piper.speak(speechChunks,prefix,"calme".equals(mood)?.94f:"joie".equals(mood)?1.02f:.98f,new PiperVoice.Events(){
-    public void start(String id,String content){main.post(()->{if(epoch!=workEpoch||!validSpeech(id))return;speechId=id;speechText=content;speechBegan=SystemClock.elapsedRealtime();journal.add("speech",diagnosticTurn,DiagnosticJournal.fields("engine","piper-siwis","text",content,"id",id,"firstAudioLatencyMs",partIndex(id)==0?SystemClock.elapsedRealtime()-voiceBegan:JSONObject.NULL));setState("speaking","Je te réponds.");speechEvent("speech-start",id,0,0);});}
+    public void start(String id,String content){main.post(()->{if(epoch!=workEpoch||!validSpeech(id))return;speechId=id;speechText=content;speechBegan=SystemClock.elapsedRealtime();journal.add("speech",diagnosticTurn,DiagnosticJournal.fields("engine","piper-mls","text",content,"id",id,"firstAudioLatencyMs",partIndex(id)==0?SystemClock.elapsedRealtime()-voiceBegan:JSONObject.NULL));setState("speaking","Je te réponds.");speechEvent("speech-start",id,0,0);});}
     public void level(String id,double value,int frame){main.post(()->{if(epoch!=workEpoch||!validSpeech(id)||listener==null)return;JSONObject e=base("speech-level");try{e.put("id",id).put("level",value).put("frame",frame);listener.onEvent(e.toString());}catch(JSONException ignored){}});}
     public void done(){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;finishSpeech();});}
     public void failed(String reason,boolean hadAudio){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;journal.add("speech-fallback",diagnosticTurn,DiagnosticJournal.fields("reason",reason,"hadAudio",hadAudio));if(hadAudio)stop(request,"Lecture interrompue. Tu peux réessayer.");else androidSpeech(epoch,0);});}
@@ -290,7 +290,7 @@ public final class ConversationService extends Service {
    if(council!=null)o.put("council",council.snapshot());
    o.put("active",session.active()).put("state",state).put("busy","thinking".equals(state)).put("status",status).put("voice",voiceName);
    JSONArray rows=new JSONArray();for(DialogueMemory.Entry e:memory.entries())rows.put(new JSONObject().put("id",e.id).put("role",e.role).put("text",e.text));o.put("history",rows).put("importedThrough",prefs.getLong("importedThrough",0));
-   JSONArray voices=new JSONArray();voices.put(new JSONObject().put("name","piper-siwis").put("quality",400));if(voiceInitFinished&&tts!=null)for(Voice v:localVoices())voices.put(new JSONObject().put("name",v.getName()).put("quality",v.getQuality()));o.put("voices",voices);
+   JSONArray voices=new JSONArray();voices.put(new JSONObject().put("name","piper-mls").put("quality",400));if(voiceInitFinished&&tts!=null)for(Voice v:localVoices())voices.put(new JSONObject().put("name",v.getName()).put("quality",v.getQuality()));o.put("voices",voices);
    if(prefs.contains("restoredWeb")){o.put("restoredWeb",new JSONObject(prefs.getString("restoredWeb","{}")));o.put("restoreWeights",new JSONObject(prefs.getString("restoredWeights","{}")));o.put("restoreJournal",journal.copy());}
    if(!speechId.isEmpty())o.put("speech",new JSONObject().put("id",speechId).put("text",speechText).put("ageMs",SystemClock.elapsedRealtime()-speechBegan));
   }catch(JSONException ignored){}return o;
@@ -332,7 +332,7 @@ public final class ConversationService extends Service {
   boolean committed=prefs.edit().putString("rollback",rollback.toString()).putString("restoredWeb",web.toString())
    .putString("restoredWeights",root.optJSONObject("weights")==null?"{}":root.optJSONObject("weights").toString()).putString("history",rows.toString()).putString("scene",n.optString("scene","")).putString("mode",nextMode)
    .putBoolean("neural",n.optBoolean("neural",false)).putBoolean("readText",n.optBoolean("readText",false)).putString("voice",n.optString("voice",""))
-   .putBoolean("imported",true).putLong("importedThrough",0).putString("journal",trace.toString()).putString("lastWeb",web.toString()).putString("lastWeights",nextWeights==null?"{}":nextWeights.toString()).putString("council-state",nextCouncil==null?"{}":nextCouncil.getJSONObject("state").toString()).putString("council-params",nextCouncil==null?"{}":nextCouncil.getJSONObject("params").toString()).putString("voiceChoiceV2",n.optString("voice","piper-siwis")).commit();
+   .putBoolean("imported",true).putLong("importedThrough",0).putString("journal",trace.toString()).putString("lastWeb",web.toString()).putString("lastWeights",nextWeights==null?"{}":nextWeights.toString()).putString("council-state",nextCouncil==null?"{}":nextCouncil.getJSONObject("state").toString()).putString("council-params",nextCouncil==null?"{}":nextCouncil.getJSONObject("params").toString()).putString("voiceChoiceV2",n.optString("voice","piper-mls")).commit();
   if(!committed)throw new java.io.IOException("Storage");
   mode=nextMode;economy="eco".equals(mode);neural=n.optBoolean("neural",false);readText=n.optBoolean("readText",false);mood=n.optString("mood","curiosite");
   memory.clear();loadMemory();journal.reload();if(council!=null&&nextCouncil!=null)council.adopt(nextCouncil,nextWeights);selectVoice(n.optString("voice",""));publish();
