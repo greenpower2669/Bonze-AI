@@ -88,3 +88,7 @@ Préflight qualité : PiperPhonetics.speechPhonemes applique le plancher expéri
 - Workflow 40964127638 entièrement réussi : 45 JS, 3 Python, 8 programmes JVM, 51 assertions navigateur, compilation/lint/manifeste/signature, 3 tests Android API 35 hors connexion et publication. Probe vocal 40964127723 vert au même SHA. Capture finale inspectée, visage/légendes/Stop visibles.
 - APK : https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.6.0/Bonze-AI-v0.6.0-debug.apk ; Release : https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.6.0 ; CI : https://github.com/greenpower2669/Bonze-AI/actions/runs/40964127638 .
 - Revue indépendante des changements effectuée. PR #1 en brouillon ; main vérifiée inchangée f5910311f903d8ae4378d62d100129b690fc0e85. Aucun essai physique Samsung ni écoute humaine revendiqués. Archives : sauvegarde.md et docs/history/avenant-0.6-worklog.md.
+
+## Orientation future — mémoire à tiroirs
+
+- `docs/architecture-memoire-a-tiroirs.md` : demande BONZE-030, index local léger, tiroirs contextuels privés, récupération à la demande, provenance/oubli/archives, permissions, migration et tests. **Cible non implémentée en 0.6.0** ; ne pas la confondre avec les tiroirs de l'interface ou les mémoires vivantes du dépôt.
