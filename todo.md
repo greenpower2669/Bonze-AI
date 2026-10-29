@@ -24,6 +24,7 @@
 ## Livraison 0.2.0 micro-MoE / LLM
 - [x] Apprentissage supervisé 8 experts et sélection parcimonieuse top2, tests unitaires.
 - [x] Pont Kotlin pour un modèle de langage local partagé et réutilisé, intégration UI et désactivation manuelle.
-- [ ] Vérifier CI Kotlin/Gradle, téléchargement modèle (SHA-256) et génération de l'APK volumineux.
-- [ ] Installer sur Android 16, mesurer RAM réelle, latence 1re phrase, stabilité, erreurs de transcription et hallucinations.
+- [x] CI Kotlin/Gradle réussie : téléchargement GGUF 153 Mo avec contrôle SHA-256 et production APK debug 0.2.0 dans run #40837391687.
+- [x] Release bonze-ai-v0.2.0-moe avec APK direct vérifié (161 172 983 octets).
+- [ ] Installer sur Samsung Android 16 : confirmer chargement GGUF et vraies réponses, RAM, latence, mode avion, désactivation et écoute vocale.
 - [ ] Audit licences tiers AAR et LiquidAI pour diffusion au-delà de la phase de recherche ; reporter la signature production.
