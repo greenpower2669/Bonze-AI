@@ -21,3 +21,8 @@ Taille 1 169 364 octets. SHA-256 : 08f5780c42003579b2c6b46f711a66936d8d2c1a44748
 - APK 0.2.0 signé debug : pas d'API, aucune permission INTERNET ; reconnaissance vocale de l'OS locale si disponible, et bouton pour désactiver le LLM.
 - Stockage temporaire de la copie GGUF privée de l'app (double espace disque à la première utilisation, amélioration ultérieure souhaitable).
 - Pas de preuve de qualité ou vitesse sur téléphone avant tests physiques ; le modèle peut halluciner malgré le système de consignes. Ne pas stocker de données sensibles.
+
+## 0.3.0 — Interface enfant / malvoyant
+Aucune pression sur Entrée ou Envoyer pour les phrases dictées. Appuyer sur le grand bouton ou le visage pour démarrer la session vocale ; stop identique, arrêt au passage en arrière-plan, refus micro, mémoire saturée ou après 3 silences. Audio Android : createOnDeviceSpeechRecognizer (API31+) et sélection d'une voix TTS française !isNetworkConnectionRequired(). La reconnaissance se suspend pendant la génération et la synthèse vocale pour éviter l'écho.
+Sous-titres très contrastés (police réglable, 3 tailles), visage permanent, clavier facultatif et options en tiroir.
+Si STT/TTS locaux ne sont pas disponibles, Bonze doit dire qu'il ne peut pas converser oralement et conserver le clavier. Pas de commande à la voix quand l'app est en arrière-plan.

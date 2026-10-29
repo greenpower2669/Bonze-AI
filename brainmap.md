@@ -13,3 +13,8 @@ Ne jamais confondre simulateur RAM, conversation scriptée et moteur cognitif ac
 - core/experts.mjs + core/weights/expert-router-v1.json : routeur sparse top2 et 8 experts à poids supervisés, distincts du langage.
 - scripts/train-experts.mjs : entraînement reproductible, 64 exemples, 304 paramètres au total.
 - android/app/src/main/java/fr/bonzeai/companion/BonzeInference.kt : modèle GGUF dense et partagé via llama.cpp Kotlin, poids de 153 Mo embarqués par CI depuis HF et SHA-256 vérifié.
+
+- core/conversation.mjs : anti-doublons et refus d'un transcript vocal après arrêt.
+- docs/ : visage central permanent, sous-titres adaptables, réglages en tiroir bas, mode clavier secondaire, historique et profils hors de l'écran principal ; bouton de discussion tactile sur visage.
+- android MainActivity.java : session conversation à activation explicite ; STT on-device Android, TTS français non réseau quand disponible, alternance de tours, arrêt sur pause et pression mémoire. Interface WebView partagée.
+- tests/conversation.test.mjs : garde-fous du tour de parole et vérification de présence des contrôles accessibles.

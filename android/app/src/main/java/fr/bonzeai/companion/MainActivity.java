@@ -253,7 +253,7 @@ public final class MainActivity extends Activity {
     private void releaseRecognizer() {
         recording = false;
         if (recognizer != null) {
-            try { recognizer.cancel(); recognizer.destroy(); } catch (RuntimeException ignored) {}
+            try { recognizer.destroy(); } catch (RuntimeException ignored) {}
             recognizer = null;
         }
     }
@@ -262,6 +262,7 @@ public final class MainActivity extends Activity {
         handsFreeRequested = false;
         awaitingResponse = false;
         consecutiveNoSpeech = 0;
+        if (recognizer != null) try { recognizer.cancel(); } catch (RuntimeException ignored) {}
         releaseRecognizer();
         if (tts != null && speakingReply) tts.stop();
         speakingReply = false;

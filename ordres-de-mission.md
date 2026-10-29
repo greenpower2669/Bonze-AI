@@ -17,3 +17,5 @@ Des briques existent en prototype, mais aucun ordre global n'est clôturé avant
 - [ ] BONZE-011 : remplacer les seuls scripts par de vrais poids neuronaux locaux, une couche d'experts entraînés et un moteur de langage partagé ; tests et APK distribuable, sans merge main.
 
 BONZE-011 progression : micro-MoE 8 experts/304 poids, LFM2.5-230M GGUF 153 Mo, inférence Kotlin llama.cpp, APK CI et Release produits ; reste tests Android réel et validation par Fab.
+
+- [ ] BONZE-012 : écran fondé sur visage toujours visible, effets corporels des émotions, grandes légendes pour enfant/malvoyant, conversation mains libres à activation unique, envoi automatique des phrases et clavier facultatif. Prototype 0.3 construit ; validation sur appareil et par Fab encore requise.

@@ -39,7 +39,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{
 #native-status{text-align:center}#keyboard-panel{max-height:35dvh;overflow:auto}
 .compose{display:flex;flex-direction:column;gap:8px}.compose label,.settings label{font-weight:800}
 input:not([type=checkbox],[type=range]),textarea,select{width:100%;background:#0c2831;border:2px solid #9abfc5;color:#fff;border-radius:12px;padding:11px;font-size:1.1rem}
-textarea{resize:vertical}.settings{position:absolute;z-index:20;top:56px;left:7px;right:7px;bottom:max(8px,env(safe-area-inset-bottom));overflow:auto;background:#102d39f9;border:2px solid #99cfc2;border-radius:23px;padding:17px 16px 28px;box-shadow:0 0 0 100vmax #06151c70}
+textarea{resize:vertical}.settings{position:absolute;z-index:20;top:auto;left:7px;right:7px;bottom:max(8px,env(safe-area-inset-bottom));max-height:min(57dvh,540px);overflow:auto;background:#102d39f9;border:2px solid #99cfc2;border-radius:23px;padding:17px 16px 28px;box-shadow:0 0 0 100vmax #06151c70}
 .settings[hidden],#keyboard-panel[hidden],#native-mic[hidden]{display:none!important}
 .settings h2{margin:0 0 12px}.settings label{display:block;margin:15px 0 6px}
 .check{display:flex!important;gap:11px;align-items:center;font-weight:650!important}

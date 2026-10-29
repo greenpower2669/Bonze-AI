@@ -23,3 +23,7 @@ Le Service Worker demande HTTPS ou localhost, et une première visite avant fonc
 ## Architecture
 core/ : logique portable. docs/ : WebApp/PWA. android/ : plan de packaging natif. tests/ : vérifications automatisées.
 Branche de développement uniquement ; pas de merge dans main sans validation.
+
+## Prototype 0.3 — expérience vocale accessible
+Écran centré sur le visage de Bonze, sous-titres réglables, état clair écoute/réflexion/parole ; les options et le clavier ne prennent plus la place du personnage.
+La conversation automatique est une session activée par l'humain, réservée à l'APK Android disposant de moteurs STT et TTS strictement locaux. Il faut tester le comportement réel sur appareil. La PWA reste entièrement navigable au clavier, aucune capture vocale Web ne s'active implicitement.

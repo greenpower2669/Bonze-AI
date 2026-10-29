@@ -149,7 +149,7 @@ window.BonzeAIError=reason=>{
   const fallback=answer(pendingInput.text,profile||{});
   finishReply(fallback.text,pendingInput.emotion);
 };
-window.BonzeNativeResult=text=>{handleText(text,session.enabled?"voice":"text");};
+window.BonzeNativeResult=text=>{handleText(text,"voice");};
 window.BonzeNativeStatus=text=>{el("native-status").textContent=String(text).slice(0,400);};
 window.BonzeConversationState=mode=>{
   if(mode==="off"||mode==="indisponible")session.stop();
