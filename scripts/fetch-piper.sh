@@ -17,5 +17,6 @@ tar xf /tmp/bonze-piper-lex.tar.gz -C /tmp/bonze-piper-lex
 cp "$(find /tmp/bonze-piper-lex -name lexicon.txt -print -quit)" android/app/src/main/assets/piper/lexicon.txt
 cp "$(find /tmp/bonze-piper-lex -name NOTICE -print -quit)" android/app/src/main/assets/piper/LEXICON_NOTICE
 # Application names, explicitly authored IPA additions.
-printf '\nbonze\tb ɔ̃ z\nai\ta i\n' >> android/app/src/main/assets/piper/lexicon.txt
+printf '\nbonze\tb ɔ̃ z\n' >> android/app/src/main/assets/piper/lexicon.txt
+python scripts/prepare-piper-lexicon.py
 if find android/app/src/main/assets/piper -iname '*espeak*' | grep -q .; then exit 1; fi

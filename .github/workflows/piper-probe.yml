@@ -24,7 +24,7 @@ jobs:
           root=pathlib.Path('android/app/src/main/assets/piper')
           config=sherpa_onnx.OfflineTtsConfig(model=sherpa_onnx.OfflineTtsModelConfig(vits=sherpa_onnx.OfflineTtsVitsModelConfig(model=str(root/'voice.onnx'),tokens=str(root/'tokens.txt'),lexicon=str(root/'lexicon.txt'),noise_scale=.333,noise_scale_w=.333),num_threads=2))
           tts=sherpa_onnx.OfflineTts(config);begin=time.monotonic()
-          audio=tts.generate('Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?',sherpa_onnx.GenerationConfig(sid=0))
+          audio=tts.generate('Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?',sherpa_onnx.GenerationConfig())
           assert len(audio.samples)>1000 and audio.sample_rate==22050 and max(abs(x) for x in audio.samples)>.01
           sf.write('Bonze-Piper-MLS-francais-essai.wav',audio.samples,audio.sample_rate)
           print('PCM',len(audio.samples),'rate',audio.sample_rate,'generationSeconds',time.monotonic()-begin,'peak',max(abs(x) for x in audio.samples))

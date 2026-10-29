@@ -19,6 +19,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: {distribution: temurin, java-version: '17'}
       - run: node --test tests/*.test.mjs
+      - run: python tests/test_piper_lexicon.py
       - name: Test native session lifecycle without Android services
         run: |
           mkdir -p /tmp/bonze-java
