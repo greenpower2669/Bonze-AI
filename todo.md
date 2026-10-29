@@ -10,7 +10,8 @@
 - [ ] Contrôler l'installation et le fonctionnement PWA sur vrai Android, mode avion inclus.
 - [ ] Mesurer mémoire, précision et latence des moteurs STT français hors ligne et choisir un repli sûr.
 - [x] Ajouter conteneur Android, pont STT local sur appareil, et workflow de construction APK debug (à vérifier en CI).
-- [ ] Vérifier la compilation CI, installation et écoute sur un Android 16 réel ; vérifier la prérelease et son APK direct.
+- [x] Compilation Android CI réussie ; prérelease APK direct vérifiée (workflow 40801461773, SHA-256 publié).
+- [ ] Installer l'APK et tester l'écoute strictement locale sur un Android 16 réel.
 - [ ] Construire et signer AAB de production seulement après validation.
 - [ ] Ajouter identification propriétaire forte, coffre mémoire chiffré et autorisations de missions.
 - [ ] Ajouter mémoire sociale, souvenirs consolidés, répétitions, archivage, tests de correction.

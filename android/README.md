@@ -8,3 +8,7 @@ L'application est un POC : pas de LLM, pas d'authentification forte, pas de mém
 Build : Gradle 8.9, JDK 17, SDK 35 : gradle :androidApp:assembleDebug
 Sortie : android/app/build/outputs/apk/debug/app-debug.apk
 Release : Bonze-AI-v0.1.0-debug.apk, signée debug pour test local, PAS pour Play Store. L'AAB et la signature production restent à faire.
+
+### Livraison vérifiée
+APK compilé dans GitHub Actions #40801461773, publication directe : https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.1.0-poc/Bonze-AI-v0.1.0-debug.apk
+Taille 1 169 364 octets. SHA-256 : 08f5780c42003579b2c6b46f711a66936d8d2c1a44748db6b9082e50650734dd. Essai sur appareil physique encore requis.
