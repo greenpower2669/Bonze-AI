@@ -11,3 +11,5 @@
 - [ ] BONZE-009 : aucun accès Internet ou API imposé, consentement pour aide externe.
 
 Des briques existent en prototype, mais aucun ordre global n'est clôturé avant vérification.
+
+- [ ] BONZE-010 : fabriquer un APK Android installable à partir du noyau commun, tester sa signature debug, la transcription locale et l'absence de cloud ; livrer un lien direct via Release après compilation.

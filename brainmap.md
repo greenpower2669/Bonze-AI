@@ -6,3 +6,6 @@
 - tests/ : vérifications de limites, preuve, microphone, état mémoire.
 - brain.md : fonctionnement souhaité ; ordres-de-mission.md : commandes non perdues ; todo.md : chantier ; debughistorical.md : risques.
 Ne jamais confondre simulateur RAM, conversation scriptée et moteur cognitif achevé.
+
+- android/app/ : coquille Java WebViewAssetLoader, pont SpeechRecognizer strictement local, écoute désactivable, signaux onTrimMemory et icône native.
+- .github/workflows/android-apk.yml : compile et publie un APK debug en prérelease si le workflow réussit.

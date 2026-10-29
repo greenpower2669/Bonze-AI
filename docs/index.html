@@ -21,10 +21,12 @@
 <form id="chat" class="line"><label class="sr" for="message">Ton message</label>
 <input id="message" maxlength="600" autocomplete="off" placeholder="Parle à Bonze…"><button>Envoyer</button></form></section>
 <section class="panel"><h2>Mes ressources</h2>
-<p>Microphone inactif : aucune transcription française locale installée.</p>
+<p>La reconnaissance vocale ne fonctionne que sur Android si un moteur français <strong>strictement embarqué</strong> est disponible. Elle reste désactivée tant que tu n'appuies pas sur le bouton.</p>
+  <button type="button" id="native-mic" hidden>🎙️ Écouter sur mon téléphone</button>
+  <p id="native-status" class="muted" role="status">Écoute désactivée.</p>
 <label for="pressure">Simuler la pression mémoire (pas une mesure du téléphone)</label>
 <select id="pressure"><option value="normal">Normale</option><option value="high">Élevée</option><option value="critical">Critique</option></select><p id="policy" class="muted"></p>
 <label class="check"><input type="checkbox" id="voice"> Lire mes réponses si une voix française locale existe</label>
 <p id="voice-status" class="muted">Voix désactivée.</p></section>
-<footer>Prototype sans LLM, sans microphone et sans mission privilégiée. L'identification sécurisée du propriétaire reste à réaliser.</footer>
+<footer>Prototype sans LLM ni mission privilégiée. Microphone seulement à la demande sur Android, si moteur local disponible. L'identification sécurisée du propriétaire reste à réaliser.</footer>
 </main><script type="module" src="./app.js"></script></body></html>

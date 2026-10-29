@@ -7,9 +7,11 @@
 - [x] Consigner commandes et limites dans les mémoires vivantes.
 
 ## À construire et vérifier
-- [ ] Contrôler installation et fonctionnement PWA sur vrai Android, mode avion inclus.
+- [ ] Contrôler l'installation et le fonctionnement PWA sur vrai Android, mode avion inclus.
 - [ ] Mesurer mémoire, précision et latence des moteurs STT français hors ligne et choisir un repli sûr.
-- [ ] Construire conteneur Android et pont STT, produire APK/AAB et vérifier les tests d'installation.
+- [x] Ajouter conteneur Android, pont STT local sur appareil, et workflow de construction APK debug (à vérifier en CI).
+- [ ] Vérifier la compilation CI, installation et écoute sur un Android 16 réel ; vérifier la prérelease et son APK direct.
+- [ ] Construire et signer AAB de production seulement après validation.
 - [ ] Ajouter identification propriétaire forte, coffre mémoire chiffré et autorisations de missions.
 - [ ] Ajouter mémoire sociale, souvenirs consolidés, répétitions, archivage, tests de correction.
 - [ ] Implémenter compréhension locale plus riche sans inventer de faits, gérer les émotions complexes.

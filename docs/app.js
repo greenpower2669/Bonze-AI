@@ -47,3 +47,36 @@ el("voice").addEventListener("change",()=>{
  if(!speaking&&"speechSynthesis" in window)speechSynthesis.cancel();
 });
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+
+/* Pont Android facultatif : aucune capture dans le navigateur web. */
+const nativeButton=el("native-mic"),nativeStatus=el("native-status");
+let listeningNow=false;
+window.BonzeNativeStatus=message=>{
+  nativeStatus.textContent=String(message).slice(0,250);
+  if(!/écoute en cours|enregistrement/i.test(message))listeningNow=false;
+  nativeButton.textContent=listeningNow?"⏹ Arrêter l'écoute":"🎙️ Écouter sur mon téléphone";
+};
+window.BonzeNativeResult=transcript=>{
+  el("message").value=String(transcript).slice(0,600);
+  el("message").focus();
+  nativeStatus.textContent="Texte reconnu localement. Vérifie-le puis appuie sur Envoyer.";
+  listeningNow=false;
+  nativeButton.textContent="🎙️ Écouter sur mon téléphone";
+};
+window.BonzeMemoryNotice=level=>{
+  nativeStatus.textContent=level==="critical"
+    ?"Android manque de mémoire : utilise le clavier, je ne charge pas de moteur vocal."
+    :"Android signale une pression mémoire : l'écoute peut être moins disponible.";
+};
+if(window.BonzeAndroid){
+  nativeButton.hidden=false;
+  let available=false;
+  try{available=window.BonzeAndroid.localSpeechAvailable()}catch{}
+  nativeButton.disabled=!available;
+  if(!available)nativeStatus.textContent="Reconnaissance 100 % locale indisponible sur ce téléphone. Le clavier reste opérationnel.";
+  nativeButton.addEventListener("click",()=>{
+    if(listeningNow){window.BonzeAndroid.stopLocalSpeech();listeningNow=false;}
+    else{listeningNow=true;window.BonzeAndroid.startLocalSpeech();}
+    nativeButton.textContent=listeningNow?"⏹ Arrêter l'écoute":"🎙️ Écouter sur mon téléphone";
+  });
+}

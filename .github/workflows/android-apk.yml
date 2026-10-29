@@ -1,0 +1,57 @@
+name: Bonze AI Android APK
+on:
+  push:
+    branches:
+      - feature/offline-bonsaiv1
+    paths:
+      - 'android/**'
+      - 'docs/**'
+      - 'core/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/android-apk.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  android-debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Install Android SDK 35
+        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+      - name: Compile installable debug APK
+        run: gradle --no-daemon :androidApp:assembleDebug
+      - name: Rename APK and check output
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk Bonze-AI-v0.1.0-debug.apk
+          test -s Bonze-AI-v0.1.0-debug.apk
+          sha256sum Bonze-AI-v0.1.0-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Bonze-AI-v0.1.0-debug
+          path: Bonze-AI-v0.1.0-debug.apk
+          if-no-files-found: error
+      - name: Publish direct APK in prerelease (not main)
+        if: github.ref == 'refs/heads/feature/offline-bonsaiv1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="bonze-ai-v0.1.0-poc"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" Bonze-AI-v0.1.0-debug.apk --clobber
+          else
+            gh release create "$tag" Bonze-AI-v0.1.0-debug.apk \
+              --target "$GITHUB_SHA" --prerelease \
+              --title "🌱 Bonze AI 0.1.0 · APK expérimental" \
+              --notes "APK de test signé avec la clé debug Android. WebView hors ligne, visage, texte et reconnaissance vocale locale Android 12+ uniquement si moteur on-device disponible. Aucun LLM ou authentification propriétaire. Branche de développement, main inchangée."
+          fi

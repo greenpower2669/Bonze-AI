@@ -8,7 +8,7 @@ Petit bonze qui évolue avec son humain. Prototype 0.1, hors ligne, conçu pour 
 - Tests unitaires ; mémoires de projet selon FAB-Copilot.
 
 ## Non réalisé
-Aucune vraie reconnaissance vocale, aucun LLM, aucune authentification forte du propriétaire et aucun APK/AAB. La pression mémoire affichée est une simulation, non une mesure. Le profil et les 30 derniers messages sont en clair dans le navigateur : ne saisir aucun secret.
+L'APK Android expérimental inclut une écoute locale facultative seulement si le téléphone propose SpeechRecognizer on-device (Android 12+). Aucun LLM, aucune authentification forte du propriétaire et aucun AAB. La pression mémoire affichée est une simulation, non une mesure. Le profil et les 30 derniers messages sont en clair dans le navigateur : ne saisir aucun secret.
 
 ## Tester
 Depuis la racine : python3 -m http.server 8080

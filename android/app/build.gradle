@@ -1,0 +1,24 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'fr.bonzeai.companion'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'fr.bonzeai.companion'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '0.1.0'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    sourceSets.main.assets.srcDirs(layout.buildDirectory.dir('generated/bonzeAssets'))
+}
+dependencies { implementation 'androidx.webkit:webkit:1.12.1' }
+tasks.register('copyBonzeAssets', Copy) {
+    from(rootProject.file('docs')) { into 'docs' }
+    from(rootProject.file('core')) { into 'core' }
+    into(layout.buildDirectory.dir('generated/bonzeAssets'))
+}
+tasks.named('preBuild').configure { dependsOn(tasks.named('copyBonzeAssets')) }
