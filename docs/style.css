@@ -92,3 +92,5 @@ textarea{resize:vertical}.settings{position:absolute;z-index:20;top:auto;left:7p
 @keyframes speaktalk{to{height:calc(var(--smile) + 13px)}}
 @media(max-height:480px){.stage{flex-basis:100px}.face-touch{width:115px}.moodline{font-size:.85rem;min-height:20px}.settings{top:165px}.topbar{min-height:54px}.caption-person p,.caption-bonze p{max-height:2.4em}}
 @media(max-width:360px){.topbar{gap:5px}.brand{font-size:.9rem}.quiet-button,.stop-button{font-size:.85rem;padding:8px}}
+
+.topbar{height:66px;min-height:66px}.brand{min-width:0;line-height:1.1}.stop-button{white-space:nowrap}

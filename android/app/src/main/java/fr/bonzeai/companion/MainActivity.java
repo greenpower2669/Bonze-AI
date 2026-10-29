@@ -95,24 +95,8 @@ public final class MainActivity extends Activity {
             if(foreground&&!destroyed)speakOffline(description,"calme",false);
         }); }
         @JavascriptInterface public void generateLocalReply(String text,String mood,String token) {
-            final long epoch=inferenceEpoch.get();
-            if(!neuralEnabled){inferenceResult("BonzeAIError","Neurones désactivés par toi.",token,epoch);return;}
-            if(memoryWarning){inferenceResult("BonzeAIError","Mémoire chargée : mode léger.",token,epoch);return;}
-            if(!generating.compareAndSet(false,true)){inferenceResult("BonzeAIError","La précédente génération se termine encore.",token,epoch);return;}
-            if(inferenceQueue.isShutdown()){generating.set(false);return;}
-            inferenceQueue.execute(()->{
-                long start=SystemClock.elapsedRealtime(), cpu=SystemClock.currentThreadTimeMillis();
-                String output; boolean failed=false;
-                try {
-                    if(epoch!=inferenceEpoch.get()||!neuralEnabled)return;
-                    output=BonzeInference.reply(getApplicationContext(),text,mood);
-                } catch(Exception|LinkageError error) {
-                    output="Neurones indisponibles : "+error.getClass().getSimpleName()+". Mode léger disponible.";failed=true;
-                } finally { generating.set(false); }
-                lastLatencyMs=SystemClock.elapsedRealtime()-start;
-                lastCpuMs=SystemClock.currentThreadTimeMillis()-cpu;
-                inferenceResult(failed?"BonzeAIError":"BonzeAIResult",output,token,epoch);
-            });
+            // Serialize epoch capture with stopHandsFree/onPause and permission callbacks.
+            runOnUiThread(()->generateReplyOnMain(text,mood,token));
         }
         @JavascriptInterface public void setNeuralEnabled(boolean enabled) {
             neuralEnabled=enabled;
@@ -135,6 +119,27 @@ public final class MainActivity extends Activity {
                 return r.toString();
             }catch(Exception error){return "{}";}
         }
+    }
+    private void generateReplyOnMain(String text,String mood,String token) {
+        if(destroyed||!foreground)return;
+            final long epoch=inferenceEpoch.get();
+            if(!neuralEnabled){inferenceResult("BonzeAIError","Neurones désactivés par toi.",token,epoch);return;}
+            if(memoryWarning){inferenceResult("BonzeAIError","Mémoire chargée : mode léger.",token,epoch);return;}
+            if(!generating.compareAndSet(false,true)){inferenceResult("BonzeAIError","La précédente génération se termine encore.",token,epoch);return;}
+            if(inferenceQueue.isShutdown()){generating.set(false);return;}
+            inferenceQueue.execute(()->{
+                long start=SystemClock.elapsedRealtime(), cpu=SystemClock.currentThreadTimeMillis();
+                String output; boolean failed=false;
+                try {
+                    if(epoch!=inferenceEpoch.get()||!neuralEnabled)return;
+                    output=BonzeInference.reply(getApplicationContext(),text,mood);
+                } catch(Exception|LinkageError error) {
+                    output="Neurones indisponibles : "+error.getClass().getSimpleName()+". Mode léger disponible.";failed=true;
+                } finally { generating.set(false); }
+                lastLatencyMs=SystemClock.elapsedRealtime()-start;
+                lastCpuMs=SystemClock.currentThreadTimeMillis()-cpu;
+                inferenceResult(failed?"BonzeAIError":"BonzeAIResult",output,token,epoch);
+            });
     }
     private void releaseModel() {
         if(!inferenceQueue.isShutdown())inferenceQueue.execute(BonzeInference::release);

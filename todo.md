@@ -63,3 +63,5 @@
 - [ ] Stabiliser durablement la signature de test et préparer clé de production sauvegardée avant distribution stable. Ancienne clé debug absente ; ne pas recommander de désinstaller si données à préserver.
 
 État de reprise : source distante vérifiée 9d7c9d5 ; modifications préparées sur la même branche via commit atomique, aucun merge main. Prochain geste : contrôler la CI du commit de reprise et corriger toute régression avant de donner un lien installable.
+
+Candidat e640023 : JS + JVM validés par CI, navigateur bloqué par incompatibilité runner/outillage. Correctif runner Ubuntu 24.04 et ordre UI stop→génération préparé ; attendre le nouveau run avant Release.
