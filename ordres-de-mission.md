@@ -88,3 +88,9 @@ Livré pour validation, pas clôturé : BONZE-023 corrections d’affichage/disp
 - Workflow 40964127638 entièrement réussi : 45 JS, 3 Python, 8 programmes JVM, 51 assertions navigateur, compilation/lint/manifeste/signature, 3 tests Android API 35 hors connexion et publication. Probe vocal 40964127723 vert au même SHA. Capture finale inspectée, visage/légendes/Stop visibles.
 - APK : https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.6.0/Bonze-AI-v0.6.0-debug.apk ; Release : https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.6.0 ; CI : https://github.com/greenpower2669/Bonze-AI/actions/runs/40964127638 .
 - Revue indépendante des changements effectuée. PR #1 en brouillon ; main vérifiée inchangée f5910311f903d8ae4378d62d100129b690fc0e85. Aucun essai physique Samsung ni écoute humaine revendiqués. Archives : sauvegarde.md et docs/history/avenant-0.6-worklog.md.
+
+## Demande validée Fab — 30 octobre 2026
+
+- [ ] **BONZE-030 — Mémoire à tiroirs autonome, locale et sélective** : s'inspirer de Djipie pour une carte d'index compacte, ouvrir uniquement les tiroirs nécessaires au dialogue et gérer séparément mémoire immédiate, personnelle/sociale, apprentissages, scènes, missions et archives. Chaque souvenir doit porter ses droits, origine, fiabilité et règles de correction/oubli. Aucun chargement intégral systématique, aucune dépendance à GitHub ni au cloud. Préserver l'historique, la personnalité, les identités et l'export `.bonze`, effectuer une migration réversible et mesurer l'impact sur Samsung Android 16. Développer par étapes avec tests de confidentialité et validation Fab avant publication.
+
+Voir `docs/architecture-memoire-a-tiroirs.md`. Il s'agit d'une **mission ouverte**, pas d'une capacité déjà livrée par la version 0.6.0. Aucun merge main.
