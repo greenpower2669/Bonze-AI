@@ -100,7 +100,7 @@ jobs:
             android/app/build/reports/lint-results-debug.html
           if-no-files-found: error
       - name: Publish direct APK in a versioned prerelease
-        if: github.ref == 'refs/heads/feature/offline-bonsaiv1'
+        if: github.ref == 'refs/heads/feature/offline-bonsaiv1' && false # candidate under validation
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

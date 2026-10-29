@@ -101,6 +101,16 @@ try{
  await p.locator('#settings-close').click();await p.locator('#stop-all').click();
  await p.locator('#open-keyboard').click();await p.locator('#message').fill('Je suis le gardien');await p.locator('#send-message').click();
  check(await p.evaluate(()=>calls.filter(c=>c[0]==='text').length===1),'one native text turn');
+ check(!(await p.locator('#answer').textContent()).includes('Je garde Azur'),'old bot answer is not shown as answer to new message');
+ await p.evaluate(()=>{document.getElementById('heard').textContent='Une très longue phrase reconnue. '.repeat(20);document.getElementById('answer').textContent='Une réponse détaillée qui doit rester lisible. '.repeat(20);document.documentElement.style.setProperty('--subtitle','2.15rem');});
+ for(const [width,height] of [[393,852],[320,568],[852,393],[393,640]]){
+  await p.setViewportSize({width,height});
+  const boxes=await p.evaluate(()=>{const box=s=>{const r=document.querySelector(s).getBoundingClientRect();return{top:r.top,bottom:r.bottom};};return{captions:box('.captions'),person:box('.caption-person'),bot:box('.caption-bonze'),button:box('#native-mic')};});
+  check(boxes.captions.bottom<=boxes.button.top+.5,'captions cannot cover microphone control '+width+'x'+height);
+  check(boxes.person.bottom<=boxes.bot.top+.5,'caption cards cannot overlap '+width+'x'+height);
+  check(boxes.bot.bottom<=boxes.captions.bottom+.5,'caption contents fit their reserved row '+width+'x'+height);
+ }
+ await p.setViewportSize({width:393,height:852});
  await p.locator('#stop-all').click();await p.locator('#settings-open').click();await p.locator('#neural').uncheck();
  await p.reload();await p.waitForSelector('#avatar-fields select',{state:'attached'});
  check(await p.evaluate(()=>calls.some(c=>c[0]==='configure'&&c[1].neural===false)),'neural disable persisted');

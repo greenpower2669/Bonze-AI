@@ -1,3 +1,4 @@
+import {captionPair} from '../core/captions.mjs';
 import {answer,listening} from '../core/bonze.mjs';
 import {inferExperts} from '../core/experts.mjs';
 import {createConversationSession} from '../core/conversation.mjs';
@@ -139,8 +140,10 @@ function applyNativeHistory(rows){
   identity={...identity,acquired:experience(identity,stimulus,'exchange',{familiar:history.length>0})};lastNativeHumanId=Math.max(lastNativeHumanId,row.id);
  }
  history=valid.map(r=>({role:r.role,text:r.text}));showHistory();
- const human=valid.filter(r=>r.role==='human').at(-1),bot=valid.filter(r=>r.role==='bot').at(-1);
- if(human)el('heard').textContent=human.text;if(bot)el('answer').textContent=bot.text;save();
+ const captions=captionPair(valid);
+ if(captions.heard)el('heard').textContent=captions.heard;
+ el('answer').textContent=captions.pending?'Je prépare ma réponse…':captions.answer||'Coucou ! Tu peux me parler ou utiliser le clavier.';
+ el('answer').setAttribute('aria-busy',String(captions.pending));save();
 }
 window.BonzeNativeEvent=e=>{
  if(!nativeView.accept(e))return;

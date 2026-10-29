@@ -17,7 +17,7 @@ jobs:
           git -C /tmp/llama checkout 2da668617612d2df773f966e3b0ee22dc2beef7b
           cmake -S /tmp/llama -B /tmp/llama/build -DBUILD_SHARED_LIBS=OFF -DGGML_NATIVE=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=OFF -DLLAMA_BUILD_TOOLS=OFF -DLLAMA_CURL=OFF
           cmake --build /tmp/llama/build --target llama -j 4
-          c++ -std=c++17 -I/tmp/llama/include -I/tmp/llama/ggml/include .github/probes/dialogue.cpp /tmp/llama/build/src/libllama.a /tmp/llama/build/ggml/src/libggml.a /tmp/llama/build/ggml/src/ggml-cpu/libggml-cpu.a /tmp/llama/build/ggml/src/libggml-base.a -fopenmp -lpthread -ldl -o /tmp/bonze-probe
+          c++ -std=c++17 -I/tmp/llama/include -I/tmp/llama/ggml/include .github/probes/dialogue.cpp /tmp/llama/build/src/libllama.a /tmp/llama/build/ggml/src/libggml.a /tmp/llama/build/ggml/src/libggml-cpu.a /tmp/llama/build/ggml/src/libggml-base.a -fopenmp -lpthread -ldl -o /tmp/bonze-probe
       - name: Compare real generations on the packaged weights
         run: |
           curl -fL --retry 3 https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LFM2.5-230M-Q4_K_M.gguf -o /tmp/model.gguf

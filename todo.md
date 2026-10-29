@@ -109,3 +109,5 @@ Prochain geste : essai humain Samsung avec conversation lancée avant verrouilla
 - [ ] Vérifications CI/APK/signature identique0.5 et essai Samsung. Aucun merge main.
 
 État : reprise au commit c271d31 ;35 tests JS de base verts. Revue parallèle Piper indisponible (quota de l'agent) ; recherche poursuivie par l'agent principal. Ne pas déclarer ces missions réalisées.
+
+Affichage périmé : correction locale et2tests verts ; génération répétée encore en investigation. Test navigateur de chevauchement en attente. Aucun nouvel APK publié.
