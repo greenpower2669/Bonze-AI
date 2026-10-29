@@ -141,3 +141,88 @@ Comparaison 40959770234 : les mêmes poids MLS deviennent compréhensibles avec 
 
 Probe 40960582870 : avec les mêmes phonèmes de dictionnaire, l’entrée directe codepoints est bien plus intelligible que le frontend texte-lexique (ASR retrouve « je suis ton petit compagnon ... tu veux jouer ... avec moi »). PiperPhonetics prépare désormais l’IPA complet de chaque segment avant tout son ; génération via GenerationConfig.phonemeCodepoints, sans frontend texte ni phonémiseur externe. Tests : nasales combinées, frontières de mots, chiffres/inconnus refusés avant parole. Nouvelle surcharge callback à revérifier réellement sur Android ; transcription de trois phrases du chemin exact en cours.
 
+
+## ordres-de-mission.md — dernières expériences de voix avant publication 0.6
+
+Provenance : 29/10/2026, comparaisons locuteur/ponctuation/accent final/plancher. Remplacées dans la mémoire active par la décision et les preuves finales, sans perte.
+
+Contrôle vocal final 40962604934 : les phrases 0 (petit compagnon/jouer) et 2 (calme/content/histoire) sont reconnues, mais « Bonjour mon ami. Comment vas tu ? » reste déformée ; garde de publication refuse donc le candidat. Comparaison isolée de six locuteurs MLS avec les mêmes phonèmes et trois phrases avant toute décision ; écoute humaine toujours ouverte.
+
+Comparaison 40962855376 : les six locuteurs échouent sur la même courte question ; changer de timbre ne résout donc pas le défaut. Lecture du code sherpa v2.0.1 : le frontend Piper conserve la ponctuation, notre entrée directe l’écarte. Prochain essai isolé : mêmes phonèmes/locuteur 0 avec ou sans ponctuation, sans changement des poids ni du débit.
+
+Probe 40963191015 : conserver la ponctuation seule ne résout pas la courte question. Dernière isolation phonétique ciblée : fonction grammaticale finale « tu » encore sans accent dans le dictionnaire, contrairement à la référence française ; comparer seulement l’accent final. Si instable, refuser ces segments courts avant lecture et employer Android de secours avec trace explicite, sans prétendre à une couverture Piper complète.
+
+Décision de livraison expérimentale : accent final 40963431262 améliore certains mots mais la courte question reste dégradée. Ne pas abaisser les exigences ni annoncer une qualité résolue. PiperPhonetics.speechPhonemes refuse les segments de moins de32codepoints phonétiques non blancs, seuil conservateur issu des essais (pas garantie de qualité), puis Android prend le relais avant tout son. Réponses voisines regroupées pour garder Piper quand possible. JVM et Android vérifient ce refus explicite ; trois phrases plus longues sont synthétisées/transcrites séparément. Couverture, timbre de secours et écoute humaine restent ouverts. Le filtre du probe suit désormais les mêmes chemins que le build Android.
+
+Régression de seuil trouvée par CI 40963789123 et revue : le plancher initial48 refusait aussi la phrase longue pourtant intelligible (43codepoints environ). Plancher conservateur corrigé à32 pour séparer le cas court dégradé (~25) des cas validés (~43–48), comptages réels désormais imprimés par le probe. Seuil expérimental, aucune garantie acoustique générale ; tests à relancer avant publication.
+
+Régression JVM complémentaire : le vrai petit lexique de « Je suis calme et content. Tu peux me raconter une histoire ? » doit rester accepté par Piper ; protège contre le plancher48 trop strict. Aucun changement supplémentaire du runtime.
+
+
+## todo.md — dernières expériences de voix avant publication 0.6
+
+Provenance : 29/10/2026, comparaisons locuteur/ponctuation/accent final/plancher. Remplacées dans la mémoire active par la décision et les preuves finales, sans perte.
+
+Contrôle vocal final 40962604934 : les phrases 0 (petit compagnon/jouer) et 2 (calme/content/histoire) sont reconnues, mais « Bonjour mon ami. Comment vas tu ? » reste déformée ; garde de publication refuse donc le candidat. Comparaison isolée de six locuteurs MLS avec les mêmes phonèmes et trois phrases avant toute décision ; écoute humaine toujours ouverte.
+
+Comparaison 40962855376 : les six locuteurs échouent sur la même courte question ; changer de timbre ne résout donc pas le défaut. Lecture du code sherpa v2.0.1 : le frontend Piper conserve la ponctuation, notre entrée directe l’écarte. Prochain essai isolé : mêmes phonèmes/locuteur 0 avec ou sans ponctuation, sans changement des poids ni du débit.
+
+Probe 40963191015 : conserver la ponctuation seule ne résout pas la courte question. Dernière isolation phonétique ciblée : fonction grammaticale finale « tu » encore sans accent dans le dictionnaire, contrairement à la référence française ; comparer seulement l’accent final. Si instable, refuser ces segments courts avant lecture et employer Android de secours avec trace explicite, sans prétendre à une couverture Piper complète.
+
+Décision de livraison expérimentale : accent final 40963431262 améliore certains mots mais la courte question reste dégradée. Ne pas abaisser les exigences ni annoncer une qualité résolue. PiperPhonetics.speechPhonemes refuse les segments de moins de32codepoints phonétiques non blancs, seuil conservateur issu des essais (pas garantie de qualité), puis Android prend le relais avant tout son. Réponses voisines regroupées pour garder Piper quand possible. JVM et Android vérifient ce refus explicite ; trois phrases plus longues sont synthétisées/transcrites séparément. Couverture, timbre de secours et écoute humaine restent ouverts. Le filtre du probe suit désormais les mêmes chemins que le build Android.
+
+Régression de seuil trouvée par CI 40963789123 et revue : le plancher initial48 refusait aussi la phrase longue pourtant intelligible (43codepoints environ). Plancher conservateur corrigé à32 pour séparer le cas court dégradé (~25) des cas validés (~43–48), comptages réels désormais imprimés par le probe. Seuil expérimental, aucune garantie acoustique générale ; tests à relancer avant publication.
+
+Régression JVM complémentaire : le vrai petit lexique de « Je suis calme et content. Tu peux me raconter une histoire ? » doit rester accepté par Piper ; protège contre le plancher48 trop strict. Aucun changement supplémentaire du runtime.
+
+
+## brain.md — dernières expériences de voix avant publication 0.6
+
+Provenance : 29/10/2026, comparaisons locuteur/ponctuation/accent final/plancher. Remplacées dans la mémoire active par la décision et les preuves finales, sans perte.
+
+Contrôle vocal final 40962604934 : les phrases 0 (petit compagnon/jouer) et 2 (calme/content/histoire) sont reconnues, mais « Bonjour mon ami. Comment vas tu ? » reste déformée ; garde de publication refuse donc le candidat. Comparaison isolée de six locuteurs MLS avec les mêmes phonèmes et trois phrases avant toute décision ; écoute humaine toujours ouverte.
+
+Comparaison 40962855376 : les six locuteurs échouent sur la même courte question ; changer de timbre ne résout donc pas le défaut. Lecture du code sherpa v2.0.1 : le frontend Piper conserve la ponctuation, notre entrée directe l’écarte. Prochain essai isolé : mêmes phonèmes/locuteur 0 avec ou sans ponctuation, sans changement des poids ni du débit.
+
+Probe 40963191015 : conserver la ponctuation seule ne résout pas la courte question. Dernière isolation phonétique ciblée : fonction grammaticale finale « tu » encore sans accent dans le dictionnaire, contrairement à la référence française ; comparer seulement l’accent final. Si instable, refuser ces segments courts avant lecture et employer Android de secours avec trace explicite, sans prétendre à une couverture Piper complète.
+
+Décision de livraison expérimentale : accent final 40963431262 améliore certains mots mais la courte question reste dégradée. Ne pas abaisser les exigences ni annoncer une qualité résolue. PiperPhonetics.speechPhonemes refuse les segments de moins de32codepoints phonétiques non blancs, seuil conservateur issu des essais (pas garantie de qualité), puis Android prend le relais avant tout son. Réponses voisines regroupées pour garder Piper quand possible. JVM et Android vérifient ce refus explicite ; trois phrases plus longues sont synthétisées/transcrites séparément. Couverture, timbre de secours et écoute humaine restent ouverts. Le filtre du probe suit désormais les mêmes chemins que le build Android.
+
+Régression de seuil trouvée par CI 40963789123 et revue : le plancher initial48 refusait aussi la phrase longue pourtant intelligible (43codepoints environ). Plancher conservateur corrigé à32 pour séparer le cas court dégradé (~25) des cas validés (~43–48), comptages réels désormais imprimés par le probe. Seuil expérimental, aucune garantie acoustique générale ; tests à relancer avant publication.
+
+Régression JVM complémentaire : le vrai petit lexique de « Je suis calme et content. Tu peux me raconter une histoire ? » doit rester accepté par Piper ; protège contre le plancher48 trop strict. Aucun changement supplémentaire du runtime.
+
+
+## brainmap.md — dernières expériences de voix avant publication 0.6
+
+Provenance : 29/10/2026, comparaisons locuteur/ponctuation/accent final/plancher. Remplacées dans la mémoire active par la décision et les preuves finales, sans perte.
+
+Contrôle vocal final 40962604934 : les phrases 0 (petit compagnon/jouer) et 2 (calme/content/histoire) sont reconnues, mais « Bonjour mon ami. Comment vas tu ? » reste déformée ; garde de publication refuse donc le candidat. Comparaison isolée de six locuteurs MLS avec les mêmes phonèmes et trois phrases avant toute décision ; écoute humaine toujours ouverte.
+
+Comparaison 40962855376 : les six locuteurs échouent sur la même courte question ; changer de timbre ne résout donc pas le défaut. Lecture du code sherpa v2.0.1 : le frontend Piper conserve la ponctuation, notre entrée directe l’écarte. Prochain essai isolé : mêmes phonèmes/locuteur 0 avec ou sans ponctuation, sans changement des poids ni du débit.
+
+Probe 40963191015 : conserver la ponctuation seule ne résout pas la courte question. Dernière isolation phonétique ciblée : fonction grammaticale finale « tu » encore sans accent dans le dictionnaire, contrairement à la référence française ; comparer seulement l’accent final. Si instable, refuser ces segments courts avant lecture et employer Android de secours avec trace explicite, sans prétendre à une couverture Piper complète.
+
+Décision de livraison expérimentale : accent final 40963431262 améliore certains mots mais la courte question reste dégradée. Ne pas abaisser les exigences ni annoncer une qualité résolue. PiperPhonetics.speechPhonemes refuse les segments de moins de32codepoints phonétiques non blancs, seuil conservateur issu des essais (pas garantie de qualité), puis Android prend le relais avant tout son. Réponses voisines regroupées pour garder Piper quand possible. JVM et Android vérifient ce refus explicite ; trois phrases plus longues sont synthétisées/transcrites séparément. Couverture, timbre de secours et écoute humaine restent ouverts. Le filtre du probe suit désormais les mêmes chemins que le build Android.
+
+Régression de seuil trouvée par CI 40963789123 et revue : le plancher initial48 refusait aussi la phrase longue pourtant intelligible (43codepoints environ). Plancher conservateur corrigé à32 pour séparer le cas court dégradé (~25) des cas validés (~43–48), comptages réels désormais imprimés par le probe. Seuil expérimental, aucune garantie acoustique générale ; tests à relancer avant publication.
+
+Régression JVM complémentaire : le vrai petit lexique de « Je suis calme et content. Tu peux me raconter une histoire ? » doit rester accepté par Piper ; protège contre le plancher48 trop strict. Aucun changement supplémentaire du runtime.
+
+
+## debughistorical.md — dernières expériences de voix avant publication 0.6
+
+Provenance : 29/10/2026, comparaisons locuteur/ponctuation/accent final/plancher. Remplacées dans la mémoire active par la décision et les preuves finales, sans perte.
+
+Contrôle vocal final 40962604934 : les phrases 0 (petit compagnon/jouer) et 2 (calme/content/histoire) sont reconnues, mais « Bonjour mon ami. Comment vas tu ? » reste déformée ; garde de publication refuse donc le candidat. Comparaison isolée de six locuteurs MLS avec les mêmes phonèmes et trois phrases avant toute décision ; écoute humaine toujours ouverte.
+
+Comparaison 40962855376 : les six locuteurs échouent sur la même courte question ; changer de timbre ne résout donc pas le défaut. Lecture du code sherpa v2.0.1 : le frontend Piper conserve la ponctuation, notre entrée directe l’écarte. Prochain essai isolé : mêmes phonèmes/locuteur 0 avec ou sans ponctuation, sans changement des poids ni du débit.
+
+Probe 40963191015 : conserver la ponctuation seule ne résout pas la courte question. Dernière isolation phonétique ciblée : fonction grammaticale finale « tu » encore sans accent dans le dictionnaire, contrairement à la référence française ; comparer seulement l’accent final. Si instable, refuser ces segments courts avant lecture et employer Android de secours avec trace explicite, sans prétendre à une couverture Piper complète.
+
+Décision de livraison expérimentale : accent final 40963431262 améliore certains mots mais la courte question reste dégradée. Ne pas abaisser les exigences ni annoncer une qualité résolue. PiperPhonetics.speechPhonemes refuse les segments de moins de32codepoints phonétiques non blancs, seuil conservateur issu des essais (pas garantie de qualité), puis Android prend le relais avant tout son. Réponses voisines regroupées pour garder Piper quand possible. JVM et Android vérifient ce refus explicite ; trois phrases plus longues sont synthétisées/transcrites séparément. Couverture, timbre de secours et écoute humaine restent ouverts. Le filtre du probe suit désormais les mêmes chemins que le build Android.
+
+Régression de seuil trouvée par CI 40963789123 et revue : le plancher initial48 refusait aussi la phrase longue pourtant intelligible (43codepoints environ). Plancher conservateur corrigé à32 pour séparer le cas court dégradé (~25) des cas validés (~43–48), comptages réels désormais imprimés par le probe. Seuil expérimental, aucune garantie acoustique générale ; tests à relancer avant publication.
+
+Régression JVM complémentaire : le vrai petit lexique de « Je suis calme et content. Tu peux me raconter une histoire ? » doit rester accepté par Piper ; protège contre le plancher48 trop strict. Aucun changement supplémentaire du runtime.
+

@@ -1,8 +1,8 @@
 # TODO Bonze AI
 
-## État courant — candidat 0.6.0, prérelease en validation
+## État courant — 0.6.0 publiée pour essai
 
-La dernière version publiée demeure 0.5.0 (ff04ec4, CI #40868793495) tant que la publication 0.6 n’est pas vérifiée. Le service de conversation, le contexte, le visage et la parole sont produits pour essai sur Samsung. Restent prioritaires : veille physique, qualité du dialogue/voix, conservation des données face au changement de signature, puis Piper et MoE linguistique. Aucun merge main.
+Prérelease 0.6.0 et APK direct vérifiés, commit 14757d3, run 40964127638. Suite : écoute et veille Samsung, amélioration du français neuronal et du phonémiseur, puis vrai MoE et mémoires/permissions familiales. Aucun merge main.
 
 ## Démonstrateur initial
 - [x] Branche de développement séparée de main.
@@ -103,8 +103,8 @@ Prochain geste : essai humain Samsung avec conversation lancée avant verrouilla
 - [x] Ancienne réponse au nouveau tour, disposition, conseil partagé/endurance/arbitrage, console authentifiée et sauvegarde chiffrée implémentés avec régressions et revue indépendante.
 - [x] Piper MLS medium locuteur 0 intégré ; trois tests Android hors connexion passent dans 40961214052 (PCM/Stop, conseil persistant, restauration/retour arrière). Certificat de livraison identique 0.5 contrôlé par CI.
 - [x] Chemin IPA direct et dictionnaire compatible ; conserver les réponses courtes ensemble pour éviter la dégradation des segments trop courts. Régression SpeechPlan ajoutée.
-- [ ] Valider le commit final : 45 JS, 3 Python, 8 programmes JVM, 51 assertions navigateur, APK/lint/signature, trois tests Android et transcription indépendante de trois phrases.
-- [ ] Publier et vérifier la prérelease 0.6.0 avec APK direct, SHA et certificat ; mettre à jour PR/mémoires sans merge main.
+- [x] Valider le commit final14757d3 / run 40964127638 : 45 JS, 3 Python, 8 programmes JVM, 51 assertions navigateur, APK/lint/signature, trois tests Android et transcription indépendante de trois phrases.
+- [x] Publier et vérifier la prérelease 0.6.0 avec APK direct, SHA et certificat ; mettre à jour PR/mémoires sans merge main.
 - [ ] Essai Samsung de Fab : écoute Piper face à Android, intelligibilité/naturel, latence/RAM/CPU, TalkBack, veille/notification/casque/écho. BONZE-029 reste ouvert jusqu’à cette écoute.
 - [ ] Améliorer la qualité française/jeu de rôle du 230M par comparaison mesurable de modèles/runtime/quantification. Défauts de flux prouvés corrigés ; qualité du modèle toujours limitée.
 - [ ] Étendre la phonémisation (noms/nombres/élisions), réduire le secours Android.
@@ -113,14 +113,11 @@ Prochain geste : essai humain Samsung avec conversation lancée avant verrouilla
 
 Publication conditionnée aux tests Android et au probe vocal vert au même SHA. Pas de prétention à une écoute humaine ni à des mesures Samsung. Notes intermédiaires archivées dans sauvegarde.md et docs/history/avenant-0.6-worklog.md.
 
-Contrôle vocal final 40962604934 : les phrases 0 (petit compagnon/jouer) et 2 (calme/content/histoire) sont reconnues, mais « Bonjour mon ami. Comment vas tu ? » reste déformée ; garde de publication refuse donc le candidat. Comparaison isolée de six locuteurs MLS avec les mêmes phonèmes et trois phrases avant toute décision ; écoute humaine toujours ouverte.
+Prochain geste humain : installer en mise à jour de0.5, Options → « MLS · ma voix Piper locale » → phrase d’essai, comparer Android ; conversation activée avant verrouillage, Stop notification puis confirmer absence de reprise. Ne pas désinstaller pour contourner une signature. Mesures Samsung/TalkBack/écho et écoute nécessaires ; aucune promesse de poursuite en arrière-plan par l’agent.
 
-Comparaison 40962855376 : les six locuteurs échouent sur la même courte question ; changer de timbre ne résout donc pas le défaut. Lecture du code sherpa v2.0.1 : le frontend Piper conserve la ponctuation, notre entrée directe l’écarte. Prochain essai isolé : mêmes phonèmes/locuteur 0 avec ou sans ponctuation, sans changement des poids ni du débit.
-
-Probe 40963191015 : conserver la ponctuation seule ne résout pas la courte question. Dernière isolation phonétique ciblée : fonction grammaticale finale « tu » encore sans accent dans le dictionnaire, contrairement à la référence française ; comparer seulement l’accent final. Si instable, refuser ces segments courts avant lecture et employer Android de secours avec trace explicite, sans prétendre à une couverture Piper complète.
-
-Décision de livraison expérimentale : accent final 40963431262 améliore certains mots mais la courte question reste dégradée. Ne pas abaisser les exigences ni annoncer une qualité résolue. PiperPhonetics.speechPhonemes refuse les segments de moins de32codepoints phonétiques non blancs, seuil conservateur issu des essais (pas garantie de qualité), puis Android prend le relais avant tout son. Réponses voisines regroupées pour garder Piper quand possible. JVM et Android vérifient ce refus explicite ; trois phrases plus longues sont synthétisées/transcrites séparément. Couverture, timbre de secours et écoute humaine restent ouverts. Le filtre du probe suit désormais les mêmes chemins que le build Android.
-
-Régression de seuil trouvée par CI 40963789123 et revue : le plancher initial48 refusait aussi la phrase longue pourtant intelligible (43codepoints environ). Plancher conservateur corrigé à32 pour séparer le cas court dégradé (~25) des cas validés (~43–48), comptages réels désormais imprimés par le probe. Seuil expérimental, aucune garantie acoustique générale ; tests à relancer avant publication.
-
-Régression JVM complémentaire : le vrai petit lexique de « Je suis calme et content. Tu peux me raconter une histoire ? » doit rester accepté par Piper ; protège contre le plancher48 trop strict. Aucun changement supplémentaire du runtime.
+### Preuves de livraison 0.6.0 — 29 octobre 2026
+- Tag bonze-ai-v0.6.0 au commit 14757d3ba01c13d6774b82459f04b3b0a499c6a7 ; prérelease publiée, APK direct : 271 170 701 octets.
+- SHA-256 APK : 657689ccf72068343c6c6d6f086e75e24c17516c5db86a8752ea0378e95bb8a0. Certificat 128b1bb0d488f33dd9075888ee15d6ff943136d657018026d1e0b22d9c35991d, identique à 0.5 ; clé toujours en cache de test, sauvegarde privée durable ouverte.
+- Workflow 40964127638 entièrement réussi : 45 JS, 3 Python, 8 programmes JVM, 51 assertions navigateur, compilation/lint/manifeste/signature, 3 tests Android API 35 hors connexion et publication. Probe vocal 40964127723 vert au même SHA. Capture finale inspectée, visage/légendes/Stop visibles.
+- APK : https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.6.0/Bonze-AI-v0.6.0-debug.apk ; Release : https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.6.0 ; CI : https://github.com/greenpower2669/Bonze-AI/actions/runs/40964127638 .
+- Revue indépendante des changements effectuée. PR #1 en brouillon ; main vérifiée inchangée f5910311f903d8ae4378d62d100129b690fc0e85. Aucun essai physique Samsung ni écoute humaine revendiqués. Archives : sauvegarde.md et docs/history/avenant-0.6-worklog.md.
