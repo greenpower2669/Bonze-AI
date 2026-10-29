@@ -260,11 +260,11 @@ public final class ConversationService extends Service {
   if(!acquireFocus()){stop(request,"Son indisponible pour le moment.");return;}
   releaseRecognizer(true);if(conversation)session.talking();speechConversation=conversation;
   speechChunks=SpeechPlan.chunks(text);if(speechChunks.isEmpty()){stop(request,"Lecture vide.");return;}
-  speechPrefix="BONZE_"+(++speechSerial)+"_";final String prefix=speechPrefix;
+  speechPrefix="BONZE_"+(++speechSerial)+"_";final String prefix=speechPrefix;final long voiceBegan=SystemClock.elapsedRealtime();
   if("piper-siwis".equals(voiceName)){
    speechEngine="piper-siwis";setState("waiting","Je prépare ma voix locale.");
    piper.speak(speechChunks,prefix,"calme".equals(mood)?.94f:"joie".equals(mood)?1.02f:.98f,new PiperVoice.Events(){
-    public void start(String id,String content){main.post(()->{if(epoch!=workEpoch||!validSpeech(id))return;speechId=id;speechText=content;speechBegan=SystemClock.elapsedRealtime();journal.add("speech",diagnosticTurn,DiagnosticJournal.fields("engine","piper-siwis","text",content,"id",id));setState("speaking","Je te réponds.");speechEvent("speech-start",id,0,0);});}
+    public void start(String id,String content){main.post(()->{if(epoch!=workEpoch||!validSpeech(id))return;speechId=id;speechText=content;speechBegan=SystemClock.elapsedRealtime();journal.add("speech",diagnosticTurn,DiagnosticJournal.fields("engine","piper-siwis","text",content,"id",id,"firstAudioLatencyMs",SystemClock.elapsedRealtime()-voiceBegan));setState("speaking","Je te réponds.");speechEvent("speech-start",id,0,0);});}
     public void level(String id,double value,int frame){main.post(()->{if(epoch!=workEpoch||!validSpeech(id)||listener==null)return;JSONObject e=base("speech-level");try{e.put("id",id).put("level",value).put("frame",frame);listener.onEvent(e.toString());}catch(JSONException ignored){}});}
     public void done(){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;finishSpeech();});}
     public void failed(String reason,boolean hadAudio){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;journal.add("speech-fallback",diagnosticTurn,DiagnosticJournal.fields("reason",reason,"hadAudio",hadAudio));if(hadAudio)stop(request,"Lecture interrompue. Tu peux réessayer.");else androidSpeech(epoch,0);});}

@@ -27,6 +27,8 @@ jobs:
           java -cp /tmp/bonze-java DialogueMemoryTest
           java -cp /tmp/bonze-java SpeechPlanTest
           javac -d /tmp/bonze-java android/app/src/main/java/fr/bonzeai/companion/AdminGate.java tests/AdminGateTest.java
+          javac -d /tmp/bonze-java android/app/src/main/java/fr/bonzeai/companion/PendingDocument.java tests/PendingDocumentTest.java
+          java -cp /tmp/bonze-java PendingDocumentTest
           java -cp /tmp/bonze-java AdminGateTest
           java -cp /tmp/bonze-java PendingStartTest
       - name: Install browser for integration checks
@@ -90,6 +92,7 @@ jobs:
           grep -q "name='fr.bonzeai.companion'" package.txt
           grep -q "versionName='0.6.0'" package.txt
           "${ANDROID_HOME}/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK" | tee signature.txt
+          grep -qi '128b1bb0d488f33dd9075888ee15d6ff943136d657018026d1e0b22d9c35991d' signature.txt
           cp "$APK" Bonze-AI-v0.6.0-debug.apk
           sha256sum Bonze-AI-v0.6.0-debug.apk | tee Bonze-AI-v0.6.0.sha256
       - uses: actions/upload-artifact@v4
@@ -132,7 +135,12 @@ jobs:
         with: {gradle-version: '8.9'}
       - run: bash scripts/fetch-piper.sh
       - name: Build x86 test APKs (same speech/controller source)
-        run: gradle --no-daemon -PbonzeTestAbi=x86_64 :androidApp:assembleDebug :androidApp:assembleDebugAndroidTest
+        env:
+          ANDROID_USER_HOME: ${{ runner.temp }}/bonze-emulator-key
+        run: |
+          mkdir -p "$ANDROID_USER_HOME"
+          keytool -genkeypair -keystore "$ANDROID_USER_HOME/debug.keystore" -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 100 -dname "CN=Bonze Emulator Test,O=Bonze,C=FR"
+          gradle --no-daemon -PbonzeTestAbi=x86_64 :androidApp:assembleDebug :androidApp:assembleDebugAndroidTest
       - name: Enable hardware virtualization
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules

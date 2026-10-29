@@ -56,6 +56,18 @@ try{
  await page.evaluate(async()=>{await navigator.serviceWorker.ready;});
  await context.setOffline(true);await page.reload();await page.waitForSelector('#avatar-fields select',{state:'attached'});
  check(await page.locator('#face').isVisible(),'PWA offline reload');await context.setOffline(false);
+ await page.locator('#settings-open').click();await page.locator('#backup-panel summary').click();
+ const beforeBackup=await page.evaluate(()=>JSON.parse(localStorage.getItem('bonze-proto-01')));
+ await page.locator('#backup-password').fill('une phrase secrète de test');
+ const downloadPromise=page.waitForEvent('download');await page.locator('#backup-export').click();const download=await downloadPromise;
+ const encrypted=await readFile(await download.path());check(!encrypted.toString().includes(beforeBackup.identity.seed),'download is encrypted');
+ await page.locator('#backup-password').fill('une autre phrase incorrecte');await page.locator('#backup-file').setInputFiles({name:'essai.bonze',mimeType:'application/octet-stream',buffer:encrypted});
+ await page.waitForFunction(()=>document.getElementById('backup-status').textContent.includes('incorrecte'));
+ check(await page.locator('#backup-restore').isHidden(),'wrong password cannot enable restoration');
+ await page.locator('#backup-password').fill('une phrase secrète de test');await page.locator('#backup-file').setInputFiles({name:'essai.bonze',mimeType:'application/octet-stream',buffer:encrypted});
+ await page.waitForSelector('#backup-restore',{state:'visible'});await page.locator('#backup-restore').click();await page.waitForSelector('#avatar-fields select',{state:'attached'});
+ check(await page.evaluate(seed=>JSON.parse(localStorage.getItem('bonze-proto-01')).identity.seed===seed,beforeBackup.identity.seed),'backup restores exact identity');
+ check(await page.evaluate(()=>Array.isArray(JSON.parse(localStorage.getItem('bonze-diagnostics')))&&JSON.parse(localStorage.getItem('bonze-diagnostics')).length>0),'actual council traces survive backup and reload');
  check(errors.length===0,'no browser exceptions: '+errors.join(','));await context.close();
 
  const native=await browser.newContext({viewport:{width:393,height:852}});
@@ -120,3 +132,4 @@ try{
  await native.close();
  console.log(checks+' browser assertions passed');
 }catch(error){const p=browser.contexts().at(-1)?.pages().at(-1);if(p)await p.screenshot({path:process.env.BONZE_SCREENSHOT||'/tmp/bonze-v050.png'});throw error;}finally{await browser.close();server.closeAllConnections();server.close();}
+
