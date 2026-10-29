@@ -37,7 +37,9 @@ jobs:
         run: gradle --no-daemon :androidApp:assembleDebug
       - name: Rename APK and check output
         run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk Bonze-AI-v0.1.0-debug.apk
+          APK="$(find android/app/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' -print -quit)"
+          test -n "$APK"
+          cp "$APK" Bonze-AI-v0.1.0-debug.apk
           test -s Bonze-AI-v0.1.0-debug.apk
           sha256sum Bonze-AI-v0.1.0-debug.apk
       - uses: actions/upload-artifact@v4
