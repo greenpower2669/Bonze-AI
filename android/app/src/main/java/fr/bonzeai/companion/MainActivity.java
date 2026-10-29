@@ -15,6 +15,7 @@ public final class MainActivity extends Activity {
  private static final int MIC_PERMISSION=411;
  private WebView web;private volatile ConversationService engine;
  private boolean visible,uiReady,bound,destroyed;
+ private BackupBridge backups;
  private final PendingStart pendingStart=new PendingStart();
  private String bootstrap="{}",configuration="{}";
  private final List<Runnable> pending=new ArrayList<>();
@@ -41,12 +42,14 @@ public final class MainActivity extends Activity {
    }
    @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){return !r.getUrl().toString().startsWith("https://appassets.androidplatform.net/assets/");}
   });
+  backups=new BackupBridge(this,web,()->engine);
   web.addJavascriptInterface(new Bridge(),"BonzeAndroid");setContentView(web);
   bound=bindService(new Intent(this,ConversationService.class),connection,BIND_AUTO_CREATE);
   web.loadUrl("https://appassets.androidplatform.net/assets/docs/index.html");
  }
  private void withService(Runnable task){if(destroyed)return;if(engine!=null)task.run();else pending.add(task);}
  private final class Bridge {
+  @JavascriptInterface public void admin(String action,String payload){runOnUiThread(()->{if(visible&&!destroyed)backups.command(action,payload);});}
   @JavascriptInterface public boolean localSpeechAvailable(){return Build.VERSION.SDK_INT>=31&&SpeechRecognizer.isOnDeviceRecognitionAvailable(MainActivity.this);}
   @JavascriptInterface public void connectNative(String initial,String config){runOnUiThread(()->{
    bootstrap=initial;configuration=config;uiReady=true;
@@ -58,6 +61,8 @@ public final class MainActivity extends Activity {
    else if("start".equals(action)){if(visible&&!destroyed)startAfterPermission(id);}
    else if("text".equals(action)){pendingStart.cancel();withService(()->engine.submitText(text,id));}
    else if("describe".equals(action)){pendingStart.cancel();if(visible)withService(()->engine.describe(text,id));}
+   else if("restore-ack".equals(action)){withService(()->engine.acknowledgeRestore());}
+   else if("save-web".equals(action)){withService(()->engine.saveWebState(text));}
    else if("sync".equals(action)){if(visible)withService(()->engine.attach(observer));}
   });}
   @JavascriptInterface public String resourceSnapshot(){ConversationService current=engine;return current==null?"{}":current.resources();}
@@ -83,10 +88,11 @@ public final class MainActivity extends Activity {
   if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED){pendingStart.grant();launchConversation();}
   else{pendingStart.cancel();withService(()->engine.stop(id,"Micro arrêté. Tu peux relancer la conversation lorsque Bonze est ouvert."));}
  }
+ @Override protected void onActivityResult(int request,int result,Intent data){super.onActivityResult(request,result,data);backups.result(request,result,data);}
  @Override public void onResume(){super.onResume();visible=true;if(uiReady&&engine!=null)engine.attach(observer);launchConversation();}
- @Override public void onPause(){visible=false;if(engine!=null)engine.detach(observer);super.onPause();}
+ @Override public void onPause(){visible=false;if(backups!=null)backups.pause();if(engine!=null)engine.detach(observer);super.onPause();}
  @Override public void onDestroy(){
-  destroyed=true;pendingStart.cancel();pending.clear();if(engine!=null)engine.detach(observer);
+  destroyed=true;if(backups!=null)backups.destroy();pendingStart.cancel();pending.clear();if(engine!=null)engine.detach(observer);
   if(bound){unbindService(connection);bound=false;}if(web!=null){web.destroy();web=null;}engine=null;super.onDestroy();
  }
 }

@@ -51,3 +51,5 @@ Preuves de livraison 0.5 : commit ff04ec4203bb7cfe9ca412d8814a09b16643bb8c, work
 ## Avenant 0.5.0 du 29 octobre — travaux ouverts
 
 Les huit experts doivent chacun contribuer au calcul de comportement/arbitrage, avoir force et endurance propre ; fatigue, récupération et influences restent expérimentales, jamais preuves de vérité. Journal privé des opérations réelles, console authentifiée avec alternative accessible au geste60touches, sauvegarde chiffrée/versionnée incluant identité, acquis, poids et traces. Priorité aux répétitions de dialogue signalées et aux sous-titres qui se chevauchent. Piper doit être intégré réellement puis validé hors ligne et à l'écoute ; une étude ou compilation seule ne suffit pas. Les missions BONZE-023..029 sont ouvertes.
+
+Candidat avenant : correction d'affichage en cours ; sauvegarde AES-GCM/phrase secrète et accès administrateur via code de verrouillage Android implémentés localement, validationCI encore attendue. L'authentification de l'appareil ne constitue pas une gestion familiale multi-rôles. Journaux techniques locaux bornés, jamais exposés en conversation ; les journaux ne sont pas des pensées neuronales inventées.

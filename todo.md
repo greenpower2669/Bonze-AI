@@ -111,3 +111,5 @@ Prochain geste : essai humain Samsung avec conversation lancée avant verrouilla
 État : reprise au commit c271d31 ;35 tests JS de base verts. Revue parallèle Piper indisponible (quota de l'agent) ; recherche poursuivie par l'agent principal. Ne pas déclarer ces missions réalisées.
 
 Affichage périmé : correction locale et2tests verts ; génération répétée encore en investigation. Test navigateur de chevauchement en attente. Aucun nouvel APK publié.
+
+Sauvegarde/admin/journal : code local et3tests crypto verts, branchement natif en cours de validation (JVM, compilation et scénarios navigateur nécessaires). Piper : lexique MIT+runtime2.0 sans eSpeak est une piste exécutable, synthèseLinux générée mais vérification finale du probe/écoute/intégrationAndroid encore ouvertes. Génération : formats alternatifs ne suffisent pas ; isoler la réutilisation du contexte.

@@ -44,7 +44,7 @@ jobs:
           tts=sherpa_onnx.OfflineTts(config);begin=time.monotonic();audio=tts.generate(text,sherpa_onnx.GenerationConfig())
           assert len(audio.samples)>1000 and audio.sample_rate==22050
           sf.write('Bonze-Piper-francais-essai.wav',audio.samples,audio.sample_rate)
-          print('PCM',len(audio.samples),'rate',audio.sample_rate,'seconds',time.monotonic()-begin,'peak',max(abs(audio.samples)))
+          print('PCM',len(audio.samples),'rate',audio.sample_rate,'seconds',time.monotonic()-begin,'peak',max(abs(x) for x in audio.samples))
           PY
       - uses: actions/upload-artifact@v4
         if: always()

@@ -1,3 +1,4 @@
+import {setupBackup} from './backup-ui.js';
 import {captionPair} from '../core/captions.mjs';
 import {answer,listening} from '../core/bonze.mjs';
 import {inferExperts} from '../core/experts.mjs';
@@ -29,8 +30,10 @@ if(saved&&typeof saved==='object'){
  browserVoiceEnabled=saved.browserVoiceEnabled===true;lastNativeHumanId=Number.isSafeInteger(saved.lastNativeHumanId)?saved.lastNativeHumanId:0;
 }
 identity=restoreIdentity(saved?.identity);
+function webState(){return {profile,history:history.slice(-30),fontSize,resourceMode,neuralEnabled,contrast,reduceMotion,identity,browserVoiceEnabled,lastNativeHumanId};}
+function saveNativeWeb(){if(isNative&&nativeConnected)window.BonzeAndroid.command('save-web',JSON.stringify({web:webState(),weights:trainedWeights}),'');}
 function save(){
- try{localStorage.setItem(STORAGE,JSON.stringify({profile,history:history.slice(-30),fontSize,resourceMode,neuralEnabled,contrast,reduceMotion,identity,browserVoiceEnabled,lastNativeHumanId}));}
+ try{localStorage.setItem(STORAGE,JSON.stringify(webState()));}
  catch{el('profile-status').textContent='Stockage indisponible : identité et changements ne pourront pas être conservés après fermeture.';}
  lastSaved=performance.now();
 }
@@ -148,6 +151,9 @@ function applyNativeHistory(rows){
 window.BonzeNativeEvent=e=>{
  if(!nativeView.accept(e))return;
  if(e.type==='snapshot'){
+  if(e.restoredWeb){
+   try{localStorage.setItem(STORAGE,JSON.stringify(e.restoredWeb));if(e.restoreWeights)localStorage.setItem('bonze-expert-weights',JSON.stringify(e.restoreWeights));if(e.restoreJournal)localStorage.setItem('bonze-diagnostics',JSON.stringify(e.restoreJournal));window.BonzeAndroid.command('restore-ack','','');location.reload();return;}catch{el('profile-status').textContent='Écriture de la restauration impossible : la copie native attend toujours.';return;}
+  }
   nativeActive=e.active===true;nativeBusy=e.busy===true;
   if(Number.isSafeInteger(e.importedThrough))lastNativeHumanId=Math.max(lastNativeHumanId,e.importedThrough);
   applyNativeHistory(e.history);el('message').disabled=nativeBusy;el('send-message').disabled=nativeBusy;
@@ -218,14 +224,15 @@ setInterval(()=>{
  const now=performance.now();const dt=Math.min(2,(now-lastTick)/1000);lastTick=now;
  if(document.hidden)return;
  identity={...identity,acquired:advance(identity,dt,mode)};draw();
- if(now-lastSaved>10000){save();configureNative();}
+ if(now-lastSaved>10000){save();saveNativeWeb();configureNative();}
 },65);
 document.addEventListener('visibilitychange',()=>{
  lastTick=performance.now();save();
  if(!isNative&&document.hidden)stopAll('Lecture suspendue : écran masqué.');
  if(isNative&&!document.hidden)window.BonzeAndroid.command('sync','','');
 });
-window.addEventListener('pagehide',()=>{save();if(!isNative)stopAll('Lecture arrêtée.');});
+window.addEventListener('pagehide',()=>{save();saveNativeWeb();if(!isNative)stopAll('Lecture arrêtée.');});
+setupBackup({isNative,getData:()=>({schema:1,createdAt:Date.now(),web:webState(),native:null,weights:trainedWeights,journal:[]}),stop:()=>stopAll(),saveNativeWeb,restoreWeb:data=>{localStorage.setItem(STORAGE,JSON.stringify(data.web));if(data.weights)localStorage.setItem('bonze-expert-weights',JSON.stringify(data.weights));localStorage.setItem('bonze-diagnostics',JSON.stringify(data.journal||[]));location.reload();}});
 if(isNative){nativeConnected=true;window.BonzeAndroid.connectNative(JSON.stringify({history}),configData());}
-fetch('../core/weights/expert-router-v1.json').then(r=>r.ok?r.json():Promise.reject(Error('404'))).then(w=>{trainedWeights=w;el('experts-state').textContent='Huit micro-experts émotionnels disponibles.';}).catch(()=>{});
+fetch('../core/weights/expert-router-v1.json').then(r=>r.ok?r.json():Promise.reject(Error('404'))).then(w=>{try{const custom=JSON.parse(localStorage.getItem('bonze-expert-weights'));if(custom){inferExperts('',custom);w=custom;}}catch{}trainedWeights=w;el('experts-state').textContent='Huit micro-experts émotionnels disponibles.';}).catch(()=>{});
 if('serviceWorker' in navigator&&!isNative)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));

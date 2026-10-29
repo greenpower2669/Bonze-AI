@@ -28,7 +28,7 @@ public final class ConversationService extends Service {
  private final DialogueMemory memory=new DialogueMemory();
  private final String boot=UUID.randomUUID().toString();
  private Listener listener;private SpeechRecognizer recognizer;private TextToSpeech tts;
- private android.content.SharedPreferences prefs;
+ private android.content.SharedPreferences prefs;private DiagnosticJournal journal;private long diagnosticTurn;
  private PowerManager.WakeLock cpu;
  private AudioManager audio;private AudioFocusRequest focus;
  private boolean promoted,recording,disposed,localVoiceReady,voiceInitFinished;
@@ -47,7 +47,7 @@ public final class ConversationService extends Service {
  @Override public void onCreate(){
   super.onCreate();prefs=getSharedPreferences("bonze-conversation-v1",MODE_PRIVATE);
   mode=prefs.getString("mode","precise");neural=prefs.getBoolean("neural",true);readText=prefs.getBoolean("readText",false);economy="eco".equals(mode);
-  loadMemory();audio=(AudioManager)getSystemService(AUDIO_SERVICE);
+  journal=new DiagnosticJournal(prefs);loadMemory();audio=(AudioManager)getSystemService(AUDIO_SERVICE);
   cpu=((PowerManager)getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"BonzeAI:Conversation");cpu.setReferenceCounted(false);
   ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).createNotificationChannel(new NotificationChannel("bonze-dialogue","Conversation Bonze",NotificationManager.IMPORTANCE_LOW));
   IntentFilter filter=new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
@@ -140,18 +140,20 @@ public final class ConversationService extends Service {
   String text=DialogueMemory.clean(raw,600).trim();if(text.isEmpty())return;
   final long epoch=workEpoch;
   final String prompt=memory.prompt(text);
+  final long turn=++diagnosticTurn;
+  journal.add("input",turn,DiagnosticJournal.fields("source",fromVoice?"voice":"text","text",text,"prompt",prompt,"epoch",epoch));
   memory.add("human",text);saveMemory();lastHeardAt=SystemClock.elapsedRealtime();
   if(fromVoice)session.awaiting();setState("thinking","Je réfléchis à ce que tu viens de me dire.");holdCpu();
   if(!neural||!Arrays.asList("precise","eco").contains(mode)){complete(epoch,lightReply(text),fromVoice);return;}
   if(!generating.compareAndSet(false,true)){complete(epoch,"Ma précédente pensée se termine encore. Redis-moi ta phrase dans un instant ?",fromVoice);return;}
   final boolean eco=economy;final String currentMood=mood;
   inference.execute(()->{
-   String result;long began=SystemClock.elapsedRealtime(),cpuBegan=SystemClock.currentThreadTimeMillis();
+   String result,errorName="";long began=SystemClock.elapsedRealtime(),cpuBegan=SystemClock.currentThreadTimeMillis();
    try{BonzeInference.setEconomy(eco);result=BonzeInference.reply(getApplicationContext(),prompt,currentMood);}
-   catch(Exception|LinkageError error){result="Je cherche encore mes mots. Tu peux me le dire autrement ?";}
+   catch(Exception|LinkageError error){errorName=error.getClass().getSimpleName();result="Je cherche encore mes mots. Tu peux me le dire autrement ?";}
    finally{generating.set(false);}
-   final String answer=result;final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
-   main.post(()->{lastLatency=elapsed;lastCpu=cpuTime;if(!disposed&&epoch==workEpoch)complete(epoch,answer,fromVoice);});
+   final String answer=result,failure=errorName;final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
+   main.post(()->{lastLatency=elapsed;lastCpu=cpuTime;journal.add("generation",turn,DiagnosticJournal.fields("output",answer,"error",failure,"latencyMs",elapsed,"discarded",disposed||epoch!=workEpoch));if(!disposed&&epoch==workEpoch)complete(epoch,answer,fromVoice);});
   });
  }
  private String lightReply(String text){
@@ -160,7 +162,7 @@ public final class ConversationService extends Service {
  }
  private void complete(long epoch,String answer,boolean fromVoice){
   if(epoch!=workEpoch||disposed)return;
-  memory.add("bot",answer);saveMemory();setState("waiting","J'ai une réponse pour toi.");
+  memory.add("bot",answer);journal.add("published",diagnosticTurn,DiagnosticJournal.fields("answer",answer));saveMemory();setState("waiting","J'ai une réponse pour toi.");
   if(fromVoice&&session.active()||readText&&!"text".equals(mode)&&!"off".equals(mode))speak(answer,fromVoice,epoch,0);
   else{releaseCpu();setState("off","Réponse écrite disponible.");}
  }
@@ -223,7 +225,7 @@ public final class ConversationService extends Service {
     @Override public void onStart(String id){main.post(()->{
      if(!validSpeech(id))return;
      int part=partIndex(id);if(part<0||part>=speechChunks.size())return;
-     speechId=id;speechText=speechChunks.get(part);speechBegan=SystemClock.elapsedRealtime();
+     speechId=id;speechText=speechChunks.get(part);journal.add("speech",diagnosticTurn,DiagnosticJournal.fields("engine","android","id",id,"text",speechText));speechBegan=SystemClock.elapsedRealtime();
      setState("speaking","Je te réponds.");speechEvent("speech-start",id,0,0);
     });}
     @Override public void onRangeStart(String id,int start,int end,int frame){main.post(()->{if(id.equals(speechId)&&validSpeech(id))speechEvent("speech-range",id,start,end);});}
@@ -280,6 +282,7 @@ public final class ConversationService extends Service {
    o.put("active",session.active()).put("state",state).put("busy","thinking".equals(state)).put("status",status).put("voice",voiceName);
    JSONArray rows=new JSONArray();for(DialogueMemory.Entry e:memory.entries())rows.put(new JSONObject().put("id",e.id).put("role",e.role).put("text",e.text));o.put("history",rows).put("importedThrough",prefs.getLong("importedThrough",0));
    JSONArray voices=new JSONArray();if(voiceInitFinished&&tts!=null)for(Voice v:localVoices())voices.put(new JSONObject().put("name",v.getName()).put("quality",v.getQuality()));o.put("voices",voices);
+   if(prefs.contains("restoredWeb")){o.put("restoredWeb",new JSONObject(prefs.getString("restoredWeb","{}")));o.put("restoreWeights",new JSONObject(prefs.getString("restoredWeights","{}")));o.put("restoreJournal",journal.copy());}
    if(!speechId.isEmpty())o.put("speech",new JSONObject().put("id",speechId).put("text",speechText).put("ageMs",SystemClock.elapsedRealtime()-speechBegan));
   }catch(JSONException ignored){}return o;
  }
@@ -292,6 +295,37 @@ public final class ConversationService extends Service {
  private void loadMemory(){
   try{JSONArray rows=new JSONArray(prefs.getString("history","[]"));for(int i=Math.max(0,rows.length()-30);i<rows.length();i++){JSONObject r=rows.optJSONObject(i);if(r!=null)memory.add(r.optLong("id",System.currentTimeMillis()+i),r.optString("role"),r.optString("text"));}memory.setScene(prefs.getString("scene",""));}catch(JSONException ignored){}
  }
+
+ public JSONObject diagnostics(){return DiagnosticJournal.fields("journal",journal.copy(),"resources",resourceObject(),"engine","Android TTS","model","LFM2.5-230M dense");}
+ private JSONObject resourceObject(){try{return new JSONObject(resources());}catch(JSONException e){return new JSONObject();}}
+ public JSONObject backupData(){
+  JSONArray rows=new JSONArray();for(DialogueMemory.Entry e:memory.entries())rows.put(DiagnosticJournal.fields("id",e.id,"role",e.role,"text",e.text));
+  return DiagnosticJournal.fields("native",DiagnosticJournal.fields("schema",1,"history",rows,"scene",memory.scene(),"mode",mode,"neural",neural,"readText",readText,"voice",voiceName,"mood",mood),"journal",journal.copy());
+ }
+ public void acknowledgeRestore(){prefs.edit().remove("restoredWeb").remove("restoredWeights").apply();}
+ public void restoreBackup(String data) throws Exception {
+  if(data.length()>4*1024*1024)throw new IllegalArgumentException("size");
+  JSONObject root=new JSONObject(data),web=root.getJSONObject("web"),identity=web.getJSONObject("identity");
+  if(root.getInt("schema")!=1||identity.getInt("version")!=1||identity.getString("seed").isEmpty()||identity.getString("seed").length()>128)throw new IllegalArgumentException("schema");
+  JSONObject n=root.optJSONObject("native");if(n==null)n=DiagnosticJournal.fields("schema",1,"history",web.optJSONArray("history"),"scene","","mode",web.optString("resourceMode","text"),"neural",web.optBoolean("neuralEnabled",false),"readText",false,"voice","");
+  String nextMode=n.getString("mode");JSONArray rows=n.getJSONArray("history"),trace=root.getJSONArray("journal");
+  if(n.getInt("schema")!=1||!Arrays.asList("precise","eco","light","text","off").contains(nextMode)||rows.length()>30||trace.length()>200||trace.toString().length()>1000000)throw new IllegalArgumentException("data");
+  for(int j=0;j<rows.length();j++){JSONObject r=rows.getJSONObject(j);if(!Arrays.asList("human","bot").contains(r.getString("role"))||r.getString("text").length()>1200)throw new IllegalArgumentException("history");}
+  // Validate everything before stopping/writing. One preferences transaction is canonical;
+  // restoredWeb stays pending until the WebView acknowledges its own durable write.
+  JSONObject old=backupData();String previousWeb=prefs.getString("lastWeb","{}");
+  JSONObject rollback=DiagnosticJournal.fields("schema",1,"web",new JSONObject(previousWeb),"native",old.getJSONObject("native"),"journal",old.getJSONArray("journal"),"weights",new JSONObject(prefs.getString("lastWeights","{}")));
+  stop(request,"Restauration : micro arrêté.");
+  boolean committed=prefs.edit().putString("rollback",rollback.toString()).putString("restoredWeb",web.toString())
+   .putString("restoredWeights",root.optJSONObject("weights")==null?"{}":root.optJSONObject("weights").toString()).putString("history",rows.toString()).putString("scene",n.optString("scene","")).putString("mode",nextMode)
+   .putBoolean("neural",n.optBoolean("neural",false)).putBoolean("readText",n.optBoolean("readText",false)).putString("voice",n.optString("voice",""))
+   .putBoolean("imported",true).putLong("importedThrough",0).putString("journal",trace.toString()).commit();
+  if(!committed)throw new java.io.IOException("Storage");
+  mode=nextMode;economy="eco".equals(mode);neural=n.optBoolean("neural",false);readText=n.optBoolean("readText",false);mood=n.optString("mood","curiosite");
+  memory.clear();loadMemory();journal.reload();selectVoice(n.optString("voice",""));publish();
+ }
+ public void rollbackBackup() throws Exception {String saved=prefs.getString("rollback","");if(saved.isEmpty())throw new IllegalArgumentException("Aucun retour arrière");restoreBackup(saved);}
+ public void saveWebState(String state){if(state.length()<2*1024*1024)try{JSONObject o=new JSONObject(state),w=o.getJSONObject("web");if(w.has("identity"))prefs.edit().putString("lastWeb",w.toString()).putString("lastWeights",o.optJSONObject("weights")==null?"{}":o.optJSONObject("weights").toString()).apply();}catch(JSONException ignored){}}
  public String resources(){
   try{ActivityManager.MemoryInfo m=new ActivityManager.MemoryInfo();((ActivityManager)getSystemService(ACTIVITY_SERVICE)).getMemoryInfo(m);
    return new JSONObject().put("availableMiB",m.availMem/1048576).put("totalMiB",m.totalMem/1048576).put("pssMiB",Debug.getPss()/1024)

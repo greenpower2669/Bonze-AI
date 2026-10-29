@@ -106,3 +106,12 @@ textarea{resize:vertical}.settings{position:absolute;z-index:20;top:auto;left:7p
 .high-contrast .brows span{filter:drop-shadow(0 1px #fff) drop-shadow(0 -1px #fff)}
 .high-contrast .mouth{filter:drop-shadow(0 1px #fff) drop-shadow(0 -1px #fff)}
 @media(max-height:560px){.stage{flex-basis:115px;min-height:110px}.face-touch{width:145px}.settings{top:184px}}
+/* Caption rows keep their intrinsic height. Scroll the panel, never shrink
+   a grid underneath an adjacent control (large fonts / Android zoom). */
+.conversation > *{flex-shrink:0}
+.captions{flex:none;min-height:min-content}
+.caption-person,.caption-bonze{min-width:0}
+.caption-person p,.caption-bonze p{overscroll-behavior:contain}
+.topbar{height:auto;min-height:66px}.brand small{overflow-wrap:anywhere}
+#backup-panel button{margin-top:10px;width:100%}
+#admin-journal{white-space:pre-wrap;overflow-wrap:anywhere;max-height:40dvh;overflow:auto;font-size:.9rem}

@@ -24,6 +24,7 @@ public final class DialogueMemory {
   String lower=t.toLowerCase(Locale.FRANCE);
   if(role.equals("human")&&(lower.contains("on joue")||lower.contains("tu joues")||lower.contains("imagine")||lower.contains("tu es le")||lower.matches(".*notre.{0,40}s.appelle.*")))scene=clean(t,360);
  }
+ public synchronized void clear(){entries.clear();scene="";name="";nextId=System.currentTimeMillis();}
  public synchronized int size(){return entries.size();}
  public synchronized List<Entry> entries(){return new ArrayList<>(entries);}
  public synchronized String prompt(String current){

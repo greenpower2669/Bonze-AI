@@ -26,6 +26,8 @@ jobs:
           java -cp /tmp/bonze-java VoiceSessionTest
           java -cp /tmp/bonze-java DialogueMemoryTest
           java -cp /tmp/bonze-java SpeechPlanTest
+          javac -d /tmp/bonze-java android/app/src/main/java/fr/bonzeai/companion/AdminGate.java tests/AdminGateTest.java
+          java -cp /tmp/bonze-java AdminGateTest
           java -cp /tmp/bonze-java PendingStartTest
       - name: Install browser for integration checks
         run: |

@@ -83,6 +83,26 @@
   <select id="pressure"><option value="normal">Normale</option><option value="high">Élevée</option><option value="critical">Critique</option></select>
   <p id="policy" class="hint"></p>
  </details>
+ <details id="backup-panel"><summary>Sauvegarder et restaurer mon Bonze</summary>
+  <p class="hint">Le fichier contient identité, souvenirs, acquis, paramètres, poids émotionnels et diagnostics. Il est chiffré avec ta phrase secrète ; garde-la, elle ne peut pas être retrouvée par Bonze.</p>
+  <label for="backup-password">Phrase secrète de la sauvegarde (12 caractères minimum)</label>
+  <input id="backup-password" type="password" minlength="12" maxlength="256" autocomplete="off">
+  <button id="backup-export" type="button" class="secondary-button">Exporter une sauvegarde chiffrée</button>
+  <button id="backup-import" type="button" class="secondary-button">Vérifier un fichier de sauvegarde</button>
+  <input id="backup-file" type="file" accept=".bonze,application/octet-stream" hidden>
+  <button id="backup-restore" type="button" class="secondary-button" hidden>Remplacer les données par cette sauvegarde vérifiée</button>
+  <button id="backup-rollback" type="button" class="secondary-button">Rétablir l'état précédant la dernière restauration</button>
+  <p id="backup-status" class="hint" role="status">Aucune sauvegarde vérifiée.</p>
+ </details>
+ <details><summary>Administration</summary>
+  <button id="admin-open" type="button" class="secondary-button">Ouvrir la console avec le code Android</button>
+  <p class="hint">Le code de verrouillage du téléphone autorise les actions d'administration. Ce mécanisme ne distingue pas encore plusieurs membres d'une famille connaissant le même code.</p>
+  <section id="admin-console" hidden aria-label="Diagnostic administrateur">
+   <button id="admin-close" type="button" class="secondary-button">Verrouiller la console</button>
+   <p>Traces locales des opérations exécutées, sans pensées rédigées par un modèle.</p>
+   <pre id="admin-journal" tabindex="0" aria-label="Journal technique local"></pre>
+  </section>
+ </details>
  <details><summary>Historique des derniers échanges</summary>
   <div id="log" role="log" aria-label="Historique de la conversation"></div>
  </details>
