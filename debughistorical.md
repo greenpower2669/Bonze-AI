@@ -100,3 +100,5 @@ Probe Piper #40905257759 : chargement sherpa2.0.1 + Siwis mediumINT8 + lexique f
 - Publication finale exige probe de trois phrases et contrôles Android au même commit. L’ASR n’est pas une écoute humaine ni une mesure de naturel ; aucune conclusion Samsung. Archives détaillées : sauvegarde.md.
 
 Contrôle vocal final 40962604934 : les phrases 0 (petit compagnon/jouer) et 2 (calme/content/histoire) sont reconnues, mais « Bonjour mon ami. Comment vas tu ? » reste déformée ; garde de publication refuse donc le candidat. Comparaison isolée de six locuteurs MLS avec les mêmes phonèmes et trois phrases avant toute décision ; écoute humaine toujours ouverte.
+
+Comparaison 40962855376 : les six locuteurs échouent sur la même courte question ; changer de timbre ne résout donc pas le défaut. Lecture du code sherpa v2.0.1 : le frontend Piper conserve la ponctuation, notre entrée directe l’écarte. Prochain essai isolé : mêmes phonèmes/locuteur 0 avec ou sans ponctuation, sans changement des poids ni du débit.

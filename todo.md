@@ -114,3 +114,5 @@ Prochain geste : essai humain Samsung avec conversation lancée avant verrouilla
 Publication conditionnée aux tests Android et au probe vocal vert au même SHA. Pas de prétention à une écoute humaine ni à des mesures Samsung. Notes intermédiaires archivées dans sauvegarde.md et docs/history/avenant-0.6-worklog.md.
 
 Contrôle vocal final 40962604934 : les phrases 0 (petit compagnon/jouer) et 2 (calme/content/histoire) sont reconnues, mais « Bonjour mon ami. Comment vas tu ? » reste déformée ; garde de publication refuse donc le candidat. Comparaison isolée de six locuteurs MLS avec les mêmes phonèmes et trois phrases avant toute décision ; écoute humaine toujours ouverte.
+
+Comparaison 40962855376 : les six locuteurs échouent sur la même courte question ; changer de timbre ne résout donc pas le défaut. Lecture du code sherpa v2.0.1 : le frontend Piper conserve la ponctuation, notre entrée directe l’écarte. Prochain essai isolé : mêmes phonèmes/locuteur 0 avec ou sans ponctuation, sans changement des poids ni du débit.
