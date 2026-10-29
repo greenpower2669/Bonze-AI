@@ -18,6 +18,13 @@ import android.graphics.Color;
 import androidx.webkit.WebViewAssetLoader;
 import org.json.JSONObject;
 import java.util.ArrayList;
+import java.util.Locale;
+import android.os.Handler;
+import android.os.Looper;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
+import android.speech.tts.Voice;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,6 +42,15 @@ public final class MainActivity extends Activity {
     private final ExecutorService inferenceQueue = Executors.newSingleThreadExecutor();
     private final AtomicBoolean generating = new AtomicBoolean(false);
     private volatile boolean neuralEnabled = true;
+    // Conversation only starts from a deliberate on-screen tap; never on app launch.
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private boolean handsFreeRequested = false;
+    private boolean awaitingResponse = false;
+    private boolean speakingReply = false;
+    private int consecutiveNoSpeech = 0;
+    private TextToSpeech tts;
+    private boolean localVoiceReady = false;
+    private boolean voiceInitFinished = false;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -61,6 +77,7 @@ public final class MainActivity extends Activity {
             }
         });
         web.addJavascriptInterface(new SpeechBridge(), "BonzeAndroid");
+        prepareOfflineVoice();
         setContentView(web);
         web.loadUrl("https://appassets.androidplatform.net/assets/docs/index.html");
     }
@@ -80,19 +97,35 @@ public final class MainActivity extends Activity {
         @JavascriptInterface public boolean localSpeechAvailable() {
             return localSupported();
         }
-        @JavascriptInterface public void startLocalSpeech() {
+        @JavascriptInterface public void beginHandsFree() {
             runOnUiThread(() -> {
                 if (!localSupported()) {
-                    send("BonzeNativeStatus", "Reconnaissance strictement locale indisponible. Utilise le clavier.");
+                    send("BonzeConversationState", "indisponible");
+                    send("BonzeNativeStatus", "Le moteur d'écoute hors ligne manque sur cet appareil. Le clavier reste disponible.");
                     return;
                 }
                 if (memoryWarning) {
-                    send("BonzeNativeStatus", "Mémoire sous pression : écoute suspendue. Utilise le clavier.");
+                    send("BonzeNativeStatus", "Mémoire sous pression : conversation vocale impossible maintenant.");
+                    send("BonzeConversationState", "off");
                     return;
                 }
-                if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, MIC_PERMISSION);
-                } else startRecognizer();
+                handsFreeRequested = true;
+                awaitingResponse = false;
+                consecutiveNoSpeech = 0;
+                startAfterPermission();
+            });
+        }
+        @JavascriptInterface public void stopHandsFree() {
+            runOnUiThread(() -> stopConversation("Conversation arrêtée par toi."));
+        }
+        @JavascriptInterface public void speakReply(String reply) {
+            runOnUiThread(() -> speakOffline(reply));
+        }
+        @JavascriptInterface public boolean localVoiceAvailable() { return localVoiceReady; }
+        @JavascriptInterface public void startLocalSpeech() {
+            runOnUiThread(() -> {
+                handsFreeRequested = false;
+                startAfterPermission();
             });
         }
         @JavascriptInterface public void generateLocalReply(String text, String mood) {
@@ -130,7 +163,7 @@ public final class MainActivity extends Activity {
             catch (Exception e) { return false; }
         }
         @JavascriptInterface public void stopLocalSpeech() {
-            runOnUiThread(() -> cancelRecognizer("Écoute arrêtée."));
+            runOnUiThread(() -> stopConversation("Écoute arrêtée."));
         }
     }
 
@@ -138,69 +171,172 @@ public final class MainActivity extends Activity {
         super.onRequestPermissionsResult(requestCode, permissions, results);
         if (requestCode != MIC_PERMISSION) return;
         if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) startRecognizer();
-        else send("BonzeNativeStatus", "Micro refusé : écoute désactivée.");
+        else stopConversation("Accès au microphone refusé. Le clavier reste disponible.");
+    }
+
+
+    private void startAfterPermission() {
+        if (!localSupported()) {
+            stopConversation("Moteur de reconnaissance vocale locale indisponible.");
+            return;
+        }
+        if (memoryWarning) {
+            stopConversation("Mémoire chargée, écoute arrêtée.");
+            return;
+        }
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, MIC_PERMISSION);
+        } else startRecognizer();
     }
 
     private void startRecognizer() {
-        if (recording || memoryWarning || !localSupported()) return;
+        if (recording || awaitingResponse || speakingReply || memoryWarning || !localSupported()) return;
         try {
-            // API 31+: guaranteed on-device path, no network permission.
             recognizer = SpeechRecognizer.createOnDeviceSpeechRecognizer(this);
             recognizer.setRecognitionListener(new RecognitionListener() {
                 @Override public void onReadyForSpeech(Bundle params) {
-                    send("BonzeNativeStatus", "Écoute en cours… parle maintenant.");
+                    send("BonzeNativeStatus", "Je t'écoute. Parle naturellement.");
+                    send("BonzeConversationState", "listening");
                 }
                 @Override public void onBeginningOfSpeech() {}
                 @Override public void onRmsChanged(float rmsdB) {}
                 @Override public void onBufferReceived(byte[] buffer) {}
                 @Override public void onEndOfSpeech() {
-                    send("BonzeNativeStatus", "J'analyse tes mots localement…");
+                    send("BonzeNativeStatus", "Je termine de transcrire ta phrase.");
                 }
                 @Override public void onError(int error) {
-                    cancelRecognizer("Je n'ai pas pu transcrire localement (code " + error + "). Réessaie ou écris-moi.");
+                    releaseRecognizer();
+                    if (handsFreeRequested && (error == SpeechRecognizer.ERROR_NO_MATCH ||
+                        error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) && consecutiveNoSpeech++ < 2) {
+                        send("BonzeNativeStatus", "Je n'ai rien entendu, je réessaie.");
+                        mainHandler.postDelayed(() -> {
+                            if (handsFreeRequested && !awaitingResponse) startAfterPermission();
+                        }, 600);
+                    } else {
+                        stopConversation("Je n'ai pas pu comprendre ta voix (code " + error +
+                            "). L'écoute est arrêtée. Tu peux réessayer ou écrire.");
+                    }
                 }
                 @Override public void onResults(Bundle results) {
-                    ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                    ArrayList<String> matches =
+                        results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                     String value = matches != null && !matches.isEmpty() ? matches.get(0) : "";
-                    cancelRecognizer("Écoute terminée.");
-                    if (!value.isEmpty()) send("BonzeNativeResult", value);
-                    else send("BonzeNativeStatus", "Je n'ai pas compris. Réessaie ou écris-moi.");
+                    releaseRecognizer();
+                    if (!value.isBlank()) {
+                        consecutiveNoSpeech = 0;
+                        awaitingResponse = handsFreeRequested;
+                        send("BonzeConversationState", "thinking");
+                        send("BonzeNativeResult", value);
+                    } else if (handsFreeRequested) {
+                        if (++consecutiveNoSpeech < 3) mainHandler.postDelayed(
+                            () -> { if (handsFreeRequested) startAfterPermission(); }, 600);
+                        else stopConversation("Je n'ai rien entendu. Conversation arrêtée.");
+                    } else send("BonzeNativeStatus", "Je n'ai pas compris. Tu peux recommencer.");
                 }
                 @Override public void onPartialResults(Bundle partial) {}
                 @Override public void onEvent(int eventType, Bundle params) {}
             });
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "fr-FR");
             intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
+            intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true);
             recording = true;
             recognizer.startListening(intent);
-            send("BonzeNativeStatus", "Écoute en cours… parle maintenant.");
-        } catch (RuntimeException ex) {
-            cancelRecognizer("Moteur local indisponible : utilise le clavier.");
+            send("BonzeNativeStatus", "Je t'écoute. Dis-moi ce que tu veux.");
+        } catch (RuntimeException error) {
+            stopConversation("Le moteur vocal local n'a pas démarré. Le clavier reste disponible.");
         }
     }
 
-    private void cancelRecognizer(String message) {
+    private void releaseRecognizer() {
         recording = false;
         if (recognizer != null) {
-            try { recognizer.cancel(); recognizer.destroy(); }
-            catch (RuntimeException ignored) {}
+            try { recognizer.cancel(); recognizer.destroy(); } catch (RuntimeException ignored) {}
             recognizer = null;
         }
+    }
+
+    private void stopConversation(String message) {
+        handsFreeRequested = false;
+        awaitingResponse = false;
+        consecutiveNoSpeech = 0;
+        releaseRecognizer();
+        if (tts != null && speakingReply) tts.stop();
+        speakingReply = false;
+        send("BonzeConversationState", "off");
         send("BonzeNativeStatus", message);
+    }
+
+    private void prepareOfflineVoice() {
+        tts = new TextToSpeech(getApplicationContext(), status -> {
+            voiceInitFinished = true;
+            if (status != TextToSpeech.SUCCESS || tts == null) {
+                localVoiceReady = false;
+                return;
+            }
+            Set<Voice> voices = tts.getVoices();
+            Voice chosen = null;
+            if (voices != null) {
+                for (Voice voice : voices) {
+                    if (voice != null && voice.getLocale() != null
+                            && "fr".equals(voice.getLocale().getLanguage())
+                            && !voice.isNetworkConnectionRequired()) {
+                        chosen = voice;
+                        if (Locale.FRANCE.equals(voice.getLocale())) break;
+                    }
+                }
+            }
+            if (chosen != null && tts.setVoice(chosen) == TextToSpeech.SUCCESS) {
+                localVoiceReady = true;
+                tts.setSpeechRate(.96f);
+            }
+            tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                @Override public void onStart(String id) { runOnUiThread(() -> {
+                    speakingReply = true;
+                    send("BonzeConversationState", "speaking");
+                }); }
+                @Override public void onDone(String id) { runOnUiThread(() -> completeSpeech()); }
+                @Override public void onError(String id) { runOnUiThread(() ->
+                    stopConversation("La voix locale a échoué. Conversation arrêtée.")); }
+            });
+        });
+    }
+    private void speakOffline(String text) {
+        if (!handsFreeRequested) return;
+        awaitingResponse = false;
+        if (!voiceInitFinished || !localVoiceReady || tts == null) {
+            stopConversation("La voix française hors ligne est indisponible. Continue en mode texte.");
+            return;
+        }
+        speakingReply = true;
+        send("BonzeConversationState", "speaking");
+        int result = tts.speak(text.substring(0, Math.min(text.length(), 1200)),
+            TextToSpeech.QUEUE_FLUSH, null, "BONZE_REPLY");
+        if (result != TextToSpeech.SUCCESS) {
+            stopConversation("Synthèse vocale locale impossible. Conversation arrêtée.");
+        }
+    }
+    private void completeSpeech() {
+        speakingReply = false;
+        send("BonzeConversationState", handsFreeRequested ? "waiting" : "off");
+        if (handsFreeRequested) mainHandler.postDelayed(() -> {
+            if (handsFreeRequested && !speakingReply && !awaitingResponse &&
+                    !isFinishing()) startAfterPermission();
+        }, 600);
     }
 
     @Override public void onTrimMemory(int level) {
         super.onTrimMemory(level);
         if (level == TRIM_MEMORY_RUNNING_CRITICAL || level >= TRIM_MEMORY_MODERATE) {
             memoryWarning = true;
-            cancelRecognizer("Mémoire critique : écoute désactivée. Je reste disponible par écrit.");
+            stopConversation("Mémoire critique : écoute arrêtée, mode texte disponible.");
             send("BonzeMemoryNotice", "critical");
             inferenceQueue.execute(BonzeInference::release);
         } else if (level >= TRIM_MEMORY_RUNNING_LOW && level != TRIM_MEMORY_UI_HIDDEN) {
             memoryWarning = true;
-            cancelRecognizer("Mémoire chargée : le clavier reste disponible.");
+            stopConversation("Mémoire chargée : écoute arrêtée, le clavier reste disponible.");
             send("BonzeMemoryNotice", "high");
         }
     }
@@ -209,11 +345,12 @@ public final class MainActivity extends Activity {
         memoryWarning = false; // allow explicit retry, never auto-start microphone
     }
     @Override public void onPause() {
-        cancelRecognizer("Écoute arrêtée en arrière-plan.");
+        stopConversation("Écoute suspendue : application en arrière-plan.");
         super.onPause();
     }
     @Override public void onDestroy() {
-        cancelRecognizer("Écoute arrêtée.");
+        stopConversation("Écoute arrêtée.");
+        if (tts != null) { tts.shutdown(); tts = null; }
         inferenceQueue.execute(BonzeInference::release);
         inferenceQueue.shutdown();
         if (web != null) { web.destroy(); web = null; }
