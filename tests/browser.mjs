@@ -59,6 +59,9 @@ try{
  await page.locator('#settings-open').click();await page.locator('#quick-export').click();
  check(await page.locator('#backup-panel').evaluate(el=>el.open),'one-tap access to encrypted backup');
  check(await page.evaluate(()=>document.activeElement.id==='backup-password'),'backup password receives focus');
+ await page.locator('#backup-password').fill('trop court');await page.locator('#backup-export').click();
+ check((await page.locator('#backup-status').textContent()).includes('phrase secrète'),'invalid short phrase explains issue before export');
+ check(await page.evaluate(()=>document.activeElement.id==='backup-password'),'invalid phrase keeps focus');
  const beforeBackup=await page.evaluate(()=>JSON.parse(localStorage.getItem('bonze-proto-01')));
  await page.locator('#backup-password').fill('une phrase secrète de test');
  const downloadPromise=page.waitForEvent('download');await page.locator('#backup-export').click();const download=await downloadPromise;
@@ -86,7 +89,7 @@ try{
     else if(action==='stop'){active=false;emitSnapshot();}
     else if(action==='text'){active=false;rows.push({id:Date.now(),role:'human',text});emitSnapshot({state:'thinking',busy:true});}
     else if(action==='describe'){active=false;emitSnapshot();BonzeNativeEvent({type:'speech-start',boot:'service',seq:++seq,request,id:'description',text});}
-   },resourceSnapshot:()=>JSON.stringify({availableMiB:1024,totalMiB:8192,pssMiB:300})};
+   },admin:(action,payload)=>{calls.push(['admin',action,payload]);},resourceSnapshot:()=>JSON.stringify({availableMiB:1024,totalMiB:8192,pssMiB:300})};
  });
  const p=await native.newPage();p.on('pageerror',e=>errors.push(String(e)));
  await p.goto(origin+'/docs/');await p.waitForSelector('#avatar-fields select',{state:'attached'});
@@ -130,6 +133,8 @@ try{
  check(await p.evaluate(()=>calls.some(c=>c[0]==='configure'&&c[1].neural===false)),'neural disable persisted');
  check(await p.evaluate(()=>!calls.some(c=>c[0]==='start')),'reload never resumes microphone by itself');
  check(await p.locator('#native-voice').inputValue()==='fr-soft','selected native voice survives reload');
+ await p.locator('#settings-open').click();await p.locator('#quick-journal').click();
+ check(await p.evaluate(()=>calls.some(c=>c[0]==='admin'&&c[1]==='unlock')),'quick diagnostic shortcut invokes existing Android device gate');
  check(errors.length===0,'no native UI exceptions: '+errors.join(','));
  await native.close();
  console.log(checks+' browser assertions passed');
