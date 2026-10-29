@@ -86,3 +86,5 @@ Ordre demandé : anomalies bloquantes, puis mécanismes émotionnels, administra
 Candidat complément : tests instrumentés Android Piper/conseil ajoutés ; migration des acquis sans ancien conseil corrigée, journaux PWA persistés. Licences détaillées dans docs/piper-integration.md et docs/licenses. Validation Android toujours en cours.
 
 Relecture indépendante : export SAF périmé rejeté avant ouverture du fichier ; poids par défaut restaurés immédiatement ; six tests JVM désormais prévus. CI instrumentée 40954882209 a échoué avant les essais à cause de la clé debug absente du runner ; clé éphémère dédiée à l’émulateur ajoutée. La clé de livraison reste celle de 0.5, avec contrôle SHA-256 obligatoire. Tests de sauvegarde chiffrée de bout en bout ajoutés au navigateur.
+
+Validation : le nouveau scénario navigateur importait le fichier sans activer le bouton Importer (qui capture la phrase secrète) ; test corrigé pour utiliser le véritable sélecteur. Probe complémentaire demandé : comparer début de séquence explicite et automatique, température 0,1 recommandée upstream ; ne conclure à une cause modèle qu’après comparaison.

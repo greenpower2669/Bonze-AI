@@ -61,10 +61,10 @@ try{
  await page.locator('#backup-password').fill('une phrase secrète de test');
  const downloadPromise=page.waitForEvent('download');await page.locator('#backup-export').click();const download=await downloadPromise;
  const encrypted=await readFile(await download.path());check(!encrypted.toString().includes(beforeBackup.identity.seed),'download is encrypted');
- await page.locator('#backup-password').fill('une autre phrase incorrecte');await page.locator('#backup-file').setInputFiles({name:'essai.bonze',mimeType:'application/octet-stream',buffer:encrypted});
+ await page.locator('#backup-password').fill('une autre phrase incorrecte');const chooseWrong=page.waitForEvent('filechooser');await page.locator('#backup-import').click();await(await chooseWrong).setFiles({name:'essai.bonze',mimeType:'application/octet-stream',buffer:encrypted});
  await page.waitForFunction(()=>document.getElementById('backup-status').textContent.includes('incorrecte'));
  check(await page.locator('#backup-restore').isHidden(),'wrong password cannot enable restoration');
- await page.locator('#backup-password').fill('une phrase secrète de test');await page.locator('#backup-file').setInputFiles({name:'essai.bonze',mimeType:'application/octet-stream',buffer:encrypted});
+ await page.locator('#backup-password').fill('une phrase secrète de test');const chooseRight=page.waitForEvent('filechooser');await page.locator('#backup-import').click();await(await chooseRight).setFiles({name:'essai.bonze',mimeType:'application/octet-stream',buffer:encrypted});
  await page.waitForSelector('#backup-restore',{state:'visible'});await page.locator('#backup-restore').click();await page.waitForSelector('#avatar-fields select',{state:'attached'});
  check(await page.evaluate(seed=>JSON.parse(localStorage.getItem('bonze-proto-01')).identity.seed===seed,beforeBackup.identity.seed),'backup restores exact identity');
  check(await page.evaluate(()=>Array.isArray(JSON.parse(localStorage.getItem('bonze-diagnostics')))&&JSON.parse(localStorage.getItem('bonze-diagnostics')).length>0),'actual council traces survive backup and reload');
