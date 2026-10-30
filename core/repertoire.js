@@ -197,9 +197,12 @@ function choose(input){
  for(i=0;i<ranked.length;i++){needle-=ranked[i].weight;if(needle<=0){pick=ranked[i].card;break;}}
  // Fixed-scope validated lexical alternatives; never change negation, facts, names, or safety texts.
  var body=pick.body,substitutions=[];
- if(input.synonyms===true&&intent!=='urgence'&&intent!=='question'&&intent!=='correction'){
-  body=body.replace(/\[\[([a-z]+)\]\]/g,function(_,key){var words=SYNS[key];if(!words)return '';var chosen=words[Math.floor(rand(s)*words.length)];substitutions.push({slot:key,value:chosen});return chosen;});
- }
+ body=body.replace(/\[\[([a-z]+)\]\]/g,function(_,key){
+  var words=SYNS[key];if(!words)return '';
+  var vary=input.synonyms===true&&intent!=='urgence'&&intent!=='question'&&intent!=='correction';
+  var chosen=vary?words[Math.floor(rand(s)*words.length)]:words[0];
+  substitutions.push({slot:key,value:chosen});return chosen;
+ });
  s.turns++;s.recent.push(pick.id);s.recent=s.recent.slice(-16);s.families.push(pick.family);s.families=s.families.slice(-8);
  return {text:body,emotion:pick.role==='sage'?'calme':pick.role,card:pick.id,family:pick.family,intent:intent,detected:local,semanticUsed:intent===semantic,state:s,trace:{cardsConsidered:candidates.length,substitutions:substitutions,source:'authored-repertoire',modelGenerated:false}};
 }
