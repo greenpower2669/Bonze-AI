@@ -194,3 +194,11 @@ Rapport complet : \`docs/history/bonze031-evolution-2026-10-30.md\`. Aucun APK n
 - [ ] Revoir sauvegarde durable de signature ; tester ancienne install 0.6 en mise à jour et retour arrière avant d'autoriser un APK de test direct. Ne pas réclamer de désinstallation.
 - [ ] Compléter mémoire familiale autorisée, IA du savoir au-delà de heuristiques, apprentissage des experts/ablation, et Piper/voix française.
 - [ ] Aucune fusion main, aucun tag, aucune Release ni AAB publiés sans validation Fab. Dernier APK publiquement vérifié : `Bonze-AI-v0.6.0-debug.apk`.
+
+## Livraison demandée : APK 0.7.0-dev, distinct de la 0.6.0
+- [x] Construire une variante de diagnostic `-PbonzeParallelInstall=true` avec ID `fr.bonzeai.companion.dev` et libellé **Bonze AI Dev**, pour garder `fr.bonzeai.companion` et ses données 0.6.0 intactes.
+- [x] Ajouter au job Actions conditionnel `[bonze-build]` une véritable compilation du paquet, vérification du manifeste, absence d'INTERNET, certificat APK et empreinte SHA-256.
+- [x] Activer un **artefact GitHub Actions** incluant un APK entier, sans tag ni GitHub Release ; durée de conservation 30 jours.
+- [ ] Vérifier le run final et le paquet, récupérer l'artefact et livrer le fichier `.apk` direct décompressé à Fab.
+- [ ] Essai réel sur son Samsung, reconnaissance vocale, Piper, contrôle du chargement GGUF 1.2B, écran éteint, RAM. L'APK Dev ne partage pas l'historique de la 0.6.0 : importer volontairement une sauvegarde `.bonze` si souhaité.
+- [ ] Ne jamais confondre ce test parallèle signé par une clé CI éphémère avec une mise à jour officielle de la 0.6.0. La signature et les données originales doivent rester préservées.
