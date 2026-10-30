@@ -9,13 +9,16 @@ import android.speech.SpeechRecognizer;
 import android.webkit.*;
 import androidx.webkit.WebViewAssetLoader;
 import java.util.*;
+import java.util.concurrent.*;
+import org.json.JSONObject;
 
 /** Offline UI bridge. An authorized conversation belongs to ConversationService. */
 public final class MainActivity extends Activity {
- private static final int MIC_PERMISSION=411;
+ private static final int MIC_PERMISSION=411,MODEL_PICKER=512;
  private WebView web;private volatile ConversationService engine;
  private boolean visible,uiReady,bound,destroyed;
  private BackupBridge backups;
+ private final ExecutorService modelImporter=Executors.newSingleThreadExecutor();
  private final PendingStart pendingStart=new PendingStart();
  private String bootstrap="{}",configuration="{}";
  private final List<Runnable> pending=new ArrayList<>();
@@ -64,8 +67,22 @@ public final class MainActivity extends Activity {
    else if("restore-ack".equals(action)){withService(()->engine.acknowledgeRestore());}
    else if("save-web".equals(action)){withService(()->engine.saveWebState(text));}
    else if("sync".equals(action)){if(visible)withService(()->engine.attach(observer));}
+   else if("model-import".equals(action)&&visible&&!destroyed){pendingStart.cancel();withService(()->engine.prepareModelImport());pickLocalModel();}
   });}
   @JavascriptInterface public String resourceSnapshot(){ConversationService current=engine;return current==null?"{}":current.resources();}
+ }
+ private void pickLocalModel(){
+  Intent select=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+  select.addCategory(Intent.CATEGORY_OPENABLE);
+  select.setType("*/*");
+  try{startActivityForResult(select,MODEL_PICKER);}
+  catch(RuntimeException error){modelEvent("Impossible d'ouvrir le sélecteur de fichiers.",false);}
+ }
+ private void modelEvent(String message,boolean success){
+  if(destroyed||web==null)return;
+  String payload="{\"message\":"+JSONObject.quote(message)+",\"success\":"+success+"}";
+  web.evaluateJavascript("window.BonzeModelEvent&&window.BonzeModelEvent("+payload+")",null);
+  if(engine!=null)engine.modelImported();
  }
  private void startAfterPermission(String id){
   pendingStart.request(id);
@@ -88,11 +105,24 @@ public final class MainActivity extends Activity {
   if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED){pendingStart.grant();launchConversation();}
   else{pendingStart.cancel();withService(()->engine.stop(id,"Micro arrêté. Tu peux relancer la conversation lorsque Bonze est ouvert."));}
  }
- @Override protected void onActivityResult(int request,int result,Intent data){super.onActivityResult(request,result,data);backups.result(request,result,data);}
+ @Override protected void onActivityResult(int request,int result,Intent data){
+  super.onActivityResult(request,result,data);
+  if(request!=MODEL_PICKER){backups.result(request,result,data);return;}
+  if(result!=RESULT_OK||data==null||data.getData()==null){modelEvent("Import annulé.",false);return;}
+  final android.net.Uri source=data.getData();
+  modelEvent("Vérification SHA-256 du GGUF local en cours…",false);
+  modelImporter.execute(()->{
+   String resultText;boolean ok;
+   try{resultText=LocalModelStore.install(getApplicationContext(),source);ok=true;}
+   catch(Exception error){resultText="Import refusé : "+error.getMessage();ok=false;}
+   final String message=resultText;final boolean success=ok;
+   runOnUiThread(()->modelEvent(message,success));
+  });
+ }
  @Override public void onResume(){super.onResume();visible=true;if(uiReady&&engine!=null)engine.attach(observer);launchConversation();}
  @Override public void onPause(){visible=false;if(backups!=null)backups.pause();if(engine!=null)engine.detach(observer);super.onPause();}
  @Override public void onDestroy(){
-  destroyed=true;if(backups!=null)backups.destroy();pendingStart.cancel();pending.clear();if(engine!=null)engine.detach(observer);
+  destroyed=true;modelImporter.shutdownNow();if(backups!=null)backups.destroy();pendingStart.cancel();pending.clear();if(engine!=null)engine.detach(observer);
   if(bound){unbindService(connection);bound=false;}if(web!=null){web.destroy();web=null;}engine=null;super.onDestroy();
  }
 }
