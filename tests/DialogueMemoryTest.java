@@ -19,6 +19,11 @@ public class DialogueMemoryTest {
   check(!p.contains("Humain :")&&!p.contains("Bonze :")); // current message remains standalone
   m.setName("Fab");m.setScene("On joue à la forêt.");
   check(m.context().contains("non authentifié"));
+  m.add("human","Maintenant on est sur la lune, loin de notre forêt.");
+  check(m.scene().contains("lune"));
+  check(m.context().contains("lune"));
+  m.add("human","On quitte la lune pour visiter Mars.");
+  check(m.scene().contains("Mars"));
   check(m.context().length()<850);
   m.add("human","ligne un\nligne deux");
   check(m.context().contains("ligne un ligne deux"));
