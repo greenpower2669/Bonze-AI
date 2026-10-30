@@ -58,5 +58,6 @@ final class ScriptedDialogue {
             return result;
         } finally {org.mozilla.javascript.Context.exit();}
     }
+    void adopt(JSONObject restored){if(restored!=null)state=restored;}
     JSONObject state(){return state;}
 }
