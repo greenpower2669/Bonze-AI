@@ -84,6 +84,28 @@
   <select id="pressure"><option value="normal">Normale</option><option value="high">Élevée</option><option value="critical">Critique</option></select>
   <p id="policy" class="hint"></p>
  </details>
+ <details id="memory-panel"><summary>🧠 Mes tiroirs de mémoire privée (expérimental)</summary>
+  <p class="hint">Ce coffre local est chiffré par une phrase secrète distincte du verrouillage du téléphone. Les souvenirs ne sont pas encore partagés avec le modèle vocal : l'identification familiale reste à sécuriser. Sauvegarde .bonze conseillée.</p>
+  <label for="memory-password">Phrase secrète du coffre (12 caractères minimum)</label>
+  <input id="memory-password" type="password" autocomplete="off" minlength="12" maxlength="256">
+  <button id="memory-unlock" class="secondary-button" type="button">Ouvrir ou créer mon coffre</button>
+  <p id="memory-status" class="hint" role="status">Coffre verrouillé. Aucun souvenir privé n’est injecté dans les réponses vocales.</p>
+  <section id="memory-editor" hidden aria-label="Gestion de ma mémoire privée">
+    <button id="memory-lock" type="button" class="secondary-button">🔒 Verrouiller la mémoire</button>
+    <label for="memory-kind">Tiroir</label>
+    <select id="memory-kind"><option value="personnalite">Personnalité</option><option value="personnes">Personnes</option><option value="relations">Relations</option><option value="connaissances">Connaissances</option><option value="experiences">Expériences</option><option value="competences">Compétences</option><option value="missions">Missions</option><option value="scenes">Scènes</option></select>
+    <label for="memory-trust">Statut du souvenir</label>
+    <select id="memory-trust"><option value="declare">Déclaré par moi (non vérifié)</option><option value="fiction">Imaginaire / jeu</option><option value="hypothese">Hypothèse</option><option value="observe">Observé</option></select>
+    <label for="memory-text">Ce que je veux lui apprendre explicitement</label>
+    <textarea id="memory-text" rows="3" maxlength="360"></textarea>
+    <label class="check" for="memory-confirm"><input type="checkbox" id="memory-confirm"> Je confirme l'enregistrement ou la suppression demandée.</label>
+    <button type="button" id="memory-add" class="secondary-button">Enregistrer ce souvenir</button>
+    <label for="memory-query">Chercher un souvenir dans les tiroirs</label>
+    <input id="memory-query" type="text" maxlength="200" placeholder="Ex. Pipo ou forêt">
+    <button id="memory-find" type="button" class="secondary-button">Chercher (3 extraits maximum)</button>
+    <div id="memory-results" role="region" aria-label="Souvenirs trouvés"></div>
+  </section>
+ </details>
  <details id="backup-panel"><summary>Sauvegarder et restaurer mon Bonze</summary>
   <p class="hint">Le fichier contient identité, souvenirs, acquis, paramètres, poids émotionnels et diagnostics. Il est chiffré avec ta phrase secrète ; garde-la, elle ne peut pas être retrouvée par Bonze.</p>
   <label for="backup-password">Phrase secrète de la sauvegarde (12 caractères minimum)</label>
