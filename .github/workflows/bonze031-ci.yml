@@ -102,3 +102,4 @@ jobs:
             bonze-*.jsonl
             bonze031-diagnostics.md
           if-no-files-found: ignore
+# One-time model comparison requested on the experiment branch; never publishes assets.
