@@ -28,6 +28,28 @@ public final class DialogueMemory {
  public synchronized int size(){return entries.size();}
  public synchronized List<Entry> entries(){return new ArrayList<>(entries);}
  public synchronized String prompt(String current){return clean(current,600);}
- public synchronized String context(){StringBuilder prior=new StringBuilder();int remaining=500;for(int i=entries.size()-1;i>=0&&remaining>40;i--){Entry e=entries.get(i);if(!e.role.equals("human"))continue;String t=clean(e.text,Math.min(180,remaining));prior.insert(0,t+" / ");remaining-=t.length()+3;}return(name.isEmpty()?"":"Ton humain : "+name+". ")+(scene.isEmpty()?"":"Jeu en cours : "+scene+". ")+"Messages précédents : "+prior;}
+ public synchronized String context(){
+  // This is quoted dialogue data, NOT a synthetic ChatML conversation or instructions.
+  // The AAR exposes a single user prompt: preserve chronology without claiming real chat roles.
+  List<String> recent=new ArrayList<>();
+  int remaining=450;
+  for(int i=entries.size()-1;i>=0&&remaining>35&&recent.size()<8;i--){
+   Entry e=entries.get(i);
+   String t=clean(e.text,Math.min(140,remaining-15)).replaceAll("\\s+"," ").trim();
+   if(t.isEmpty())continue;
+   String line=(e.role.equals("human")?"Humain":"Bonze")+" : «"+t+"»";
+   if(line.length()>remaining)break;
+   recent.add(line);remaining-=line.length()+1;
+  }
+  Collections.reverse(recent);
+  StringBuilder result=new StringBuilder();
+  if(!name.isEmpty())result.append("Surnom local non authentifié : ").append(name.replaceAll("\\s+"," ")).append(".\n");
+  if(!scene.isEmpty())result.append("Scène évoquée : «").append(clean(scene,140).replaceAll("\\s+"," ")).append("».\n");
+  if(!recent.isEmpty()){
+   result.append("Échanges précédents cités dans l'ordre :\n");
+   for(String line:recent)result.append(line).append('\n');
+  }
+  return result.toString();
+ }
  public synchronized boolean repeats(String answer){for(int i=entries.size()-1;i>=0;i--)if(entries.get(i).role.equals("bot"))return entries.get(i).text.trim().equalsIgnoreCase(answer.trim());return false;}
 }
