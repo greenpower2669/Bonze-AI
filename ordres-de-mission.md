@@ -121,3 +121,11 @@ Rapport de passation exact : \`docs/history/bonze031-evolution-2026-10-30.md\` e
 - [ ] Vérifier le benchmark réel 230M/1.2B et les résultats français (humour, suite du dialogue, répétition, hallucinations), RAM/PSS et latence sur Samsung avant adoption recommandée.
 - [ ] Vérifier APK complet, signature identique 0.6, tests Android instrumentés/Piper/Stop/veille, compatibilité de sauvegarde, stockage et ressources puis validation Fab.
 - [ ] Aucune Release ni merge `main` sans autorisation. Aucun APK de cette branche publié.
+
+## Avenant technique 30/10 — constats vérifiés
+- [x] Exécuter comparaison réelle CPU/Linux sur LFM 230M et 1.2B Q4 et consigner sorties : `41096101109`, `docs/bench-dialogue-fr-bonze031-results.md`. Le 1.2B n'est pas supérieur de manière suffisamment constante pour remplacer le 230M.
+- [x] Ajouter `KnowledgeGuard.java` (règles bornées, non neuronales) pour limiter des informations sensibles ou temporelles inventées hors ligne et tracer l'origine de la réponse.
+- [x] Corriger concurrence de déverrouillage du coffre privé à tiroirs ; toute opération périmée est ignorée après Stop ou nouvelle tentative.
+- [x] Passer l'interface expérimentale au code Android7/version `0.7.0-dev`, conserver la 0.6.0 comme référence publiée.
+- [ ] Compiler APK complet/tester lint, vérifications de sécurité et signature de CI ; aucune distribution tant que certificat de mise à jour n'est pas préservé.
+- [ ] Améliorer dialogue multi-rôles, jugement vrai/fiction, prononciation Piper, expertises spécialisées apprises et tests Samsung, sans présentation trompeuse de réussite.
