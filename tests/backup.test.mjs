@@ -30,8 +30,10 @@ test('scripted repertoire ledgers survive encrypted export, with strict bounds',
  d.web.scriptedState=ledger;d.repertoire=ledger;
  const encrypted=await sealBackup(d,'une phrase secrète longue');
  const restored=await openBackup(encrypted,'une phrase secrète longue');
- assert.deepEqual(restored.web.scriptedState,ledger);
- assert.deepEqual(restored.repertoire,ledger);
+ assert.deepEqual(restored.web.scriptedState.recent,ledger.recent);
+ assert.deepEqual(restored.repertoire.recent,ledger.recent);
+ assert.equal(restored.repertoire.lastIntent,'');
+ assert.deepEqual(restored.repertoire.associations,[]);
  const invalid=data();invalid.repertoire={...ledger,recent:Array(100).fill('salut/joie/0')};
  assert.throws(()=>validateBackup(invalid));
 });

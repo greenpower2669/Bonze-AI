@@ -36,6 +36,7 @@ public final class ConversationService extends Service {
  private long focusSerial;
  private boolean neural=true,readText=false,economy;
  private String mode="precise",mood="curiosite",request="",state="off",status="Micro arrêté.",voiceName="";
+ private boolean piperFallbackForSession=false;private String lastPiperFailure="";
  private long workEpoch,sequence,speechSerial,speechBegan,lastHeardAt;
  private volatile long lastLatency=-1,lastCpu=-1;
  private int noSpeech;
@@ -96,7 +97,7 @@ public final class ConversationService extends Service {
   invalidate();request=id;
   if("off".equals(mode)||"text".equals(mode)){stop(id,"Ce mode conserve le microphone arrêté.");return;}
   if(!localSupported()){stop(id,"Reconnaissance française locale indisponible. Tu peux écrire.");return;}
-  session.begin();noSpeech=0;lastHeardAt=SystemClock.elapsedRealtime();holdCpu();setState("waiting","Je prépare notre conversation, même écran éteint.");listen();
+  session.begin();piperFallbackForSession=false;lastPiperFailure="";noSpeech=0;lastHeardAt=SystemClock.elapsedRealtime();holdCpu();setState("waiting","Je prépare notre conversation, même écran éteint.");listen();
  }
  public void stop(String id,String message){
   request=id==null?request:id;invalidate();setState("off",message);releaseCpu();
@@ -267,6 +268,7 @@ public final class ConversationService extends Service {
   if(tts==null||!voiceInitFinished)return;List<Voice> all=localVoices();Voice choice=null;
   for(Voice v:all)if(v.getName().equals(preferred)){choice=v;break;}
   if(choice==null&&!all.isEmpty())choice=all.get(0);
+   if(!preferred.equals(voiceName)){piperFallbackForSession=false;lastPiperFailure="";}
   localVoiceReady=choice!=null&&tts.setVoice(choice)==TextToSpeech.SUCCESS;
   if("piper-mls".equals(preferred))voiceName=preferred;else if(localVoiceReady)voiceName=choice.getName();prefs.edit().putString("voiceChoiceV2",voiceName).putString("voice",voiceName).apply();
  }
@@ -277,13 +279,13 @@ public final class ConversationService extends Service {
   releaseRecognizer(true);if(conversation)session.talking();speechConversation=conversation;
   speechChunks="piper-mls".equals(voiceName)?SpeechPlan.piperChunks(text):SpeechPlan.chunks(text);if(speechChunks.isEmpty()){stop(request,"Lecture vide.");return;}
   speechPrefix="BONZE_"+(++speechSerial)+"_";final String prefix=speechPrefix;final long voiceBegan=SystemClock.elapsedRealtime();
-  if("piper-mls".equals(voiceName)){
+  if("piper-mls".equals(voiceName)&&!piperFallbackForSession){
    speechEngine="piper-mls";setState("waiting","Je prépare ma voix locale.");
    piper.speak(speechChunks,prefix,"calme".equals(mood)?.94f:"joie".equals(mood)?1.02f:.98f,new PiperVoice.Events(){
     public void start(String id,String content){main.post(()->{if(epoch!=workEpoch||!validSpeech(id))return;speechId=id;speechText=content;speechBegan=SystemClock.elapsedRealtime();journal.add("speech",diagnosticTurn,DiagnosticJournal.fields("engine","piper-mls","text",content,"id",id,"firstAudioLatencyMs",partIndex(id)==0?SystemClock.elapsedRealtime()-voiceBegan:JSONObject.NULL));setState("speaking","Je te réponds.");speechEvent("speech-start",id,0,0);});}
     public void level(String id,double value,int frame){main.post(()->{if(epoch!=workEpoch||!validSpeech(id)||listener==null)return;JSONObject e=base("speech-level");try{e.put("id",id).put("level",value).put("frame",frame);listener.onEvent(e.toString());}catch(JSONException ignored){}});}
     public void done(){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;finishSpeech();});}
-    public void failed(String reason,boolean hadAudio){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;journal.add("speech-fallback",diagnosticTurn,DiagnosticJournal.fields("reason",reason,"hadAudio",hadAudio));if(hadAudio)stop(request,"Lecture interrompue. Tu peux réessayer.");else androidSpeech(epoch,0);});}
+    public void failed(String reason,boolean hadAudio){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;journal.add("speech-fallback",diagnosticTurn,DiagnosticJournal.fields("reason",reason,"hadAudio",hadAudio,"sessionFallback",!hadAudio));lastPiperFailure=reason;if(hadAudio)stop(request,"Lecture Piper interrompue après démarrage. Tu peux réessayer.");else{piperFallbackForSession=true;setState("waiting","Piper ne peut pas lire cette phrase ("+reason+"). Voix Android locale de secours pour la conversation.");androidSpeech(epoch,0);}});}
    });
   }else androidSpeech(epoch,0);
  }
@@ -304,7 +306,7 @@ public final class ConversationService extends Service {
  private JSONObject snapshotObject(){
   JSONObject o=base("snapshot");try{
    if(council!=null)o.put("council",council.snapshot());
-   o.put("active",session.active()).put("state",state).put("busy","thinking".equals(state)).put("status",status).put("voice",voiceName);
+   o.put("active",session.active()).put("state",state).put("busy","thinking".equals(state)).put("status",status).put("voice",voiceName).put("actualVoiceEngine",speechEngine).put("piperFallback",piperFallbackForSession);
    JSONArray rows=new JSONArray();for(DialogueMemory.Entry e:memory.entries())rows.put(new JSONObject().put("id",e.id).put("role",e.role).put("text",e.text));o.put("history",rows).put("importedThrough",prefs.getLong("importedThrough",0));
    JSONArray voices=new JSONArray();voices.put(new JSONObject().put("name","piper-mls").put("quality",400));if(voiceInitFinished&&tts!=null)for(Voice v:localVoices())voices.put(new JSONObject().put("name",v.getName()).put("quality",v.getQuality()));o.put("voices",voices);
    if(prefs.contains("restoredWeb")){o.put("restoredWeb",new JSONObject(prefs.getString("restoredWeb","{}")));o.put("restoreWeights",new JSONObject(prefs.getString("restoredWeights","{}")));o.put("restoreJournal",journal.copy());}
@@ -324,7 +326,7 @@ public final class ConversationService extends Service {
  private void updateCouncil(String text){if(council==null)return;long now=SystemClock.elapsedRealtime();try{JSONObject r=council.run(text,DiagnosticJournal.fields("familiar",memory.size()>0,"scene",!memory.scene().isEmpty()),Math.min(30,(now-councilAt)/1000.0),state);councilAt=now;policyHint=r.optString("hint");JSONObject forces=r.getJSONObject("state").getJSONObject("forces");double max=-1;for(Iterator<String> it=forces.keys();it.hasNext();){String k=it.next();if(forces.optDouble(k)>max){max=forces.optDouble(k);mood=k;}}journal.add("council",diagnosticTurn,r);}catch(Exception e){journal.add("council-error",diagnosticTurn,DiagnosticJournal.fields("error",e.getClass().getSimpleName()));}}
  private void councilTick(){if(disposed)return;if(session.active()||listener!=null){updateCouncil("");if(listener!=null&&council!=null){JSONObject e=base("emotion-state");try{e.put("council",council.snapshot());listener.onEvent(e.toString());}catch(JSONException ignored){}}}main.postDelayed(this::councilTick,10000);}
  public void configureCouncil(String json)throws JSONException{if(council==null)throw new IllegalStateException();council.configure(new JSONObject(json));journal.add("admin-council",diagnosticTurn,council.snapshot());publish();}
- public JSONObject diagnostics(){return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"journal",journal.copy(),"resources",resourceObject(),"engine",speechEngine,"preferredVoice",voiceName,"model","LFM2.5-230M classification only; authored replies");}
+ public JSONObject diagnostics(){return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"journal",journal.copy(),"resources",resourceObject(),"engine",speechEngine,"preferredVoice",voiceName,"piperFallbackForSession",piperFallbackForSession,"lastPiperFailure",lastPiperFailure,"model","LFM2.5-230M classification only; authored replies");}
  private JSONObject resourceObject(){try{return new JSONObject(resources());}catch(JSONException e){return new JSONObject();}}
  public JSONObject backupData(){
   JSONArray rows=new JSONArray();for(DialogueMemory.Entry e:memory.entries())rows.put(DiagnosticJournal.fields("id",e.id,"role",e.role,"text",e.text));

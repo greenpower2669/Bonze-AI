@@ -28,3 +28,11 @@ test('BONZE-034 compressed repertoire is loaded by Android before selection',()=
  assert.ok(bridge.indexOf('core/repertoire-corpus.js')<bridge.indexOf('core/repertoire.js'));
  assert.ok(service.includes('scriptedReply(text,semantic,turn)'));
 });
+
+test('BONZE-036: Piper fallback stays on local voice until reset and never replays existing audio',()=>{
+ assert.ok(service.includes('piperFallbackForSession=true'));
+ assert.ok(service.includes('if(hadAudio)stop('));
+ assert.ok(service.includes('lastPiperFailure'));
+ assert.ok(service.includes('piperFallbackForSession=false'));
+ assert.ok(service.includes('actualVoiceEngine'));
+});
