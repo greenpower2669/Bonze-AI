@@ -27,7 +27,7 @@ test('council forces, all individual endurances, parameters and traces survive a
 test('v1 .bonze retains a separately encrypted owner drawer without exposing plaintext',async()=>{
  const {createDrawers,remember}=await import('../core/memory-drawers.mjs');
  const {encryptDrawers}=await import('../core/memory-vault.mjs');
- const d=data(),scope=d.web.identity.seed,access={scope,verified:true};
+ const d=data();d.web.identity=createIdentity('123456789abcdef0');const scope=d.web.identity.seed,access={scope,verified:true};
  let drawers=createDrawers(scope);
  drawers=remember(drawers,access,{id:'memory-001',kind:'scenes',text:'Pipo se cache près du lac',
   status:'fiction',provenance:'human',confirmed:true});
