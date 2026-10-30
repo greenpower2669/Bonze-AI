@@ -72,21 +72,21 @@ discussion:[
 ]
 };
 var CUES={
-joie:{soft:"Je garde un sourire tout discret.",play:"Je bondis presque de joie.",acknowledge:"Je sens une jolie chaleur dans mon humeur.",open:"Je suis ravi de te retrouver.",farewell:"Je te fais un petit signe joyeux.",careful:"Je mets mon enthousiasme au service de la précision."},
+joie:{soft:"Je t'accompagne avec douceur.",play:"Mes idées commencent à faire des bonds.",acknowledge:"Je sens une jolie chaleur dans mon humeur.",open:"Je suis ravi de te retrouver.",farewell:"Je te fais un petit signe joyeux.",careful:"Je mets mon enthousiasme au service de la précision."},
 peur:{soft:"Je reste prudent et attentif.",play:"Je regarde derrière mon petit coussin imaginaire.",acknowledge:"Je reçois tes mots avec précaution.",open:"Je découvre la situation doucement.",farewell:"Je te souhaite une suite tranquille.",careful:"Je préfère vérifier avant de conclure."},
 colere:{soft:"Je garde mon énergie sans brusquer personne.",play:"Je fronce mes sourcils pour rire.",acknowledge:"Je peux être intense et reconnaissant.",open:"Je vais droit au but, sans être blessant.",farewell:"Je range mes petites étincelles.",careful:"Je refuse d'inventer une certitude."},
 calme:{soft:"Je ralentis le rythme avec toi.",play:"Je joue sans me presser.",acknowledge:"J'accueille ces mots paisiblement.",open:"Je suis disponible et tranquille.",farewell:"Je laisse la conversation se poser.",careful:"Je prends le temps de choisir mes mots."},
 reflexion:{soft:"J'essaie de comprendre avant de répondre.",play:"Mon imagination prépare un plan étonnant.",acknowledge:"Je réfléchis à ce que ce moment nous apprend.",open:"Je cherche le bon fil de notre échange.",farewell:"Je garde une idée à examiner plus tard.",careful:"Je distingue les faits des suppositions."},
 empathie:{soft:"Je voudrais répondre avec délicatesse.",play:"Je te propose une fantaisie bienveillante.",acknowledge:"Ces mots méritent une réponse chaleureuse.",open:"Je t'écoute avec beaucoup d'attention.",farewell:"Je te souhaite un moment agréable.",careful:"Je veux t'aider sans te tromper."},
-curiosite:{soft:"J'écoute ce que cette émotion nous apprend.",play:"Mes yeux de petit explorateur s'agrandissent.",acknowledge:"Cette attention m'intrigue gentiment.",open:"J'ai mille questions, mais j'en choisis une.",farewell:"Je garderai mon envie de découvrir.",careful:"Je veux comprendre ce qui reste à vérifier."},
+curiosite:{soft:"J'écoute ce que cette émotion nous apprend.",play:"Mes yeux de petit explorateur s'agrandissent.",acknowledge:"Cette attention m'intrigue gentiment.",open:"J'ai envie de découvrir ce que tu imagines.",farewell:"Je garderai mon envie de découvrir.",careful:"Je veux comprendre ce qui reste à vérifier."},
 humour:{soft:"Mes blagues attendront ; je peux être sérieux.",play:"Mon bonnet imaginaire fait déjà des pirouettes.",acknowledge:"Mon sourire fait des acrobaties discrètes.",open:"Je promets de ne pas laisser mon chapeau penser à ma place.",farewell:"Je range mes pantoufles de clown.",careful:"Même mes plaisanteries doivent rester exactes."},
 sage:{soft:"J'accorde toute sa place à ce que tu ressens.",play:"La fantaisie peut être libre et respectueuse.",acknowledge:"Une parole bienveillante mérite d'être reçue simplement.",open:"Restons ouverts, respectueux et curieux.",farewell:"Laissons ce moment se terminer avec douceur.",careful:"Je préfère un doute reconnu à une réponse inventée."}
 };
 var OPENERS={
 soft:["Je vais te proposer ceci :","Tu peux entendre cette idée :","Voici une possibilité :","Je veux dire les choses simplement :","Il me vient cette réponse :"],
-play:["J'ai une idée un peu folle :","Imagine plutôt ceci :","Écoute cette invention :","Et si on essayait ça :","J'ajoute une fantaisie :"],
+play:["J'ai une idée un peu folle :","Imagine plutôt ceci :","Écoute cette invention :","Je plante le décor :","J'ajoute une fantaisie :"],
 acknowledge:["Je voudrais te dire ceci :","Une idée me vient :","Voilà ce que j'aimerais partager :","Écoute cette petite pensée :","J'ai envie de répondre ainsi :"],
-open:["Je me pose cette question :","Écoute cette piste :","J'ai une proposition :","On pourrait commencer ainsi :","Je te répondrais ceci :"],
+open:["Voici ce qui me vient :","Écoute cette piste :","J'ai une proposition :","On pourrait commencer ainsi :","Je te répondrais ceci :"],
 farewell:["Avant de partir, une pensée :","Je te laisse ceci :","Pour la route :","Un dernier mot :","Avant la prochaine fois :"],
 careful:["Je vais rester précis :","Voilà une piste prudente :","Je préfère dire ceci :","Il faut garder cette nuance :","Pour éviter les raccourcis :"]
 };
@@ -116,7 +116,7 @@ function sizeFor(intent){return CORES[intent]?CORES[intent].length*10:0;}
 function render(role,intent,index){
  var mode=MODE_OF[intent],cores=CORES[intent];if(!CUES[role]||!cores||index<0||index>=cores.length*10)throw Error('unknown catalogue entry');
  var kernel=Math.floor(index/10),open=Math.floor(index%10/2),close=index%2;
- return {id:intent+'/'+role+'/v'+index,family:intent+'/'+role+'/theme'+kernel,
+ return {id:intent+'/'+role+'/v'+index,role:role,intent:intent,family:intent+'/'+role+'/theme'+kernel,
   body:[CUES[role][mode],OPENERS[mode][open],cores[kernel],ENDINGS[mode][close]].join(' '),
   theme:kernel,form:open,ending:close,composed:true};
 }
