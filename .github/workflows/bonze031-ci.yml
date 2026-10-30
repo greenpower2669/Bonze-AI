@@ -63,7 +63,7 @@ jobs:
 
   compare-models:
     name: Optional CPU probe — 230M vs 1.2B (manual)
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[bonze-benchmark]')
     needs: unit
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -92,9 +92,13 @@ jobs:
           echo "b1b3de114215d9507409a662a501a631095a479a419584e8a2ded6304b19b4f5  /tmp/model.gguf" | sha256sum -c
           /tmp/bonze031-probe /tmp/model.gguf "LFM2.5-1.2B Q4" > bonze-12b.jsonl
           rm /tmp/model.gguf
+      - name: Produce non-qualitative diagnostics
+        run: node scripts/score-dialogue.mjs bonze-230m.jsonl bonze-12b.jsonl
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: bonze031-comparison-raw
-          path: bonze-*.jsonl
+          path: |
+            bonze-*.jsonl
+            bonze031-diagnostics.md
           if-no-files-found: ignore
