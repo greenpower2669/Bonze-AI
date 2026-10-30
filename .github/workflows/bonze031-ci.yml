@@ -160,3 +160,5 @@ jobs:
 # One-time model comparison requested on the experiment branch; never publishes assets.
 
 # BONZE-032: one-time opt-in benchmark after fixing mutable token and model switch (no release).
+
+# BONZE-032: explicit one-time package validation after knowledge/memory fixes (no APK published).
