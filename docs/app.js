@@ -163,7 +163,7 @@ window.BonzeNativeEvent=e=>{
   nativeActive=e.active===true;nativeBusy=e.busy===true;
   model12Ready=e.model12Ready===true;modelChoice=e.model==='12b'?'12b':'230m';
   el('local-model').value=modelChoice;el('local-model').querySelector('option[value="12b"]').disabled=!model12Ready;
-  el('local-model-status').textContent='Moteur actif : '+(modelChoice==='12b'?'Liquid 1.2B Q4':'Liquid 230M Q4')+'. Liquid 1.2B '+(model12Ready?'installé et vérifié.':'non installé.')+' Aucun modèle supplémentaire chargé sans demande.';
+  el('local-model-status').textContent='Moteur actif : '+(modelChoice==='12b'?'Liquid 1.2B Q4':'Liquid 230M Q4')+'. Liquid 1.2B '+(model12Ready?'installé et vérifié.':'non installé.')+' Aucun modèle supplémentaire chargé sans demande.'+(e.modelFallback?' '+String(e.modelFallback).slice(0,180):'');
   if(Number.isSafeInteger(e.importedThrough))lastNativeHumanId=Math.max(lastNativeHumanId,e.importedThrough);
   applyNativeHistory(e.history);el('message').disabled=nativeBusy;el('send-message').disabled=nativeBusy;
   el('native-status').textContent=String(e.status||'');state(e.state);
