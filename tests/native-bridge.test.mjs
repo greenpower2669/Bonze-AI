@@ -21,3 +21,17 @@ test('stop cannot discard inference completion bookkeeping from the main queue',
  assert.ok(!service.includes('main.removeCallbacksAndMessages(null)'));
  assert.ok(service.includes('finally{generating.set(false);}'));
 });
+
+test('model switching imports only pinned local weights and never permits cloud loading',()=>{
+ const source=read('android/app/src/main/java/fr/bonzeai/companion/LocalModelStore.java');
+ const inference=read('android/app/src/main/java/fr/bonzeai/companion/BonzeInference.kt');
+ assert.ok(source.includes('ACTION')===false); // Source selector lives in Activity.
+ assert.ok(source.includes('SHA-256')&&source.includes('LARGE_SHA256'));
+ assert.ok(source.includes('openInputStream(uri)'));
+ assert.ok(source.includes('"content".equals(uri.getScheme())'));
+ assert.ok(activity.includes('Intent.ACTION_OPEN_DOCUMENT'));
+ assert.ok(activity.includes('LocalModelStore.install'));
+ assert.ok(inference.includes('if (loadedChoice != selected) release()'));
+ assert.ok(service.includes('LocalModelStore.available'));
+ assert.ok(!manifest.includes('android.permission.INTERNET'));
+});
