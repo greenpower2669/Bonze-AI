@@ -111,3 +111,8 @@ Préflight qualité : PiperPhonetics.speechPhonemes applique le plancher expéri
 - Branche `feature/bonze031-dialogue-natural-v1` : sélection 230M / 1.2B (défaut 230M), import SAF hors ligne du GGUF Q4_K_M avec SHA-256 et contrôle d'espace, déchargement avant changement de modèle. Aucune permission INTERNET, aucun poids 1.2B embarqué.
 - UI Options et sauvegarde `.bonze` conservent la sélection ; restauration sur téléphone dépourvu du poids 1.2B retombe au 230M. Tests JS et compilation Android source verts pour un commit antérieur du chantier (run `41095563691`).
 - Comparaison réelle JSONL à relancer après correctif C++ (`const llama_token` incompatible), aucun benchmark/essai Samsung et aucun APK nouveau publié. Détails dans `docs/history/bonze031-evolution-2026-10-30.md` et `todo.md`.
+
+## 0.7.0-dev — garde du savoir et sécurité mémoire (30/10)
+- Probe CPU réel `41096101109` : 230M/1.2B Q4, 6 scènes ×4 variantes ; 1.2B plus expressif mais peut inventer météo et badiner sur santé. Résultats : `docs/bench-dialogue-fr-bonze031-results.md`. Aucune validation Samsung.
+- `KnowledgeGuard.java` : garde-fou hors ligne étroit, journalisé comme règle, non attribué aux réseaux. `DialogueMemory` suit les changements explicites de scène.
+- Déverrouillage du coffre privé `memory-ui.js` désormais protégé contre les résultats asynchrones périmés ; SW v10. Builds/CI/validation physique encore en cours, aucun APK publié.
