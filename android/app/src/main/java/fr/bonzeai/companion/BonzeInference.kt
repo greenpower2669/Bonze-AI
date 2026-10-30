@@ -16,19 +16,25 @@ import java.io.FileOutputStream
 object BonzeInference {
     private const val MODEL = "LFM2.5-230M-Q4_K_M.gguf"
     private var loaded: LlamaModel? = null
+    private var loadedChoice: String = ""
     @Volatile private var economy = false
 
     @JvmStatic fun setEconomy(enabled: Boolean) { economy = enabled }
 
     @JvmStatic @Synchronized
     fun reply(context: Context, text: String, contextData: String, hint: String): String = runBlocking {
+        val selected = LocalModelStore.choice(context)
+        if (loadedChoice != selected) release()
         val model = loaded ?: run {
-            val path = ensureModel(context)
+            val path = if (selected == LocalModelStore.LARGE) {
+                check(LocalModelStore.available(context)) { "Liquid 1.2B absent ou non vérifié" }
+                LocalModelStore.destination(context)
+            } else ensureModel(context)
             Llama.loadModel(
                 path.absolutePath,
                 LlamaConfig(contextSize = 2048, threads = 3, temperature = 0.45f,
                     topP = 0.9f, topK = 50, gpuLayers = 0)
-            ).also { loaded = it }
+            ).also { loaded = it; loadedChoice = selected }
         }
         // The Android AAR accepts one system + one user message, not a list of chat roles.
         // Previous dialogue is therefore quoted as untrusted USER context, never promoted
@@ -75,6 +81,7 @@ object BonzeInference {
     fun release() {
         loaded?.let { Llama.releaseModel(it) }
         loaded = null
+        loadedChoice = ""
     }
 }
 
