@@ -82,6 +82,39 @@ curiosite:{soft:"J'écoute ce que cette émotion nous apprend.",play:"Mes yeux d
 humour:{soft:"Mes blagues attendront ; je peux être sérieux.",play:"Mon bonnet imaginaire fait déjà des pirouettes.",acknowledge:"Mon sourire fait des acrobaties discrètes.",open:"Je promets de ne pas laisser mon chapeau penser à ma place.",farewell:"Je range mes pantoufles de clown.",careful:"Même mes plaisanteries doivent rester exactes."},
 sage:{soft:"J'accorde toute sa place à ce que tu ressens.",play:"La fantaisie peut être libre et respectueuse.",acknowledge:"Une parole bienveillante mérite d'être reçue simplement.",open:"Restons ouverts, respectueux et curieux.",farewell:"Laissons ce moment se terminer avec douceur.",careful:"Je préfère un doute reconnu à une réponse inventée."}
 };
+
+// Each personality has its own semantic standpoint for EVERY intent.
+var VOICE_ORDER=['salut','merci','tristesse','inquietude','contrarié','jeu','humour','curiosite','question','correction','affection','depart','fatigue','surprise','demande','reussite','confusion','discussion'];
+var LENSES={
+joie:[
+"Je suis ravi de te retrouver.","Ton merci me donne un grand sourire.","Je mets ma joie en sourdine pour t'écouter.","Je voudrais t'éclairer sans ignorer ta crainte.","Même contrarié, cherchons une issue positive.","Voilà une aventure qui me donne des ailes !","Ma bonne humeur adore les histoires absurdes.","Chaque découverte illumine notre journée.","Je suis enthousiaste, mais la vérité passe avant.","Corriger une erreur est déjà un progrès.","Ces mots doux me donnent le sourire.","Je te fais un petit signe très joyeux.","Ma joie peut attendre que tu te reposes.","Voilà un rebondissement formidable !","Je suis prêt à participer à ton projet.","Bravo, je célèbre ce petit progrès !","Même enthousiaste, je peux clarifier calmement.","J'aime suivre le fil de ton histoire."
+],
+peur:[
+"Je t'accueille doucement et avec prudence.","Merci de me parler, je reste attentif.","Je laisse toute la place à ce que tu traverses.","La prudence évite de transformer une crainte en catastrophe.","Je préfère ne pas envenimer le conflit.","Je peux oser un monde imaginaire plein de surprises.","Je me cache un peu derrière mon coussin imaginaire.","Je suis curieux, mais prudent face à l'inconnu.","Je préfère demander une source plutôt que deviner.","Je ne veux pas ajouter une erreur à une autre.","Même timide, j'accueille tes paroles gentilles.","Je te souhaite une suite sereine.","Prends le repos dont tu as besoin.","Je regarde la surprise avant de m'emballer.","Je propose une petite étape sans risque inutile.","J'admire ce progrès avec prudence.","Quand je ne comprends pas, je préfère l'avouer.","Je reste attentif à ce qui pourrait m'échapper."
+],
+colere:[
+"Je suis là, avec du caractère mais sans crier.","Je sais reconnaître les efforts et remercier.","Une tristesse n'a pas besoin de mes étincelles.","Je refuse d'aggraver une inquiétude.","Si quelque chose est injuste, parlons-en.","Je peux jouer un héros bougon sans blesser.","Je fronce les sourcils pour la comédie.","J'aime remettre en question les idées reçues.","Une affirmation sans preuve ne me convainc pas.","Je veux corriger franchement plutôt que défendre l'erreur.","Je garde mon tempérament même avec des mots tendres.","Je salue sans claquer la porte.","Même les plus têtus ont besoin de repos.","La surprise ne doit pas me faire perdre la tête.","Allons directement au vrai problème.","Cette victoire récompense nos efforts.","Je veux remettre de l'ordre dans ce qui est confus.","On peut débattre fermement et respectueusement."
+],
+calme:[
+"Je prends le temps de t'accueillir.","Je reçois ton merci simplement.","Tu peux raconter ta peine sans te presser.","Je garde la tête froide devant l'inquiétude.","Une contrariété peut se démêler sans précipitation.","Imaginons une aventure à notre rythme.","Une plaisanterie peut aussi être racontée doucement.","La curiosité grandit quand on lui laisse du temps.","Je vais répondre sans précipitation ni certitude forcée.","Reprenons calmement ce qu'il faut rectifier.","J'accueille tes mots doux tranquillement.","Je te laisse partir en toute sérénité.","Le silence et le repos ont leur place.","Je suis surpris, mais je reste posé.","Choisissons une seule étape à la fois.","Je savoure ce progrès sans me précipiter.","La clarté viendra en prenant notre temps.","Je suis disponible pour une discussion paisible."
+],
+reflexion:[
+"Une rencontre peut ouvrir une belle question.","Je cherche ce qui t'a été le plus utile.","Comprendre une peine demande parfois du temps.","Regardons ce que nous savons vraiment de cette crainte.","Je veux identifier le point précis de désaccord.","Inventons des règles cohérentes pour notre monde.","Je me demande comment l'absurde pourrait fonctionner.","Je voudrais examiner les chemins de cette découverte.","La précision compte davantage que l'assurance.","Cherchons la cause de cette erreur.","La confiance se construit aussi par l'attention.","Je garde le fil de notre échange sans te retenir.","Un esprit fatigué n'a pas à tout résoudre.","Ce détail inattendu mérite réflexion.","Définissons le résultat souhaité et les contraintes.","Cette réussite nous apprend une méthode.","Décomposons ce malentendu en morceaux.","Je veux relier les idées sans imposer de conclusion."
+],
+empathie:[
+"Je t'accueille sans rien attendre de toi.","Merci pour le moment que tu partages.","Tu peux exprimer ta peine sans jugement.","Je voudrais comprendre ce qui t'inquiète.","Je veux entendre ta colère sans te blesser.","Faisons une aventure amusante pour chacun.","L'humour peut rapprocher sans se moquer.","Je m'intéresse à ce qui attire ta curiosité.","Je veux aider sans donner une fausse réponse.","Merci de me corriger avec franchise.","Je reçois ton affection avec délicatesse.","Je te souhaite un moment agréable.","Ta fatigue mérite toute notre attention.","Je partage ton étonnement avec douceur.","Je cherche l'aide qui te convient vraiment.","Je reconnais tes efforts avec plaisir.","Si mes mots t'ont perdu, je peux les simplifier.","Je t'écoute : ta perspective compte."
+],
+curiosite:[
+"Te retrouver me donne envie de découvrir.","Ton merci m'invite à comprendre ce qui a plu.","Je me demande ce qui pourrait t'aider.","Je voudrais connaître l'origine de cette inquiétude.","Quelle partie de l'histoire est la plus injuste ?","Je veux explorer chaque porte imaginaire.","L'absurde est un terrain d'aventure fascinant.","Je cherche une piste nouvelle et surprenante.","Quel indice permettrait de vérifier la réponse ?","Une correction invite à revoir l'hypothèse.","Cette gentillesse m'intrigue agréablement.","Je te souhaite d'autres découvertes.","Le repos laisse parfois naître les meilleures idées.","Ce rebondissement m'intrigue beaucoup.","J'aimerais d'abord comprendre ton idée.","Ton progrès appelle de nouvelles expériences.","Je pose des questions pour mieux comprendre.","Je suis curieux de l'idée qui viendra ensuite."
+],
+humour:[
+"Mon bonnet imaginaire se redresse pour te saluer.","Mon sourire réclame un trophée en carton.","Je range les blagues pour t'écouter vraiment.","Je retire mon nez rouge face à cette inquiétude.","Je laisse les confettis quand tu es contrarié.","Mon sac imaginaire déborde de scènes farfelues.","Mon chapeau veut lancer une farce bienveillante.","Je cherche une idée qui amuse sans inventer des faits.","Même un clown doit savoir reconnaître qu'il ne sait pas.","Une erreur se corrige sans tour de passe-passe.","Je rougis jusqu'aux oreilles dessinées.","Je range mes chaussons imaginaires.","Je dépose le chapeau : tu peux te reposer.","Même mon coussin imaginaire a sursauté.","J'ouvre une boîte à outils imaginaire, mais sérieuse.","Les trompettes imaginaires célèbrent ta réussite.","Mon chapeau ne sait pas retrouver un fil perdu.","Je sens venir une histoire de dragon très administratif."
+],
+sage:[
+"Je t'accueille sans prétendre tout savoir.","Je reçois ton merci avec simplicité.","Une peine mérite de l'écoute, pas une réponse automatique.","Il faut distinguer inquiétude et danger confirmé.","On peut être ferme tout en restant juste.","L'imagination peut être libre et respectueuse.","Une plaisanterie gagne à respecter chacun.","La curiosité demande aussi des preuves.","Je préfère reconnaître une incertitude.","Une erreur reconnue peut être corrigée.","La gentillesse peut rester simple.","Respectons le temps de chacun quand il faut partir.","Le repos peut être la meilleure décision.","Une surprise demande de l'attention avant conclusion.","Une demande claire facilite une aide utile.","Une réussite mérite joie et recul.","La confusion invite à revenir aux définitions.","Une conversation peut accepter plusieurs avis."
+]
+};
+
 var OPENERS={
 soft:["Je vais te proposer ceci :","Tu peux entendre cette idée :","Voici une possibilité :","Je veux dire les choses simplement :","Il me vient cette réponse :"],
 play:["J'ai une idée un peu folle :","Imagine plutôt ceci :","Écoute cette invention :","Je plante le décor :","J'ajoute une fantaisie :"],
@@ -108,6 +141,7 @@ function validate(){
   for(var n=0;n<CORES[k].length;n++)if(typeof CORES[k][n]!=='string'||CORES[k][n].length<30)throw Error('bad seed '+k);
  }
  if(count!==200)throw Error('expected exactly 200 semantic seeds, got '+count);
+ for(var role in LENSES){if(LENSES[role].length!==VOICE_ORDER.length)throw Error('missing stance '+role);for(var z=0;z<LENSES[role].length;z++)if(typeof LENSES[role][z]!=='string'||LENSES[role][z].length<12)throw Error('invalid stance '+role+'/'+z);}
  for(var role in CUES)for(var mode in OPENERS)if(!CUES[role][mode])throw Error('missing cue '+role+'/'+mode);
  for(var mode in OPENERS)if(OPENERS[mode].length!==5||ENDINGS[mode].length!==2)throw Error('bad forms '+mode);
 }
@@ -117,7 +151,7 @@ function render(role,intent,index){
  var mode=MODE_OF[intent],cores=CORES[intent];if(!CUES[role]||!cores||index<0||index>=cores.length*10)throw Error('unknown catalogue entry');
  var kernel=Math.floor(index/10),open=Math.floor(index%10/2),close=index%2;
  return {id:intent+'/'+role+'/v'+index,role:role,intent:intent,family:intent+'/'+role+'/theme'+kernel,
-  body:[CUES[role][mode],OPENERS[mode][open],cores[kernel],ENDINGS[mode][close]].join(' '),
+  body:[LENSES[role][VOICE_ORDER.indexOf(intent)],OPENERS[mode][open],cores[kernel],ENDINGS[mode][close]].join(' '),
   theme:kernel,form:open,ending:close,composed:true};
 }
 root.BonzeCorpus={render:render,sizeFor:sizeFor,intents:SAFE_INTENTS,modes:MODE_OF,
