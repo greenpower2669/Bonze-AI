@@ -1,0 +1,17 @@
+# Modèle tiers ~153 Mo : téléchargé puis vérifié SHA-256 en CI, jamais commité.
+android/app/src/main/assets/models/
+.gradle/
+**/build/
+.idea/
+*.iml
+
+
+node_modules/
+android/test-signing/
+
+
+android/app/libs/*.aar
+android/app/src/main/assets/piper/
+
+**/__pycache__/
+*.pyc

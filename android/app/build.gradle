@@ -1,0 +1,40 @@
+plugins { id 'com.android.application'; id 'org.jetbrains.kotlin.android' }
+android {
+    namespace 'fr.bonzeai.companion'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'fr.bonzeai.companion'
+        minSdk 26
+        targetSdk 35
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        versionCode 6
+        versionName '0.6.0'
+        ndk { abiFilters += [project.findProperty('bonzeTestAbi') ?: 'arm64-v8a'] }
+    }
+    signingConfigs {
+        debug { storeFile file(System.getenv('ANDROID_USER_HOME') ? System.getenv('ANDROID_USER_HOME') + '/debug.keystore' : System.getProperty('user.home') + '/.android/debug.keystore') }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    sourceSets.main.assets.srcDirs('src/main/assets', layout.buildDirectory.dir('generated/bonzeAssets'))
+    androidResources { noCompress += ['gguf','onnx'] }
+}
+dependencies {
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'junit:junit:4.13.2'
+    implementation 'org.mozilla:rhino:1.7.15.1'
+    implementation files('libs/sherpa-onnx-2.0.1.aar')
+    implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'dev.ffmpegkit-maintained:llama-android:0.1.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0'
+}
+tasks.register('copyBonzeAssets', Copy) {
+    from(rootProject.file('docs')) { into 'docs' }
+    from(rootProject.file('core')) { into 'core' }
+    into(layout.buildDirectory.dir('generated/bonzeAssets'))
+}
+tasks.named('preBuild').configure { dependsOn(tasks.named('copyBonzeAssets')) }
+
+

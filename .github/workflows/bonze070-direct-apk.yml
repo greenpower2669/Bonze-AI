@@ -1,0 +1,101 @@
+name: Bonze 0.7.0-dev — APK direct, mise à jour en place
+on:
+  push:
+    branches: [feature/offline-bonsaiv1]
+    paths: [.github/workflows/bonze070-direct-apk.yml]
+permissions:
+  contents: write
+jobs:
+  signed-update:
+    name: Build 0.7.0-dev using original 0.6.0 debug signing key
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - name: Checkout exactly validated 0.7.0-dev source
+        uses: actions/checkout@v4
+        with:
+          ref: fdd4ba9477fbb87f72b7f69a2a0ec225bd471fbb
+          persist-credentials: true
+      - name: Retrieve original debug signing key (branch-scoped GitHub Actions cache)
+        uses: actions/cache/restore@v4
+        with:
+          path: android/test-signing/debug.keystore
+          key: bonze-ai-debug-signing-v2
+          fail-on-cache-miss: true
+      - name: Ensure previously published signing key is present
+        run: |
+          test -s android/test-signing/debug.keystore
+          keytool -list -keystore android/test-signing/debug.keystore -storepass android -alias androiddebugkey > /dev/null
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '17'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '8.9'}
+      - name: Install Android SDK 35 and pinned GGUF
+        run: |
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
+          test -x "$SDKMANAGER"
+          "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
+          mkdir -p android/app/src/main/assets/models
+          curl --fail --location --retry 4 --output android/app/src/main/assets/models/LFM2.5-230M-Q4_K_M.gguf "https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LFM2.5-230M-Q4_K_M.gguf"
+          echo "7bbd90384d3deffe4c646ec9643b212802d32d4ce417c90a1ec9282100650062  android/app/src/main/assets/models/LFM2.5-230M-Q4_K_M.gguf" | sha256sum -c
+          curl --fail --location --retry 4 --output android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt "https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LICENSE"
+          test -s android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt
+      - name: Fetch verified Piper runtime, voice and dictionary
+        run: bash scripts/fetch-piper.sh
+      - name: Build and inspect actual upgrade APK
+        env:
+          ANDROID_USER_HOME: /tmp/bonze-upgrade-user
+        run: |
+          mkdir -p "$ANDROID_USER_HOME"
+          cp android/test-signing/debug.keystore "$ANDROID_USER_HOME/debug.keystore"
+          gradle --no-daemon :androidApp:assembleDebug :androidApp:lintDebug
+          APK="$(find android/app/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' -print -quit)"
+          test -n "$APK" && test -s "$APK"
+          cp "$APK" Bonze-AI-v0.7.0-dev.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging Bonze-AI-v0.7.0-dev.apk | head -n 1 | tee bonze-package.txt
+          grep -q "name='fr.bonzeai.companion'" bonze-package.txt
+          grep -q "versionCode='7'" bonze-package.txt
+          grep -q "versionName='0.7.0-dev'" bonze-package.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions Bonze-AI-v0.7.0-dev.apk | tee bonze-permissions.txt
+          ! grep -q android.permission.INTERNET bonze-permissions.txt
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs Bonze-AI-v0.7.0-dev.apk | tee bonze-signature.txt
+          grep -qi '128b1bb0d488f33dd9075888ee15d6ff943136d657018026d1e0b22d9c35991d' bonze-signature.txt
+          sha256sum Bonze-AI-v0.7.0-dev.apk | tee Bonze-AI-v0.7.0-dev.sha256
+      - name: Keep direct APK as verified build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bonze-AI-v0.7.0-dev-upgrade-backup
+          path: |
+            Bonze-AI-v0.7.0-dev.apk
+            Bonze-AI-v0.7.0-dev.sha256
+            bonze-package.txt
+            bonze-permissions.txt
+            bonze-signature.txt
+          retention-days: 30
+          if-no-files-found: error
+      - name: Publish pre-release with DIRECT APK (no ZIP, no main merge)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=bonze-ai-v0.7.0-dev
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release already exists; refusing to overwrite a previously published APK."
+            exit 1
+          fi
+          cat > bonze-release-notes.md <<'NOTES'
+          🌱 Bonze AI 0.7.0-dev — préversion Android ARM64 hors ligne.
+          
+          Téléchargement direct .apk : mise à jour de Bonze AI 0.6.0, même identifiant d'application et même signature de test, sans installer une deuxième application. Conserve les données privées dans l'installation existante. Sauvegarde .bonze recommandée par précaution avant mise à jour.
+          
+          Nouveautés : dialogue et suivi des scènes, coffre mémoire local chiffré, garde-fou factuel limité et import facultatif de Liquid LFM2.5-1.2B-Instruct Q4 depuis le téléphone. Liquid 230M reste inclus et sélectionné par défaut.
+          
+          Cette version expérimentale n'a pas encore été testée physiquement sur tous les appareils Samsung. Le fichier APK fait environ 271 Mo ; Android peut avoir besoin d'espace supplémentaire temporaire pour installer la mise à jour.
+          
+          Branche source : feature/bonze031-dialogue-natural-v1, commit fdd4ba9477fbb87f72b7f69a2a0ec225bd471fbb. Aucun merge dans main.
+          NOTES
+          sha256sum -c Bonze-AI-v0.7.0-dev.sha256
+          gh release create "$tag" Bonze-AI-v0.7.0-dev.apk Bonze-AI-v0.7.0-dev.sha256 bonze-signature.txt \
+            --target fdd4ba9477fbb87f72b7f69a2a0ec225bd471fbb \
+            --prerelease \
+            --title "🌱 Bonze AI 0.7.0-dev · APK direct · mise à jour expérimentale" \
+            --notes-file bonze-release-notes.md

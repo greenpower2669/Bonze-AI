@@ -1,0 +1,71 @@
+# Bonze AI — mémoire vivante
+
+Un humain de référence par instance, enfant ou adulte, lié par découverte progressive. Les autres peuvent converser ; seules les actions authentifiées du propriétaire modifient les missions.
+Invariants : curiosité, respect de tous, apprentissage, progrès, sincérité sur les limites. Les émotions sont simulées et ne rendent pas les connaissances vraies.
+Miroir : compétences jamais testées, testées, à revérifier ; preuves d'échecs et réussites, apprentissage validé. Mémoire sociale des personnes connues sans présomption de compétence d'après leur âge.
+Souvenirs consolidés selon importance, émotion simulée et répétition, mais statut de vérité indépendant. Mémoire courte, durable et archives à concevoir.
+Modes : transcription française locale, précise, économique, secours texte, désactivée ; bascule selon ressources, microphone coupé par humain toujours prioritaire.
+Avatar très léger et mignon : grands yeux pixelisés, sourcils, sourire, rougeurs ; expressions et skins. Un seul noyau Web/PWA et Android APK/AAB.
+
+Android 0.1.0 : WebViewAssetLoader, sans permission INTERNET, même noyau empaqueté au build ; voix à la demande avec SpeechRecognizer on-device seulement, jamais de fallback réseau ; saisie clavier prioritaire. App debug, non destinée à Play Store.
+
+**0.2.0** : implémentation réelle micro-MoE entraînée (8 petits experts top-2, 304 poids sur 64 phrases) associée à un seul LLM dense préentraîné LiquidAI LFM2.5-230M, Q4_K_M GGUF ~153 Mo. Ce dernier n'est pas MoE en lui-même. Kotlin/llama.cpp hors ligne, poids téléchargés et vérifiés à la construction, modèle désactivable ; avertissements honnêtes en cas de saturation mémoire. Pas de fallback cloud. Les hallucinations restent possibles.
+
+**0.3.0 expérience accessible (demande Fab)** : visage principal toujours visible, grandes expressions et sous-titres fort contraste dimensionnables, conversation au toucher puis aucun bouton pour chaque phrase. Tour de parole STT local -> génération locale -> synthèse vocale locale -> STT ; jamais d'écoute automatique au démarrage, stop explicite, arrêt dès arrière-plan ou mémoire critique. Après 3 absences de parole consécutives, stop et invitation à relancer, pas de boucle permanente. Appareil sans moteurs locaux : clavier facile d'accès. État des 8 mini-experts maintenu ; ne PAS prétendre qu'ils constituent déjà le MoE indépendant complet imaginé.
+
+
+## Contrat étendu Fab — 29/10/2026
+
+Reprise globale : véritable MoE avec tronc partagé et sous-réseaux experts entraînés impliqués dans l'inférence ; huit tendances émotionnelles persistantes et directionnelles ; individualité innée locale, personnalisée et acquise séparées ; visage toujours visible et continuellement piloté par les états ; voix Piper française locale cohérente ; conversation mains libres avec arrêt prioritaire ; endurance globale ; mémoire personnelle/sociale, consolidation/oubli/archives et miroir des compétences avec preuves. Découverte progressive de l'humain, enfant compris, sans présumer de ses compétences ; reconnaissance et autorisation de modifier les missions distinctes. Les faits et le respect ne dépendent jamais des émotions. Pas de faux souvenirs, fausse conscience ou faux progrès neuronal.
+
+L'apparence innée varie par seed durable : yeux (forme/taille/espacement), sourcils, sourire, couleur, joues, corps, pousse/décoration, mouvement. Le tempérament varie légèrement et peut évoluer ; curiosité, respect, gentillesse et protections essentielles restent invariants. Éditeur accessible facultatif, presets, skins, contraste renforcé et descriptions vocalisables. Personnaliser ou revenir à l'apparence de naissance préserve les acquis et souvenirs. Le retour aux dispositions de repos tient compte des adaptations individuelles.
+
+### 0.4.0 — prérelease construite et vérifiée en CI
+
+Identité versionnée avec graine 128 bits générée une fois, morphologie et tempérament déterministes ; trois couches distinctes et historique borné des changements. Migration de la clé 0.3 sans effacer surnom/historique. Forces et endurance persistées, évolution continue durant l'activité de premier plan ; adaptations bornées par échanges, sans preuve de vérité. Projection graphique continue indépendante de l'étiquette de la dernière phrase. Presets/éditeur avancé, retour à la naissance, contraste et mouvements réduits.
+
+Sessions vocales et générations identifiées, callbacks périmés rejetés, bouton d'arrêt global permanent, annulation du tour JS et arrêt TTS/micro au fond. Un calcul llama.cpp déjà lancé n'est pas préempté : son résultat est invalidé. Modes précis/éco/léger/texte/pause et désactivation neuronale persistante. Métriques Android demandées explicitement : mémoire système, PSS du processus, durée et CPU du thread appelant de la dernière génération ; aucune valeur prédite n'est présentée comme mesure.
+
+Prompt court avec nom et valeurs essentielles. LFM dense inchangé, Piper absent. Étude primaire et critères de preuve dans docs/moe-piper-study.md. Voix Android locale et STT dépendent des paquets installés ; aucune validation physique n'est acquise. Authentification familiale et mémoire sociale chiffrée restent absentes.
+
+
+Validation du commit e60d8876d1e997c031c788fdbd82663124a614aa : workflow 40858508226 réussi, 27 tests JS, garde Java, 28 assertions navigateur, assembleDebug + lintDebug, inspection du package fr.bonzeai.companion / code4 / version0.4.0, permission RECORD_AUDIO seule dans le manifeste compilé. Signature APK vérifiée par apksigner. Asset Release de 161191354 octets, SHA-256 4e74415462df28060a30ef116b6a0ceccc9ffeda84da8fe7cf431391fcf8850d. Tests Samsung physiques et réalisation du reste du contrat toujours ouverts. Main reste f5910311f903d8ae4378d62d100129b690fc0e85.
+
+## Avenant Fab après essai 0.4 — 29 octobre
+
+Fab demande maintenant la continuité d'une conversation déjà activée lorsque le téléphone passe en veille. L'ancien arrêt systématique à tout arrière-plan devient une limite à corriger ; l'arrêt humain reste absolu et aucune nouvelle écoute ne doit naître d'une simple extinction/réouverture. Architecture cible : service Android au premier plan avec arrêt accessible, état et cognition indépendants de la WebView. Ce comportement n'est pas encore implémenté.
+
+Retour d'expérience : langage trop auto-descriptif et participation insuffisante au jeu de rôle, tête trop petite et bouche peu visible pendant la parole, voix robotique. Priorités : contexte de scène/historique, incarnation faciale et taille, voix locale plus naturelle. Les rappels identitaires répétés ne sont pas un objectif de sincérité. Rapport d'audit ciblé à la racine ; aucune nouvelle réalisation revendiquée avant tests.
+
+## Correction autorisée par Fab — 0.5.0 livrée en prérelease
+
+Boucle STT/inférence/TTS/historique portée par ConversationService (service Android au premier plan), indépendante de la visibilité de l'Activity. Démarrage app visible après action/permissions, notification Arrêter ; aucun redémarrage système automatique. L'arrêt invalide les autorisations en file, reconnaissances et générations. Dix minutes de silence mettent la conversation en pause. Wake lock CPU de 120s renouvelé seulement durant la session autorisée et libéré à l'arrêt. Autorisations FGS micro/lecture, notifications et wake lock ajoutées ; aucune permission Internet.
+
+Historique natif limité à30 entrées, migration unique depuis0.4 et réconciliation sans recompter les échanges existants. Le modèle reçoit les échanges récents et un contexte de jeu bornés ; prompt plus incarné et température0.45, contexte2048. Ce réglage ne prouve pas encore une meilleure qualité réelle du langage français, à évaluer sur appareil.
+
+Visage élargi en portrait ; bouche remplie et visible pilotée par événements de lecture et plages de mots quand le moteur en fournit, repli animé approximatif sinon. Les descriptions vocales et la voix navigateur utilisent le même moteur graphique. Choix d'une voix française locale déterministe et conservé ; segmentation des phrases, pauses et modulation douce du débit/hauteur. Piper n'est pas embarqué dans cette correction.
+
+
+Preuves de livraison 0.5 : commit ff04ec4203bb7cfe9ca412d8814a09b16643bb8c, workflow #40868793495 réussi ;35 tests JS,4 programmes de tests JVM et34 assertions navigateur, compilation+lint. APK code5/version0.5.0,161213280 octets, SHA-256 e5d12f3357e463232db7d2dea94663c53cf0ffd8cbdb99a89efff05572eacdee. Certificat public 128b1bb0d488f33dd9075888ee15d6ff943136d657018026d1e0b22d9c35991d, différent de0.4 ; continuité de mise à jour depuis0.4 impossible sans migration/retrait préalable de l'ancienne app. Ne pas faire perdre les données sans consentement. Clé de test désormais sauvée en cacheCI v2 (rétention limitée), aucune clé de production.
+
+## Avenant 0.5.0 du 29 octobre — travaux ouverts
+
+Les huit experts doivent chacun contribuer au calcul de comportement/arbitrage, avoir force et endurance propre ; fatigue, récupération et influences restent expérimentales, jamais preuves de vérité. Journal privé des opérations réelles, console authentifiée avec alternative accessible au geste60touches, sauvegarde chiffrée/versionnée incluant identité, acquis, poids et traces. Priorité aux répétitions de dialogue signalées et aux sous-titres qui se chevauchent. Piper doit être intégré réellement puis validé hors ligne et à l'écoute ; une étude ou compilation seule ne suffit pas. Les missions BONZE-023..029 sont ouvertes.
+
+Candidat avenant : correction d'affichage en cours ; sauvegarde AES-GCM/phrase secrète et accès administrateur via code de verrouillage Android implémentés localement, validationCI encore attendue. L'authentification de l'appareil ne constitue pas une gestion familiale multi-rôles. Journaux techniques locaux bornés, jamais exposés en conversation ; les journaux ne sont pas des pensées neuronales inventées.
+
+
+## État 0.6.0 livré pour essai — 29 octobre 2026
+Piper français réellement intégré : sherpa 2.0.1 + MLS medium locuteur 0 fixe (entraîné depuis zéro, données CC-BY 4.0), lexique MIT et IPA direct, sans eSpeak dans l’APK. Siwis/Lessac et Ryan écartés pour conditions de corpus. Génération, PCM joué, bouche RMS et Stop vérifiés sur émulateur hors connexion (40961214052). Réponses voisines regroupées jusqu’à 220 caractères : les segments très courts dégradaient la diction. La transcription automatique indépendante sert de garde de régression ; l’écoute humaine reste indispensable.
+Conseil JS/Rhino partagé : huit activations entraînées + contributions contextualisées, forces/endurance individuelles, influences et arbitre transmis au générateur. Politiques encore manuelles ; aucun MoE linguistique complet revendiqué. Journaux privés des calculs exécutés, sans pensée fictive.
+Sous-titres périmés et chevauchement corrigés. Message actuel séparé du contexte humain ; sorties/répétitions tracées. Le 230M demeure faible en français/jeu même avec contexte neuf et BOS vérifié. Ne pas déclarer cette limite résolue.
+Console par authentification Android et sauvegarde AES-GCM/PBKDF2, contrôle avant restauration/retour arrière ; acquis/poids conservés. Historique et traces bornés. Le code partagé du téléphone ne distingue pas la famille. Signature de livraison identique 0.5 exigée. Prérelease 0.6 publiée après les contrôles du commit final ; essai Samsung/TalkBack/veille/écho/ressources et écoute Piper restent ouverts. Aucun merge main.
+
+Voix expérimentale : les segments de moins de32codepoints IPA non blancs passent à Android avant tout son, comme les mots inconnus/nombres. Ce plancher est une précaution issue des essais, pas une garantie de qualité ; pas de mélange ni de réponse rejouée après le début du PCM. La qualité des phrases courtes et le phonémiseur complet restent à améliorer. L’écoute humaine n’a pas été faite ici.
+
+### Preuves de livraison 0.6.0 — 29 octobre 2026
+- Tag bonze-ai-v0.6.0 au commit 14757d3ba01c13d6774b82459f04b3b0a499c6a7 ; prérelease publiée, APK direct : 271 170 701 octets.
+- SHA-256 APK : 657689ccf72068343c6c6d6f086e75e24c17516c5db86a8752ea0378e95bb8a0. Certificat 128b1bb0d488f33dd9075888ee15d6ff943136d657018026d1e0b22d9c35991d, identique à 0.5 ; clé toujours en cache de test, sauvegarde privée durable ouverte.
+- Workflow 40964127638 entièrement réussi : 45 JS, 3 Python, 8 programmes JVM, 51 assertions navigateur, compilation/lint/manifeste/signature, 3 tests Android API 35 hors connexion et publication. Probe vocal 40964127723 vert au même SHA. Capture finale inspectée, visage/légendes/Stop visibles.
+- APK : https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.6.0/Bonze-AI-v0.6.0-debug.apk ; Release : https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.6.0 ; CI : https://github.com/greenpower2669/Bonze-AI/actions/runs/40964127638 .
+- Revue indépendante des changements effectuée. PR #1 en brouillon ; main vérifiée inchangée f5910311f903d8ae4378d62d100129b690fc0e85. Aucun essai physique Samsung ni écoute humaine revendiqués. Archives : sauvegarde.md et docs/history/avenant-0.6-worklog.md.

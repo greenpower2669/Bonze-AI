@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10232d">
+<meta name="description" content="Bonze AI, petit compagnon local au visage toujours visible">
+<title>Bonze AI — Petit compagnon</title>
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./style.css">
+</head><body>
+<main class="app">
+<header class="topbar">
+ <span class="brand">🌱 Bonze AI <small>0.6.0 · Une voix pour notre histoire</small></span>
+ <button id="stop-all" type="button" class="stop-button">⏹ Tout arrêter</button>
+ <button type="button" id="settings-open" class="quiet-button" aria-controls="settings" aria-expanded="false">⚙️ Options</button>
+</header>
+<section class="stage" aria-label="Visage expressif de Bonze AI">
+ <button type="button" id="face-touch" class="face-touch" aria-label="Toucher le visage de Bonze pour démarrer ou arrêter la conversation vocale">
+  <div id="face" class="face calme" role="img" aria-label="Bonze est calme">
+   <div class="sprout"></div>
+   <div class="brows"><span></span><span></span></div>
+   <div class="eyes"><span><i></i></span><span><i></i></span></div>
+   <div class="cheeks"><span></span><span></span></div>
+   <div class="mouth"></div>
+  </div>
+ </button>
+ <div class="moodline"><span id="mood">Je suis curieux !</span></div>
+</section>
+<section class="conversation" aria-label="Conversation et sous-titres">
+ <p id="conversation-state" class="state" role="status" aria-live="polite">● Prêt à discuter</p>
+ <div class="captions" aria-live="polite" aria-atomic="true">
+  <div class="caption-person"><span class="speaker">Toi</span><p id="heard">Je t'écoute quand tu le souhaites.</p></div>
+  <div class="caption-bonze"><span class="speaker">Bonze</span><p id="answer">Coucou ! Tu peux me parler ou utiliser le clavier.</p></div>
+ </div>
+ <button id="native-mic" type="button" class="primary-button" hidden aria-pressed="false">🎙️ Démarrer la conversation</button>
+ <button id="open-keyboard" type="button" class="secondary-button" aria-controls="keyboard-panel" aria-expanded="false">⌨️ Écrire plutôt que parler</button>
+ <p id="native-status" class="hint" role="status">Micro désactivé. La voix n'est jamais activée sans ton accord.</p>
+ <div id="keyboard-panel" hidden>
+  <form id="chat" class="compose">
+    <label for="message">Ton message à Bonze</label>
+    <textarea id="message" rows="2" maxlength="600" placeholder="Écris-moi quelque chose…"></textarea>
+    <button type="submit" id="send-message" class="primary-button">💬 Dire à Bonze</button>
+  </form>
+ </div>
+</section>
+<aside id="settings" class="settings" hidden aria-label="Options et historique">
+ <h2>Mes réglages</h2>
+ <button id="settings-close" type="button" class="secondary-button">Fermer les options</button>
+ <label for="resource-mode">Mode de fonctionnement</label>
+ <select id="resource-mode"><option value="precise">Précis · neurones et voix locale</option><option value="eco">Économique · réponses courtes</option><option value="light">Léger · réponses simples et voix</option><option value="text">Texte · sans voix ni modèle de langage</option><option value="off">En pause</option></select>
+ <label class="check" for="neural"><input type="checkbox" id="neural" checked> Utiliser mes neurones locaux sur Android</label>
+ <p id="brain-status" class="hint" role="status">La WebApp utilise le moteur textuel léger.</p>
+ <label class="check" for="voice"><input type="checkbox" id="voice"> Lire aussi les réponses écrites avec une voix locale</label>
+ <p id="voice-status" class="hint">Lecture des réponses écrites désactivée.</p>
+ <div id="native-voice-row" hidden><label for="native-voice">Ma voix française locale</label><select id="native-voice" aria-describedby="voice-status"></select></div>
+ <button id="voice-sample" type="button" class="secondary-button">Écouter une phrase avec cette voix</button>
+ <p class="hint">Sur Android, une conversation démarrée continue écran éteint. Tu peux l'arrêter ici ou dans sa notification.</p>
+ <label class="check" for="contrast"><input id="contrast" type="checkbox"> Contraste renforcé</label>
+ <label class="check" for="reduce-motion"><input id="reduce-motion" type="checkbox"> Réduire les mouvements</label>
+ <label for="caption-size">Taille des sous-titres</label>
+ <input id="caption-size" type="range" min="1" max="3" step="1" value="2" aria-label="Taille des sous-titres, de normal à très grand">
+ <label for="nickname">Comment veux-tu que je t'appelle ?</label>
+ <form id="intro" class="compose">
+   <input id="nickname" maxlength="40" autocomplete="off" placeholder="Ton surnom">
+   <button type="submit" class="secondary-button">Enregistrer mon surnom</button>
+ </form>
+ <p id="profile-status" class="hint">Surnom conservé dans l'appareil, sans authentification.</p>
+ <details id="avatar-editor"><summary>🌱 Personnaliser mon Bonze</summary>
+  <p id="avatar-description" class="hint" role="status"></p>
+  <button id="avatar-read" type="button" class="secondary-button">Lire la description</button>
+  <label for="avatar-preset">Apparence prédéfinie</label>
+  <select id="avatar-preset"><option value="">Choisir une apparence…</option><option value="garden">Jardin menthe</option><option value="night">Nuit étoilée</option><option value="sunrise">Aurore dorée</option></select>
+  <details><summary>Personnalisation avancée</summary><div id="avatar-fields"></div></details>
+  <button id="avatar-reset" type="button" class="secondary-button">Retrouver son apparence de naissance</button>
+  <p class="hint">Ces choix gardent les souvenirs et le tempérament acquis.</p>
+ </details>
+ <details><summary>Mes petits experts et ressources</summary>
+  <p id="experts-state" class="hint">Poids émotionnels en cours de chargement…</p>
+  <p id="organism-status" class="hint"></p>
+  <button id="resources-refresh" type="button" class="secondary-button">Mesurer les ressources</button>
+  <p id="resources-real" class="hint" role="status">Aucune mesure de RAM effectuée.</p>
+  <label for="pressure">Simulation de pression mémoire (pas une mesure de RAM)</label>
+  <select id="pressure"><option value="normal">Normale</option><option value="high">Élevée</option><option value="critical">Critique</option></select>
+  <p id="policy" class="hint"></p>
+ </details>
+ <details id="backup-panel"><summary>Sauvegarder et restaurer mon Bonze</summary>
+  <p class="hint">Le fichier contient identité, souvenirs, acquis, paramètres, poids émotionnels et diagnostics. Il est chiffré avec ta phrase secrète ; garde-la, elle ne peut pas être retrouvée par Bonze.</p>
+  <label for="backup-password">Phrase secrète de la sauvegarde (12 caractères minimum)</label>
+  <input id="backup-password" type="password" minlength="12" maxlength="256" autocomplete="off">
+  <button id="backup-export" type="button" class="secondary-button">Exporter une sauvegarde chiffrée</button>
+  <button id="backup-import" type="button" class="secondary-button">Vérifier un fichier de sauvegarde</button>
+  <input id="backup-file" type="file" accept=".bonze,application/octet-stream" hidden>
+  <button id="backup-restore" type="button" class="secondary-button" hidden>Remplacer les données par cette sauvegarde vérifiée</button>
+  <button id="backup-rollback" type="button" class="secondary-button">Rétablir l'état précédant la dernière restauration</button>
+  <p id="backup-status" class="hint" role="status">Aucune sauvegarde vérifiée.</p>
+ </details>
+ <details><summary>Administration</summary>
+  <button id="admin-open" type="button" class="secondary-button">Ouvrir la console avec le code Android</button>
+  <p class="hint">Le code de verrouillage du téléphone autorise les actions d'administration. Ce mécanisme ne distingue pas encore plusieurs membres d'une famille connaissant le même code.</p>
+  <section id="admin-console" hidden aria-label="Diagnostic administrateur">
+   <button id="admin-close" type="button" class="secondary-button">Verrouiller la console</button>
+   <p>Traces locales des opérations exécutées, sans pensées rédigées par un modèle.</p>
+   <div id="admin-controls"></div>
+   <pre id="admin-journal" tabindex="0" aria-label="Journal technique local"></pre>
+  </section>
+ </details>
+ <details><summary>Historique des derniers échanges</summary>
+  <div id="log" role="log" aria-label="Historique de la conversation"></div>
+ </details>
+ <p class="hint">Le modèle linguistique LFM2.5-230M est dense : nos huit petits experts émotionnels ne forment pas encore le MoE neuronal complet envisagé. La reconnaissance vocale et la voix nécessitent des moteurs réellement locaux sur Android. Pas d'authentification du propriétaire dans ce prototype. N'entre pas de données sensibles.</p>
+</aside>
+</main>
+<script type="module" src="./app.js"></script>
+</body></html>
+
+
