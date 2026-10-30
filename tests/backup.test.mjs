@@ -39,3 +39,13 @@ test('v1 .bonze retains a separately encrypted owner drawer without exposing pla
  const wrong=data();wrong.web.memoryVault={...d.web.memoryVault,scope:'incorrect-scope'};
  assert.throws(()=>validateBackup(wrong),/incompatible/);
 });
+
+test('model choice survives .bonze backup and old archives default to 230M',async()=>{
+ const d=data();d.web.modelChoice='12b';
+ d.native={schema:1,history:[],mode:'precise',neural:true,model:'12b'};
+ const opened=await openBackup(await sealBackup(d,'une phrase secrète longue'),'une phrase secrète longue');
+ assert.equal(opened.web.modelChoice,'12b');
+ assert.equal(opened.native.model,'12b');
+ const old=data();const legacy=validateBackup(old);
+ assert.equal(legacy.web.modelChoice,'230m');
+});
