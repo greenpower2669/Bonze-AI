@@ -97,11 +97,11 @@ try{
 
  const native=await browser.newContext({viewport:{width:393,height:852}});
  await native.addInitScript(()=>{
-  window.calls=[];window.seq=0;window.request='';window.active=false;window.rows=[];window.chosen=localStorage.getItem('test-native-voice')||'fr-local';window.delayConfigAck=false;window.emitSnapshot=(extra={},delay=0)=>{
-   const e={type:'snapshot',boot:'service',seq:++seq,request,active,state:active?'listening':'off',status:'Service local',history:rows,voices:[{name:'fr-local'},{name:'fr-soft'}],voice:chosen,...extra};if(delay)setTimeout(()=>BonzeNativeEvent(e),delay);else BonzeNativeEvent(e);
+  window.calls=[];window.seq=0;window.request='';window.active=false;window.rows=[];window.chosen=localStorage.getItem('test-native-voice')||'fr-local';window.delayConfigAck=false;window.modelReady=false;window.modelChoice='230m';window.emitSnapshot=(extra={},delay=0)=>{
+   const e={type:'snapshot',boot:'service',seq:++seq,request,active,state:active?'listening':'off',status:'Service local',history:rows,voices:[{name:'fr-local'},{name:'fr-soft'}],voice:chosen,model:modelChoice,model12Ready:modelReady,...extra};if(delay)setTimeout(()=>BonzeNativeEvent(e),delay);else BonzeNativeEvent(e);
   };
   window.BonzeAndroid={localSpeechAvailable:()=>true,
-   connectNative:(initial,config)=>{calls.push(['connect']);calls.push(['configure',JSON.parse(config)]);emitSnapshot();},configureNative:data=>{const c=JSON.parse(data);calls.push(['configure',c]);if(c.voice){chosen=c.voice;localStorage.setItem('test-native-voice',chosen);}const delay=delayConfigAck?100:0;delayConfigAck=false;emitSnapshot({},delay);},
+   connectNative:(initial,config)=>{calls.push(['connect']);calls.push(['configure',JSON.parse(config)]);emitSnapshot();},configureNative:data=>{const c=JSON.parse(data);calls.push(['configure',c]);if(c.voice){chosen=c.voice;localStorage.setItem('test-native-voice',chosen);}if(c.model==='230m'||(c.model==='12b'&&modelReady))modelChoice=c.model;const delay=delayConfigAck?100:0;delayConfigAck=false;emitSnapshot({},delay);},
    command:(action,text,id)=>{
     calls.push([action,text,id]);if(action==='sync'){emitSnapshot();return;}
     request=id;
@@ -131,6 +131,15 @@ try{
  check(await p.locator('#native-voice').inputValue()==='fr-soft','pending voice survives old stop snapshot');
  await p.waitForTimeout(130);
  check(await p.evaluate(()=>chosen==='fr-soft'),'native acknowledges selected voice');
+ check(await p.locator('#local-model-row').isVisible(),'model selector shown only on Android');
+ check(await p.locator('#local-model option[value="12b"]').isDisabled(),'1.2B cannot be selected without verified local weight');
+ await p.locator('#local-model-import').click();
+ check(await p.evaluate(()=>calls.some(c=>c[0]==='model-import')),'SAF model import requires deliberate gesture');
+ await p.evaluate(()=>{modelReady=true;emitSnapshot();});
+ check(await p.locator('#local-model option[value="12b"]').isEnabled(),'verified local 1.2B can be selected');
+ await p.locator('#local-model').selectOption('12b');
+ check(await p.locator('#local-model').inputValue()==='12b','model selection is acknowledged');
+ check(await p.evaluate(()=>calls.some(c=>c[0]==='configure'&&c[1].model==='12b')),'explicit model choice propagated to native bridge');
  await p.locator('#avatar-editor summary').first().click();
  await p.locator('#avatar-read').click();
  await p.waitForFunction(()=>document.getElementById('face').classList.contains('is-talking'));
