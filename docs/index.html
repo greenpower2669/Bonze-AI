@@ -51,6 +51,16 @@
  <select id="resource-mode"><option value="precise">Précis · neurones et voix locale</option><option value="eco">Économique · réponses courtes</option><option value="light">Léger · réponses simples et voix</option><option value="text">Texte · sans voix ni modèle de langage</option><option value="off">En pause</option></select>
  <label class="check" for="neural"><input type="checkbox" id="neural" checked> Utiliser mes neurones locaux sur Android</label>
  <p id="brain-status" class="hint" role="status">La WebApp utilise le moteur textuel léger.</p>
+ <div id="local-model-row" hidden>
+  <label for="local-model">Moteur de conversation hors ligne</label>
+  <select id="local-model">
+   <option value="230m">Liquid 230M · moteur éprouvé</option>
+   <option value="12b">Liquid 1.2B Instruct · expérimental (fichier local requis)</option>
+  </select>
+  <button type="button" class="secondary-button" id="local-model-import">📁 Importer un GGUF 1.2B depuis le téléphone</button>
+  <p id="local-model-status" class="hint" role="status">Le 230M reste sélectionné par défaut. Modèle 1.2B : non installé.</p>
+  <p class="hint">Import volontaire par le sélecteur de fichiers Android : environ 731 Mo Q4_K_M, vérification SHA-256, sans Internet. Un seul modèle est chargé. La disponibilité et les performances dépendent des ressources du téléphone.</p>
+ </div>
  <label class="check" for="voice"><input type="checkbox" id="voice"> Lire aussi les réponses écrites avec une voix locale</label>
  <p id="voice-status" class="hint">Lecture des réponses écrites désactivée.</p>
  <div id="native-voice-row" hidden><label for="native-voice">Ma voix française locale</label><select id="native-voice" aria-describedby="voice-status"></select></div>
