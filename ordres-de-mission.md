@@ -103,3 +103,13 @@ Voir `docs/architecture-memoire-a-tiroirs.md`. Il s'agit d'une **mission ouverte
 - [ ] **Phase E** : approfondir Piper MLS, diction française, bouche/voix réellement lues et accessibilité avec évaluation humaine.
 - [ ] **Phase F** : validation Android Samsung hors ligne/veille/Stop/TalkBack/ressources et sauvegarde/rollback ; accord Fab avant conclusion.
 Contrats : préserver `fr.bonzeai.companion`, signature et données ; ne jamais imposer désinstallation, ne pas ajouter INTERNET, ne pas merger `main` ni publier de Release sans validation. La prérelease 0.6.0 `14757d3` demeure le point de retour. Branche expérimentale `feature/bonze031-dialogue-natural-v1` issue de `445408e`. Résultats détaillés et limites dans `docs/bench-dialogue-fr-bonze031.md`.
+
+## Ordres actifs confirmés — 30/10, progression codée
+- [x] Première correction BONZE-031 : dialogue court avec citations humaines/Bonze et consigne incarnée. **Pas validé qualitativement avec le modèle** ; BONZE-031 demeure ouvert.
+- [x] Première couche BONZE-030 : tiroirs privés avec empreinte d'instance, sélection lexicale bornée, consentement d'apprentissage, retrait/oubli et chiffrement local du nouveau coffre ; interface manuelle et extension de sauvegarde \`.bonze\`. **Pas de rappel neuronal sécurisé en conversation ni de permissions familiales fortes** ; BONZE-030 demeure ouvert.
+- [x] Préservation des huit tendances et ajout d'un garde-fou de connaissance explicite/traçable ; **pas un vrai expert de faits ni un MoE linguistique**.
+- [x] CI expérimentale sans diffusion : tests JS/JVM, Playwright hors ligne/coffre, compilation de source Android réussis sur \`41090306459\`.
+- [ ] Exécuter et analyser le benchmark réel LFM2.5-230M / LFM2.5-1.2B Q4, choisir seulement après preuves ; backend actuel Android reste 230M.
+- [ ] Continuer l'authentification des personnes, le rappel sélectif sûr et les migrations, puis apprentissage experts/arbitre/voix Piper et tests Samsung.
+- [ ] Conserver l'interdiction de merge \`main\` et de Release sans accord explicite ; la 0.6.0 reste publiée, aucun nouvel APK signé ou AAB.
+Rapport de passation exact : \`docs/history/bonze031-evolution-2026-10-30.md\` et tâches \`todo.md\`.
