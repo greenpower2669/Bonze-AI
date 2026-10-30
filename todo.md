@@ -156,3 +156,17 @@ Constats fondés sur la capture d'essai et la lecture de `BonzeInference.kt`, `D
 - [ ] Benchmark du Liquid 1.2B Q4 avec licence, template, poids hachés, mémoire totale et déchargement ; aucun moteur supplémentaire intégré pour l'instant.
 - [ ] Poursuivre BONZE-030 mémoire à tiroirs puis experts/arbitre/IA du savoir/voix selon les phases de l'ordre de mission ; conserver la 0.6.0.
 État : **code source de Phase A partiellement modifié et test ciblé passé ; modèle, CI, APK et appareil non validés**. Aucune fusion `main`, Release ni APK 0.6.1 autorisés. Prochaine action : déclencher tests complets et comparer les générations réelles sur les fixtures, puis corriger uniquement les défauts observés.
+
+## Bilan de travail du 30 octobre — branche \`feature/bonze031-dialogue-natural-v1\`
+- [x] Reprendre le dernier HEAD + les cinq mémoires et Djipie ; préserver le 0.6.0 / \`14757d3\`.
+- [x] Code de dialogue corrigé, huit tendances/arbitre conservés, heuristique d'incertitude et tests de régression.
+- [x] Prototype de mémoire à tiroirs : index/scope, confirmation humaine, état/provenance, rappel sélectif borné, archive/oubli, coffre chiffré, UI avec phrase secrète, sauvegarde \`.bonze\` compatible et PWA hors ligne.
+- [x] Teste la conservation du coffre et refus de mots de passe erronés ; CI \`41090306459\` : JS/JVM, navigateur/Playwright, sources Kotlin/Java verts.
+- [x] Préparer vraie comparaison CPU Liquid 230M/1.2B, quatre variantes avec JSONL et rapport descriptif non noté.
+- [ ] Collecter le rapport réel et vérifier les réponses françaises de chaque modèle, paramètres/tokenizer/template et coût Linux, puis comparer sur Samsung.
+- [ ] **Ne pas injecter les souvenirs privés dans la génération vocale** avant authentification utilisateur/famille, consentement par tour, tests de fuite et chiffrement adapté.
+- [ ] Travailler sur sélection de modèle 1.2B réellement disponible dans Android avec déchargement et pression RAM ; aucun poids 1.2B intégré pour le moment.
+- [ ] Affiner Liquid, vrai MoE de sous-réseaux, mémoire/relations/compétences, contrôles de connaissance, voix Piper (noms/nombres/élisions/naturel) et incarnation.
+- [ ] Refaire tests instrumentés, mode avion/veille/Stop/TalkBack/sauvegardes + tests humains Samsung, signature durable.
+- [ ] Obtenir décision de Fab avant merge main ou une Release/APK de prétest.
+Rapport complet : \`docs/history/bonze031-evolution-2026-10-30.md\`. Aucun APK nouveau n'est publié. Statut réel = **prototype codé et testé automatiquement ; modèle et téléphone non validés**.
