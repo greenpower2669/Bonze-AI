@@ -4,16 +4,18 @@ import {createDrawers,drawerMap,remember,forget,recall} from '../core/memory-dra
 import {encryptDrawers,decryptDrawers} from '../core/memory-vault.mjs';
 export function setupMemoryUI({scope,getVault,saveVault,stop}){
  const el=id=>document.getElementById(id);
- let state=null,secret='',access=null,found=[];
+ let state=null,secret='',access=null,found=[],epoch=0;
  const status=s=>{el('memory-status').textContent=s};
  function lock(){
-  state=null;secret='';access=null;found=[];
+  epoch++;state=null;secret='';access=null;found=[];
   el('memory-password').value='';el('memory-editor').hidden=true;
   el('memory-results').replaceChildren();
   el('memory-confirm').checked=false;status('Coffre verrouillé. Aucun souvenir privé n’est injecté dans les réponses vocales.');
  }
  async function persist(next){
+  const issued=epoch;
   const encrypted=await encryptDrawers(next,access,secret);
+  if(issued!==epoch)throw Error('Coffre verrouillé pendant cette opération');
   saveVault(encrypted);
   state=next;
  }
@@ -21,17 +23,19 @@ export function setupMemoryUI({scope,getVault,saveVault,stop}){
  el('memory-unlock').addEventListener('click',async()=>{
   const pass=el('memory-password').value;
   stop();lock();
-  // stop() intentionally locks first; retrieve secret from a fresh explicit input below.
+  const issued=epoch;
+  // An older asynchronous unlock must never overwrite a later attempt.
   if(!pass){status('Entre ta phrase secrète.');return;}
   try{
    if(pass.length<12)throw Error('Phrase secrète de 12 caractères minimum');
    const envelope=getVault();
    const opened=envelope?await decryptDrawers(envelope,scope,pass):createDrawers(scope);
    const auth={verified:true,scope};
-   if(!envelope){const created=await encryptDrawers(opened,auth,pass);saveVault(created);}
+   if(!envelope){const created=await encryptDrawers(opened,auth,pass);if(issued!==epoch)return;saveVault(created);}
+   if(issued!==epoch)return;
    state=opened;secret=pass;access=auth;el('memory-editor').hidden=false;
    status('Coffre ouvert : '+state.items.length+' souvenir(s). Consultation manuelle uniquement.');
-  }catch(e){lock();status(e.message);}
+  }catch(e){if(issued===epoch){lock();status(e.message);}}
   finally{el('memory-password').value='';}
  });
  el('memory-lock').addEventListener('click',lock);
