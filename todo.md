@@ -142,3 +142,17 @@ Spécification : `docs/architecture-memoire-a-tiroirs.md`. Cette tâche étend B
 - [ ] Garder le texte et la TTS distincts dans le diagnostic : Piper lit la réponse mais ne crée pas ses formulations. Demander validation Fab avant déclarer l'UX naturelle.
 
 Constats fondés sur la capture d'essai et la lecture de `BonzeInference.kt`, `DialogueMemory.java`, `docs/index.html` sur `feature/offline-bonsaiv1`. Liquid AI classe explicitement le 230M comme non recommandé pour l'écriture créative : https://huggingface.co/LiquidAI/LFM2.5-230M/blob/main/README.md . **Documenté seulement ; aucun code ni APK modifié, aucun merge main.**
+
+## Reprise BONZE-031 — 30 octobre 2026, branche de travail isolée
+- [x] Vérifier Djipie et les mémoires Bonze ; relever HEAD `445408e` (+6 commits de documentation depuis `14757d3`).
+- [x] Créer `feature/bonze031-dialogue-natural-v1` sans toucher `main` ou au tag 0.6.0.
+- [x] Ajouter les réponses `bot` et messages `human` dans le contexte chronologique borné de `DialogueMemory` ; ne plus promouvoir les citations passées au système de `BonzeInference`.
+- [x] Réécrire le court prompt de personnalité : spontanéité, humour pertinent, tutoiement, sincérité ; ne pas prétendre que le 230M s'en trouve réparé.
+- [x] Ajouter tests ciblés `tests/DialogueMemoryTest.java` ; compilation/test JVM local passé (JDK21, copie locale de travail).
+- [x] Rédiger `docs/bench-dialogue-fr-bonze031.md` avec variantes R0/A1/A2/B1 et scénarios reproductibles.
+- [ ] Faire exécuter la CI complète sur la branche dédiée, contrôler Kotlin, les tests Java, l'APK, lint, signature, permissions et non-régressions. Les workflows de build/publish actuels ciblent la branche historique ; **pas de déclenchement automatique de la CI sur la branche d'essai**.
+- [ ] Exécuter les vraies générations LFM 230M à paramètres égaux, comparer R0/A1/A2 en français, journaliser erreurs/répétitions/métriques, puis étudier la séparation multi-rôles réelle dans l'AAR.
+- [ ] Essayer sur Samsung, incluant granité à l'huile, rôle Pipo, interruptions/Stop/veille, sous-titres et Piper. Décision et validation Fab nécessaires.
+- [ ] Benchmark du Liquid 1.2B Q4 avec licence, template, poids hachés, mémoire totale et déchargement ; aucun moteur supplémentaire intégré pour l'instant.
+- [ ] Poursuivre BONZE-030 mémoire à tiroirs puis experts/arbitre/IA du savoir/voix selon les phases de l'ordre de mission ; conserver la 0.6.0.
+État : **code source de Phase A partiellement modifié et test ciblé passé ; modèle, CI, APK et appareil non validés**. Aucune fusion `main`, Release ni APK 0.6.1 autorisés. Prochaine action : déclencher tests complets et comparer les générations réelles sur les fixtures, puis corriger uniquement les défauts observés.
