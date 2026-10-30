@@ -22,6 +22,8 @@ jobs:
           mkdir -p /tmp/bonze-jvm
           javac -d /tmp/bonze-jvm android/app/src/main/java/fr/bonzeai/companion/DialogueMemory.java tests/DialogueMemoryTest.java
           java -cp /tmp/bonze-jvm DialogueMemoryTest
+          javac -d /tmp/bonze-jvm android/app/src/main/java/fr/bonzeai/companion/KnowledgeGuard.java tests/KnowledgeGuardTest.java
+          java -cp /tmp/bonze-jvm KnowledgeGuardTest
           javac -d /tmp/bonze-jvm android/app/src/main/java/fr/bonzeai/companion/VoiceSession.java tests/VoiceSessionTest.java
           java -cp /tmp/bonze-jvm VoiceSessionTest
       - run: python tests/test_piper_lexicon.py
