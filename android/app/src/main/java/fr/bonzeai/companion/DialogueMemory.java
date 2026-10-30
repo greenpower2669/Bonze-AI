@@ -22,7 +22,10 @@ public final class DialogueMemory {
   entries.add(new Entry(id,role,t));nextId=Math.max(nextId,id);
   while(entries.size()>30)entries.remove(0);
   String lower=t.toLowerCase(Locale.FRANCE);
-  if(role.equals("human")&&(lower.contains("on joue")||lower.contains("tu joues")||lower.contains("imagine")||lower.contains("tu es le")||lower.matches(".*notre.{0,40}s.appelle.*")))scene=clean(t,360);
+  if(role.equals("human")&&(lower.contains("on joue")||lower.contains("tu joues")||lower.contains("imagine")||lower.contains("tu es le")||lower.matches(".*notre.{0,40}s.appelle.*")
+   ||lower.contains("maintenant on est")||lower.contains("désormais on est")
+   ||lower.contains("on quitte")||lower.contains("on n'est plus")
+   ||lower.contains("on se retrouve maintenant")))scene=clean(t,360);
  }
  public synchronized void clear(){entries.clear();scene="";name="";nextId=System.currentTimeMillis();}
  public synchronized int size(){return entries.size();}
