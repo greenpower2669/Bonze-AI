@@ -113,6 +113,16 @@ public final class ConversationService extends Service {
    neural=c.optBoolean("neural",neural);readText=c.optBoolean("readText",readText);economy="eco".equals(mode);
    if(council==null)mood=DialogueMemory.clean(c.optString("mood",mood),30);if(council!=null&&c.optJSONObject("identity")!=null)council.seed(c.getJSONObject("identity"));memory.setName(c.optString("nickname",""));
    String chosen=c.optString("voice","");if(!chosen.isEmpty()&&!chosen.equals(voiceName))selectVoice(chosen);
+   String chosenModel=c.optString("model",LocalModelStore.SMALL);
+   String activeModel=LocalModelStore.choice(this);
+   if((LocalModelStore.SMALL.equals(chosenModel)||LocalModelStore.LARGE.equals(chosenModel))
+        &&(LocalModelStore.SMALL.equals(chosenModel)||LocalModelStore.available(this))
+        &&!chosenModel.equals(activeModel)){
+    if(session.active())stop(request,"Changement de moteur : conversation arrêtée.");
+    prefs.edit().putString("modelChoice",chosenModel).apply();
+    inference.execute(BonzeInference::release);
+    journal.add("model-choice",diagnosticTurn,DiagnosticJournal.fields("selected",chosenModel));
+   }
    prefs.edit().putString("mode",mode).putBoolean("neural",neural).putBoolean("readText",readText).apply();
    if(!neural||!Arrays.asList("precise","eco").contains(mode)){if(!inference.isShutdown())inference.execute(BonzeInference::release);}if("off".equals(mode)||"text".equals(mode))piper.unload();
    if(("off".equals(mode)||"text".equals(mode))&&session.active())stop(request,"Mode texte : conversation vocale arrêtée.");
@@ -288,7 +298,8 @@ public final class ConversationService extends Service {
  private JSONObject snapshotObject(){
   JSONObject o=base("snapshot");try{
    if(council!=null)o.put("council",council.snapshot());
-   o.put("active",session.active()).put("state",state).put("busy","thinking".equals(state)).put("status",status).put("voice",voiceName);
+   o.put("active",session.active()).put("state",state).put("busy","thinking".equals(state)).put("status",status).put("voice",voiceName)
+    .put("model",LocalModelStore.choice(this)).put("model12Ready",LocalModelStore.available(this));
    JSONArray rows=new JSONArray();for(DialogueMemory.Entry e:memory.entries())rows.put(new JSONObject().put("id",e.id).put("role",e.role).put("text",e.text));o.put("history",rows).put("importedThrough",prefs.getLong("importedThrough",0));
    JSONArray voices=new JSONArray();voices.put(new JSONObject().put("name","piper-mls").put("quality",400));if(voiceInitFinished&&tts!=null)for(Voice v:localVoices())voices.put(new JSONObject().put("name",v.getName()).put("quality",v.getQuality()));o.put("voices",voices);
    if(prefs.contains("restoredWeb")){o.put("restoredWeb",new JSONObject(prefs.getString("restoredWeb","{}")));o.put("restoreWeights",new JSONObject(prefs.getString("restoredWeights","{}")));o.put("restoreJournal",journal.copy());}
@@ -308,12 +319,16 @@ public final class ConversationService extends Service {
  private void updateCouncil(String text){if(council==null)return;long now=SystemClock.elapsedRealtime();try{JSONObject r=council.run(text,DiagnosticJournal.fields("familiar",memory.size()>0,"scene",!memory.scene().isEmpty()),Math.min(30,(now-councilAt)/1000.0),state);councilAt=now;policyHint=r.optString("hint");JSONObject forces=r.getJSONObject("state").getJSONObject("forces");double max=-1;for(Iterator<String> it=forces.keys();it.hasNext();){String k=it.next();if(forces.optDouble(k)>max){max=forces.optDouble(k);mood=k;}}journal.add("council",diagnosticTurn,r);}catch(Exception e){journal.add("council-error",diagnosticTurn,DiagnosticJournal.fields("error",e.getClass().getSimpleName()));}}
  private void councilTick(){if(disposed)return;if(session.active()||listener!=null){updateCouncil("");if(listener!=null&&council!=null){JSONObject e=base("emotion-state");try{e.put("council",council.snapshot());listener.onEvent(e.toString());}catch(JSONException ignored){}}}main.postDelayed(this::councilTick,10000);}
  public void configureCouncil(String json)throws JSONException{if(council==null)throw new IllegalStateException();council.configure(new JSONObject(json));journal.add("admin-council",diagnosticTurn,council.snapshot());publish();}
- public JSONObject diagnostics(){return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"journal",journal.copy(),"resources",resourceObject(),"engine",speechEngine,"preferredVoice",voiceName,"model","LFM2.5-230M dense");}
+ public JSONObject diagnostics(){return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"journal",journal.copy(),"resources",resourceObject(),"engine",speechEngine,"preferredVoice",voiceName,"model",LocalModelStore.choice(this),"model12Ready",LocalModelStore.available(this));}
  private JSONObject resourceObject(){try{return new JSONObject(resources());}catch(JSONException e){return new JSONObject();}}
  public JSONObject backupData(){
   JSONArray rows=new JSONArray();for(DialogueMemory.Entry e:memory.entries())rows.put(DiagnosticJournal.fields("id",e.id,"role",e.role,"text",e.text));
   return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"native",DiagnosticJournal.fields("schema",1,"history",rows,"scene",memory.scene(),"mode",mode,"neural",neural,"readText",readText,"voice",voiceName,"mood",mood),"journal",journal.copy());
  }
+ public void prepareModelImport(){
+  stop(request,"Import d’un modèle : conversation arrêtée.");inference.execute(BonzeInference::release);
+ }
+ public void modelImported(){journal.add("model-import",diagnosticTurn,DiagnosticJournal.fields("ready",LocalModelStore.available(this)));publish();}
  public void acknowledgeRestore(){prefs.edit().remove("restoredWeb").remove("restoredWeights").apply();}
  public void restoreBackup(String data) throws Exception {
   if(data.length()>4*1024*1024)throw new IllegalArgumentException("size");
