@@ -176,7 +176,9 @@ function choose(input){
  var local=detect(txt),semantic=String(input.semantic||'').toLowerCase().trim();
  // Neural labels are hints, never permission to invent an answer or bypass a safety gate.
  var uncertain=local==='discussion'||local==='question'||local==='demande'||local==='curiosite'||local==='surprise';
- var intent=uncertain&&INTENTS.indexOf(semantic)>=0?semantic:local;
+ var barred=['tristesse','inquietude','contrarié','urgence','correction'];
+ var denied=contains(norm(txt),'pas triste|ne suis pas triste|pas peur|ne suis pas inquiet|pas drole|ce n est pas drole');
+ var intent=uncertain&&!denied&&barred.indexOf(semantic)<0&&INTENTS.indexOf(semantic)>=0?semantic:local;
  if(local==='urgence'||local==='correction'||local==='tristesse'||local==='inquietude')intent=local;
  var force=input.forces&&typeof input.forces==='object'?input.forces:{};
  var endurance=input.endurances&&typeof input.endurances==='object'?input.endurances:{};
