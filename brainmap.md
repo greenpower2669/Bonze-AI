@@ -92,3 +92,11 @@ Préflight qualité : PiperPhonetics.speechPhonemes applique le plancher expéri
 ## Orientation future — mémoire à tiroirs
 
 - `docs/architecture-memoire-a-tiroirs.md` : demande BONZE-030, index local léger, tiroirs contextuels privés, récupération à la demande, provenance/oubli/archives, permissions, migration et tests. **Cible non implémentée en 0.6.0** ; ne pas la confondre avec les tiroirs de l'interface ou les mémoires vivantes du dépôt.
+
+
+## BONZE-032 — Répertoire de répliques (30/10/2026)
+- `docs/repertoire-simule-bonze-032.md` : architecture et limites de la simulation.
+- `core/repertoire.js` : 183 fiches de phrases, 9 rôles, intentions, anti-répétition, synonymes contrôlés.
+- `android/app/src/main/java/fr/bonzeai/companion/ScriptedDialogue.java` : exécution Rhino des fiches et état persistant.
+- `BonzeInference.kt` : classification Liquid seulement ; génération de phrases libre remplacée dans le service.
+- BONZE-033 encore ouvert : mémoire associative à tiroirs / fiches de phrases évolutives et stabilité Piper.

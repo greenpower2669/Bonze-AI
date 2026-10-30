@@ -142,3 +142,17 @@ Spécification : `docs/architecture-memoire-a-tiroirs.md`. Cette tâche étend B
 - [ ] Garder le texte et la TTS distincts dans le diagnostic : Piper lit la réponse mais ne crée pas ses formulations. Demander validation Fab avant déclarer l'UX naturelle.
 
 Constats fondés sur la capture d'essai et la lecture de `BonzeInference.kt`, `DialogueMemory.java`, `docs/index.html` sur `feature/offline-bonsaiv1`. Liquid AI classe explicitement le 230M comme non recommandé pour l'écriture créative : https://huggingface.co/LiquidAI/LFM2.5-230M/blob/main/README.md . **Documenté seulement ; aucun code ni APK modifié, aucun merge main.**
+
+
+## BONZE-032 — Version scénarisée avec Liquid classifieur (30/10/2026)
+- [x] Repartir du HEAD 01b1387 (pas de retour à 0.6.0), créer `feature/bonze-032-repertoire-simule`, préserver main et l'application existante.
+- [x] Créer premier catalogue de 183 cartes sur 20 intentions, 8 voix et sage ; choix pondéré par forces/endurance et anti-reprise borné.
+- [x] Ajouter WebApp + Android Rhino, Liquid 230M comme classifieur seulement et repli lexical sans génération de texte.
+- [x] Conserver choix anti-répétition dans état local et export chiffré ; refus de catégories incertaines en contexte critique / négation.
+- [x] Ajouter tests pour sélection, sécurité, synonymes et mémoire bornée, exécuter CI JS.
+- [ ] Vérifier CI Android, tests sur Samsung, mode avion, volume sonore et absence de répétition de voix.
+- [ ] **BONZE-033** : fiches mémoire S–V–C et synonymes, import/export de corpus avec validation, associations contextuelles, renforcement/déclin, index/tirroirs et contrôles de confidentialité.
+- [ ] Étendre progressivement le catalogue selon une matrice d'intentions et de scènes après tests, distinguer les réponses sages des créations humoristiques.
+- [ ] Mesurer précision de Liquid, CPU, PSS, p50/p95 et comparaison au repli lexical sans prétendre au gain mémoire MoE.
+- [ ] Diagnostiquer Piper `piper-short-unstable`, `lexicon-oov`, `lexicon-number`, discontinuités PCM/AudioTrack, et corriger seulement avec logs puis écoute Samsung.
+- [ ] Garder la publication en suspens tant que l'APK issu de BONZE-032 n'est pas vérifié et approuvé ; aucune fusion main.
