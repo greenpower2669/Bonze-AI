@@ -94,3 +94,12 @@ Livré pour validation, pas clôturé : BONZE-023 corrections d’affichage/disp
 - [ ] **BONZE-030 — Mémoire à tiroirs autonome, locale et sélective** : s'inspirer de Djipie pour une carte d'index compacte, ouvrir uniquement les tiroirs nécessaires au dialogue et gérer séparément mémoire immédiate, personnelle/sociale, apprentissages, scènes, missions et archives. Chaque souvenir doit porter ses droits, origine, fiabilité et règles de correction/oubli. Aucun chargement intégral systématique, aucune dépendance à GitHub ni au cloud. Préserver l'historique, la personnalité, les identités et l'export `.bonze`, effectuer une migration réversible et mesurer l'impact sur Samsung Android 16. Développer par étapes avec tests de confidentialité et validation Fab avant publication.
 
 Voir `docs/architecture-memoire-a-tiroirs.md`. Il s'agit d'une **mission ouverte**, pas d'une capacité déjà livrée par la version 0.6.0. Aucun merge main.
+
+## Nouvelle passation globale Fab — 30 octobre 2026 (ouverte)
+- [ ] **Phase A / BONZE-031** : dialogue naturel en français, vrai contexte de tours, vérifier le template et éviter l'effet service client ; banc de tests, échantillonnage et validation Samsung. Correctif initial sur branche dédiée, non validé en modèle réel.
+- [ ] **Phase B** : comparer le LFM2.5-230M à LFM2.5-1.2B-Instruct Q4, licence/compatibilité/qualité/charges mémoire, un seul modèle actif. Pas de remplacement implicite.
+- [ ] **Phase C / BONZE-030** : mémoire autonome à tiroirs à accès sélectif, provenance/droits, migrations et sauvegardes ; isoler les personnes, chiffrement local adapté. Indépendante de Djipie.
+- [ ] **Phase D** : huit tendances/endurances, contributions contrôlables, arbitre, études de sous-réseaux entraînés et IA du savoir ; preuves d'ablation et refus de fausses pensées.
+- [ ] **Phase E** : approfondir Piper MLS, diction française, bouche/voix réellement lues et accessibilité avec évaluation humaine.
+- [ ] **Phase F** : validation Android Samsung hors ligne/veille/Stop/TalkBack/ressources et sauvegarde/rollback ; accord Fab avant conclusion.
+Contrats : préserver `fr.bonzeai.companion`, signature et données ; ne jamais imposer désinstallation, ne pas ajouter INTERNET, ne pas merger `main` ni publier de Release sans validation. La prérelease 0.6.0 `14757d3` demeure le point de retour. Branche expérimentale `feature/bonze031-dialogue-natural-v1` issue de `445408e`. Résultats détaillés et limites dans `docs/bench-dialogue-fr-bonze031.md`.
