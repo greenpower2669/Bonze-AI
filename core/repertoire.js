@@ -5,7 +5,7 @@
 (function(root){
 'use strict';
 var ROLES=['joie','peur','colere','calme','reflexion','empathie','curiosite','humour','sage'];
-var INTENTS=['salut','merci','tristesse','inquietude','contrarié','jeu','humour','curiosite','question','correction','affection','depart','fatigue','surprise','demande','reussite','confusion','discussion','urgence'];
+var INTENTS=['salut','merci','tristesse','inquietude','contrarié','jeu','humour','curiosite','question','identite','correction','affection','depart','fatigue','surprise','demande','reussite','confusion','discussion','urgence'];
 // Each role proposes authored phrases. Different structures are kept as distinct cards.
 var LINES={
 joie:{
@@ -97,6 +97,7 @@ depart:["À plus ! Je garde mon chapeau de travers.","Au revoir ! Les chaussette
 discussion:["Ça me rappelle une histoire de canard très sérieux.","Je sens qu'un rebondissement ridicule nous guette."]
 },
 sage:{
+identite:["Je m'appelle Bonze AI ! Et toi ?"],
 salut:["Bonjour. Je suis prêt à t'écouter.","Coucou. Commençons simplement."],
 merci:["Avec plaisir. Continuons à apprendre ensemble.","Merci de ta confiance, et gardons notre esprit critique."],
 tristesse:["Tes sentiments méritent d'être pris au sérieux. Tu veux en parler ?","Je peux écouter, mais une présence humaine peut aussi aider."],
@@ -140,6 +141,7 @@ function contains(s,pat){return new RegExp('(?:^| )('+pat+')(?: |$)','i').test(s
 function detect(text){
  var n=norm(text);
  if(!n)return 'discussion';
+ if(contains(n,'comment tu t appelles|comment tu t appelles|quel est ton nom|qui es tu'))return 'identite';
  if(contains(n,'suicide|me tuer|me faire du mal|danger immediat|au secours|urgence vitale|je suis en danger'))return 'urgence';
  if(contains(n,'au revoir|a bientot|bonne nuit|je dois partir|bye|bisous'))return 'depart';
  if(contains(n,'pas compris|je comprends pas|je ne comprends pas|c est incomprehensible|confus|perdu dans'))return 'confusion';
