@@ -10,10 +10,10 @@ var INTENTS=['salut','merci','tristesse','inquietude','contrarié','jeu','humour
 var LINES={
 joie:{
 salut:["Coucou ! Ça me fait plaisir de te retrouver.","Oh, te voilà ! Qu'est-ce qu'on invente aujourd'hui ?"],
-merci:["Avec plaisir ! Ça fait une jolie petite victoire.","C'est chouette de partager ça avec toi."],
+merci:["Avec plaisir ! Ça fait une jolie petite victoire.","C'est chouette de chercher [[ensemble]]."],
 jeu:["Oui ! Une aventure, et je prends mon petit sac imaginaire.","J'adore cette idée. Quel sera notre premier rebondissement ?"],
 humour:["Attention, mon sourire va bientôt dépasser mes oreilles !","Hihi ! Je sens arriver une histoire absolument improbable."],
-curiosite:["Oh, voilà une piste qui donne envie d'explorer.","On pourrait découvrir quelque chose de surprenant !"],
+curiosite:["Oh, voilà une piste qui donne envie d'[[explorer]].","On pourrait découvrir quelque chose de [[surprenant]] !"],
 affection:["Quelle gentillesse ! Je garde ce moment dans notre échange.","C'est doux, ça me donne envie de sourire."],
 reussite:["Bravo ! Tu peux être fier de ce que tu viens de faire.","Hourra ! Une étape de plus, et pas des moindres."],
 surprise:["Oh ! Je ne m'attendais pas à celle-là !","Eh bien, quelle entrée en matière !"],
@@ -41,7 +41,7 @@ discussion:["Je peux être direct sans être méchant.","On peut ne pas être d'
 },
 calme:{
 salut:["Bonjour, je suis là. On prend notre temps.","Coucou. Comment se passe ton moment ?"],
-inquietude:["On peut avancer tranquillement, une chose à la fois.","Je t'écoute. Rien ne nous oblige à nous précipiter."],
+inquietude:["On peut avancer [[doucement]], une chose à la fois.","Je t'écoute. Rien ne nous oblige à nous précipiter."],
 tristesse:["Je suis là pour écouter, sans essayer de tout réparer.","Si tu veux, on peut simplement parler de ce qui te pèse."],
 fatigue:["Tu peux te reposer. Nous reprendrons quand tu voudras.","On peut ralentir le rythme, tout simplement."],
 depart:["À plus tard. Prends soin de toi.","Bonne pause, on reprendra tranquillement."],
@@ -56,7 +56,7 @@ question:["Je ne veux pas fabriquer une réponse. Cherchons comment la vérifier
 correction:["Merci pour la correction. Qu'est-ce que nous devons changer ?","Notons précisément ce qui était incorrect."],
 confusion:["Il y a peut-être deux idées mélangées. Séparons-les.","Essayons d'identifier ce qui manque dans le raisonnement."],
 demande:["Quel résultat concret veux-tu obtenir ?","Définissons la tâche avant de choisir la méthode."],
-jeu:["Et si notre histoire suivait une règle absurde mais cohérente ?","On peut inventer un monde où cette drôle d'idée fonctionne."],
+jeu:["Et si notre [[histoire]] suivait une règle absurde mais cohérente ?","On peut inventer un monde où cette drôle d'idée fonctionne."],
 reussite:["Qu'est-ce qui a rendu cette réussite possible ?","C'est une bonne occasion de retenir la méthode."],
 surprise:["Ce n'était pas prévu. Qu'est-ce qui a changé ?","Voilà un résultat inattendu ! Il mérite qu'on l'examine."],
 discussion:["Je voudrais comprendre le lien entre ces idées.","Il y a sans doute plusieurs façons de voir ça."]
@@ -112,7 +112,7 @@ depart:["Au revoir. Nous reprendrons quand tu voudras.","Prends soin de toi, et 
 fatigue:["Le repos est aussi une façon de prendre soin de son équilibre.","Tu peux faire une pause sans te justifier."],
 surprise:["Une surprise peut être une occasion d'apprendre.","Observons ce qui a changé avant d'en tirer une conclusion."],
 demande:["Commençons par clarifier ce qui est demandé.","Je peux aider à réfléchir, mais pas prétendre tout savoir."],
-reussite:["Une réussite mérite d'être appréciée, puis comprise.","Souviens-toi de ce qui a fonctionné : cela pourra servir."],
+reussite:["Une [[petite]] réussite mérite d'être appréciée, puis comprise.","Souviens-toi de ce qui a fonctionné : cela pourra servir."],
 confusion:["Posons une question à la fois et distinguons les faits.","Quand le sens est flou, demander une précision est plus sage."],
 discussion:["Je t'écoute. Nous pouvons aussi ne pas être d'accord.","Réfléchissons ensemble, sans prétendre avoir toujours raison."],
 urgence:["Si un danger est immédiat, contacte les secours ou une personne de confiance maintenant.","Cette situation nécessite une aide humaine rapide. Ne compte pas seulement sur moi."]
@@ -135,7 +135,7 @@ for(var r=0;r<ROLES.length;r++){
   }
  }
 }
-function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9' ]/g,' ').replace(/\s+/g,' ').trim();}
+function norm(s){var text=String(s||'').toLowerCase();if(text.normalize)text=text.normalize('NFD');return text.replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9' ]/g,' ').replace(/\s+/g,' ').trim();}
 function contains(s,pat){return new RegExp('(?:^| )('+pat+')(?: |$)','i').test(s);}
 function detect(text){
  var n=norm(text);
@@ -167,13 +167,14 @@ function cleanState(old,seed){
  var fam=Array.isArray(old.families)?old.families.filter(function(x){return typeof x==='string'&&x.length<80;}).slice(-8):[];
  return {version:1,seed:finite(old.seed,finite(seed,0x7c25b,-2147483647,2147483647),-2147483647,2147483647)|0,turns:finite(old.turns,0,0,10000000)|0,recent:rec,families:fam};
 }
-function rand(s){s.seed=(Math.imul(s.seed,1664525)+1013904223)|0;return (s.seed>>>0)/4294967296;}
+function rand(s){s.seed=((Math.imul?Math.imul(s.seed,1664525):s.seed*1664525)+1013904223)|0;return (s.seed>>>0)/4294967296;}
 function choose(input){
  input=input&&typeof input==='object'?input:{};
  var s=cleanState(input.state,input.seed),txt=String(input.text||'').slice(0,600);
  var local=detect(txt),semantic=String(input.semantic||'').toLowerCase().trim();
  // Neural labels are hints, never permission to invent an answer or bypass a safety gate.
- var intent=INTENTS.indexOf(semantic)>=0?semantic:local;
+ var uncertain=local==='discussion'||local==='question'||local==='demande'||local==='curiosite'||local==='surprise';
+ var intent=uncertain&&INTENTS.indexOf(semantic)>=0?semantic:local;
  if(local==='urgence'||local==='correction'||local==='tristesse'||local==='inquietude')intent=local;
  var force=input.forces&&typeof input.forces==='object'?input.forces:{};
  var endurance=input.endurances&&typeof input.endurances==='object'?input.endurances:{};
