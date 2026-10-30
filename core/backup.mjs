@@ -1,6 +1,7 @@
 import './council.js';
 import {restoreIdentity} from './identity.mjs';
 import {inferExperts} from './experts.mjs';
+import {validateVaultEnvelope} from './memory-vault.mjs';
 const MAX=8*1024*1024,ITERATIONS=310000;
 const encoder=new TextEncoder(),decoder=new TextDecoder('utf-8',{fatal:true});
 const modes=['precise','eco','light','text','off'];
@@ -15,7 +16,7 @@ export function validateBackup(input){
  const w=input.web,i=w.identity;
  if(!plain(i)||i.version!==1||typeof i.seed!=='string'||i.seed.length<1||i.seed.length>128||!plain(i.acquired)||!plain(i.acquired.forces))fail();
  for(const n of Object.values(i.acquired.forces))if(!Number.isFinite(n)||n<0||n>1)fail();
- const web={identity:restoreIdentity(i),history:rows(w.history||[]),profile:typeof w.profile?.nickname==='string'?{nickname:w.profile.nickname.slice(0,40)}:null,fontSize:[1,2,3].includes(w.fontSize)?w.fontSize:2,resourceMode:modes.includes(w.resourceMode)?w.resourceMode:'text',neuralEnabled:w.neuralEnabled===true,contrast:w.contrast===true,reduceMotion:w.reduceMotion===true,browserVoiceEnabled:w.browserVoiceEnabled===true,lastNativeHumanId:Number.isSafeInteger(w.lastNativeHumanId)?w.lastNativeHumanId:0};
+ const web={identity:restoreIdentity(i),history:rows(w.history||[]),profile:typeof w.profile?.nickname==='string'?{nickname:w.profile.nickname.slice(0,40)}:null,fontSize:[1,2,3].includes(w.fontSize)?w.fontSize:2,resourceMode:modes.includes(w.resourceMode)?w.resourceMode:'text',neuralEnabled:w.neuralEnabled===true,contrast:w.contrast===true,reduceMotion:w.reduceMotion===true,browserVoiceEnabled:w.browserVoiceEnabled===true,lastNativeHumanId:Number.isSafeInteger(w.lastNativeHumanId)?w.lastNativeHumanId:0,memoryVault:validateVaultEnvelope(w.memoryVault??null,i.seed)};
  let native=null;
  if(input.native!=null){const n=input.native;if(!plain(n)||n.schema!==1||!modes.includes(n.mode))fail();native={schema:1,history:rows(n.history),scene:String(n.scene||'').slice(0,360),mode:n.mode,neural:n.neural===true,readText:n.readText===true,voice:String(n.voice||'').slice(0,200),mood:String(n.mood||'curiosite').slice(0,30)};}
  let weights=null;if(input.weights!=null){inferExperts('',input.weights);weights=JSON.parse(JSON.stringify(input.weights));}
