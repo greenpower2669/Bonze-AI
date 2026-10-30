@@ -170,3 +170,15 @@ Constats fondés sur la capture d'essai et la lecture de `BonzeInference.kt`, `D
 - [ ] Refaire tests instrumentés, mode avion/veille/Stop/TalkBack/sauvegardes + tests humains Samsung, signature durable.
 - [ ] Obtenir décision de Fab avant merge main ou une Release/APK de prétest.
 Rapport complet : \`docs/history/bonze031-evolution-2026-10-30.md\`. Aucun APK nouveau n'est publié. Statut réel = **prototype codé et testé automatiquement ; modèle et téléphone non validés**.
+
+## Suite du chantier Bonze du 30 octobre — après demande « continue à coder »
+- [x] Analyser échec CI 41090962616 : jeton C++ `const` ; corrigé dans le probe compilé.
+- [x] Ajouter `LocalModelStore.java` : GGUF 1.2B Q4_K_M importé manuellement par Android SAF, contrôle SHA-256 et espace libre, aucun accès Internet, aucun écrasement inutile du poids vérifié.
+- [x] Raccorder `BonzeInference.kt` et `ConversationService.java` : moteur par défaut 230M, 1.2B optionnel, décharger ancien modèle au changement, erreur locale gérée et moteur annoncé au diagnostic.
+- [x] Ajouter menu Options de moteur, import contrôlé côté MainActivity, persistance Web/Android et compatibilité sauvegardes v0.6 avec repli au 230M.
+- [x] Ajouter tests statiques sur import/mémoire hors réseau et test aller-retour sauvegarde du choix ; CI antérieure `41095563691` verte (JS/JVM, Playwright, compilation de sources) ; les nouveaux commits demandent une nouvelle validation.
+- [ ] Achever et analyser toutes les CI du HEAD, corriger les régressions exactes, effectuer build APK complet et contrôle certificat avant installation.
+- [ ] Relancer comparaison R0/A1/A2/A3 sur les GGUF réels et mesurer français/latence/empreinte ; vérifier la disponibilité et l'impact RAM Samsung.
+- [ ] Renforcer isolation familiale, rappels de mémoire contrôlés et migrations ; le coffre à tiroirs ne doit pas être branché automatiquement à l'écoute sans authentification sûre.
+- [ ] Évaluer amélioration Piper et vrai MoE neuronal après mesures, sans promettre de voix émotionnelle entraînée.
+- [ ] Ne publier aucune nouvelle Release ni merger dans main sans validation explicite ; `bonze-ai-v0.6.0` demeure le point de retour installable.
