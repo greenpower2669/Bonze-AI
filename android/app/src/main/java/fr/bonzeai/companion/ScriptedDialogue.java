@@ -32,6 +32,9 @@ final class ScriptedDialogue {
         try {
             cx.setOptimizationLevel(-1);
             scope=cx.initSafeStandardObjects();
+            try(Reader r=new InputStreamReader(context.getAssets().open("core/repertoire-corpus.js"),StandardCharsets.UTF_8)){
+                cx.evaluateReader(scope,r,"bonze-corpus",1,null);
+            }
             try(Reader r=new InputStreamReader(context.getAssets().open("core/repertoire.js"),StandardCharsets.UTF_8)){
                 cx.evaluateReader(scope,r,"bonze-repertoire",1,null);
             }
