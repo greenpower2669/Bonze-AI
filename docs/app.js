@@ -1,4 +1,5 @@
 import '../core/council.js';
+import '../core/repertoire-corpus.js';
 import '../core/repertoire.js';
 import {setupBackup} from './backup-ui.js';
 import {captionPair} from '../core/captions.mjs';
