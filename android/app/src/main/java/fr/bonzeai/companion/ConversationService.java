@@ -328,7 +328,7 @@ public final class ConversationService extends Service {
  private JSONObject resourceObject(){try{return new JSONObject(resources());}catch(JSONException e){return new JSONObject();}}
  public JSONObject backupData(){
   JSONArray rows=new JSONArray();for(DialogueMemory.Entry e:memory.entries())rows.put(DiagnosticJournal.fields("id",e.id,"role",e.role,"text",e.text));
-  return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"native",DiagnosticJournal.fields("schema",1,"history",rows,"scene",memory.scene(),"mode",mode,"neural",neural,"readText",readText,"voice",voiceName,"mood",mood),"journal",journal.copy());
+  return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"native",DiagnosticJournal.fields("schema",1,"history",rows,"scene",memory.scene(),"mode",mode,"neural",neural,"readText",readText,"voice",voiceName,"mood",mood),"journal",journal.copy(),"repertoire",scripted==null?JSONObject.NULL:scripted.state());
  }
  public void acknowledgeRestore(){prefs.edit().remove("restoredWeb").remove("restoredWeights").apply();}
  public void restoreBackup(String data) throws Exception {
@@ -340,18 +340,27 @@ public final class ConversationService extends Service {
   if(n.getInt("schema")!=1||!Arrays.asList("precise","eco","light","text","off").contains(nextMode)||rows.length()>30||trace.length()>200||trace.toString().length()>1000000)throw new IllegalArgumentException("data");
   for(int j=0;j<rows.length();j++){JSONObject r=rows.getJSONObject(j);if(!Arrays.asList("human","bot").contains(r.getString("role"))||r.getString("text").length()>1200)throw new IllegalArgumentException("history");}
   JSONObject nextWeights=root.optJSONObject("weights");if(nextWeights!=null&&nextWeights.length()==0)nextWeights=null;JSONObject backupCouncil=root.optJSONObject("council");if(backupCouncil==null)backupCouncil=DiagnosticJournal.fields("state",DiagnosticJournal.fields("version",1,"forces",identity.getJSONObject("acquired").getJSONObject("forces"),"globalEndurance",identity.getJSONObject("acquired").optDouble("endurance",.85)));JSONObject nextCouncil=council==null?null:council.validate(backupCouncil,nextWeights);
+  JSONObject restoredRepertoire=root.optJSONObject("repertoire");
+  if(restoredRepertoire!=null){
+   if(restoredRepertoire.optInt("version",0)!=1||restoredRepertoire.toString().length()>4096)throw new IllegalArgumentException("repertoire");
+   JSONArray recent=restoredRepertoire.optJSONArray("recent"),families=restoredRepertoire.optJSONArray("families");
+   if(recent==null||families==null||recent.length()>16||families.length()>8||!restoredRepertoire.has("seed")||!restoredRepertoire.has("turns"))throw new IllegalArgumentException("repertoire");
+   for(int k=0;k<recent.length();k++)if(!(recent.opt(k) instanceof String)||recent.optString(k).length()>80)throw new IllegalArgumentException("repertoire");
+   for(int k=0;k<families.length();k++)if(!(families.opt(k) instanceof String)||families.optString(k).length()>80)throw new IllegalArgumentException("repertoire");
+  }
   // Validate everything before stopping/writing. One preferences transaction is canonical;
   // restoredWeb stays pending until the WebView acknowledges its own durable write.
   JSONObject old=backupData();String previousWeb=prefs.getString("lastWeb","{}");
-  JSONObject rollback=DiagnosticJournal.fields("schema",1,"web",new JSONObject(previousWeb),"native",old.getJSONObject("native"),"council",old.optJSONObject("council"),"journal",old.getJSONArray("journal"),"weights",new JSONObject(prefs.getString("lastWeights","{}")));
+  JSONObject rollback=DiagnosticJournal.fields("schema",1,"web",new JSONObject(previousWeb),"native",old.getJSONObject("native"),"council",old.optJSONObject("council"),"journal",old.getJSONArray("journal"),"weights",new JSONObject(prefs.getString("lastWeights","{}")),"repertoire",old.optJSONObject("repertoire"));
   stop(request,"Restauration : micro arrêté.");
   boolean committed=prefs.edit().putString("rollback",rollback.toString()).putString("restoredWeb",web.toString())
    .putString("restoredWeights",root.optJSONObject("weights")==null?"{}":root.optJSONObject("weights").toString()).putString("history",rows.toString()).putString("scene",n.optString("scene","")).putString("mode",nextMode)
    .putBoolean("neural",n.optBoolean("neural",false)).putBoolean("readText",n.optBoolean("readText",false)).putString("voice",n.optString("voice",""))
-   .putBoolean("imported",true).putLong("importedThrough",0).putString("journal",trace.toString()).putString("lastWeb",web.toString()).putString("lastWeights",nextWeights==null?"{}":nextWeights.toString()).putString("council-state",nextCouncil==null?"{}":nextCouncil.getJSONObject("state").toString()).putString("council-params",nextCouncil==null?"{}":nextCouncil.getJSONObject("params").toString()).putString("voiceChoiceV2",n.optString("voice","piper-mls")).commit();
+   .putBoolean("imported",true).putLong("importedThrough",0).putString("journal",trace.toString())
+    .putString("bonze-repertoire-v1",restoredRepertoire==null?prefs.getString("bonze-repertoire-v1","{}"):restoredRepertoire.toString()).putString("lastWeb",web.toString()).putString("lastWeights",nextWeights==null?"{}":nextWeights.toString()).putString("council-state",nextCouncil==null?"{}":nextCouncil.getJSONObject("state").toString()).putString("council-params",nextCouncil==null?"{}":nextCouncil.getJSONObject("params").toString()).putString("voiceChoiceV2",n.optString("voice","piper-mls")).commit();
   if(!committed)throw new java.io.IOException("Storage");
   mode=nextMode;economy="eco".equals(mode);neural=n.optBoolean("neural",false);readText=n.optBoolean("readText",false);mood=n.optString("mood","curiosite");
-  memory.clear();loadMemory();journal.reload();if(council!=null&&nextCouncil!=null)council.adopt(nextCouncil,nextWeights);selectVoice(n.optString("voice",""));publish();
+  memory.clear();loadMemory();journal.reload();if(scripted!=null&&restoredRepertoire!=null)scripted.adopt(restoredRepertoire);if(council!=null&&nextCouncil!=null)council.adopt(nextCouncil,nextWeights);selectVoice(n.optString("voice",""));publish();
  }
  public void rollbackBackup() throws Exception {String saved=prefs.getString("rollback","");if(saved.isEmpty())throw new IllegalArgumentException("Aucun retour arrière");restoreBackup(saved);}
  public void saveWebState(String state){if(state.length()<2*1024*1024)try{JSONObject o=new JSONObject(state),w=o.getJSONObject("web");if(w.has("identity"))prefs.edit().putString("lastWeb",w.toString()).putString("lastWeights",o.optJSONObject("weights")==null?"{}":o.optJSONObject("weights").toString()).apply();}catch(JSONException ignored){}}
