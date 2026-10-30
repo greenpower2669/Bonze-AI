@@ -106,3 +106,8 @@ Préflight qualité : PiperPhonetics.speechPhonemes applique le plancher expéri
 - \`core/council.js\` : statut épistémique traçable et prudence sur le savoir ; n'est pas un expert neuronal factuel.
 - \`.github/probes/bonze031.cpp\` : quatre variantes R0/A1/A2/A3 ; \`scripts/score-dialogue.mjs\` et \`.github/workflows/bonze031-ci.yml\` préparent la comparaison réelle 230M/1.2B sans publier.
 - CI \`41090306459\` validée : JS/JVM, navigateur hors ligne/coffre et compilation Android de sources. Aucun essai Samsung, APK publié ou adoption 1.2B. \`todo.md\` conserve les validations ouvertes.
+
+## BONZE-032 — moteur Liquid alternatif expérimental (30/10/2026)
+- Branche `feature/bonze031-dialogue-natural-v1` : sélection 230M / 1.2B (défaut 230M), import SAF hors ligne du GGUF Q4_K_M avec SHA-256 et contrôle d'espace, déchargement avant changement de modèle. Aucune permission INTERNET, aucun poids 1.2B embarqué.
+- UI Options et sauvegarde `.bonze` conservent la sélection ; restauration sur téléphone dépourvu du poids 1.2B retombe au 230M. Tests JS et compilation Android source verts pour un commit antérieur du chantier (run `41095563691`).
+- Comparaison réelle JSONL à relancer après correctif C++ (`const llama_token` incompatible), aucun benchmark/essai Samsung et aucun APK nouveau publié. Détails dans `docs/history/bonze031-evolution-2026-10-30.md` et `todo.md`.
