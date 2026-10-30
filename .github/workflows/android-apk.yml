@@ -1,7 +1,7 @@
 name: Bonze AI Android APK
 on:
   push:
-    branches: [feature/offline-bonsaiv1]
+    branches: [feature/offline-bonsaiv1, feature/bonze-032-repertoire-simule]
     paths: ['android/**','docs/**','core/**','tests/**','scripts/**','build.gradle','settings.gradle','gradle.properties','.github/workflows/android-apk.yml']
   workflow_dispatch:
 permissions:
