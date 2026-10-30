@@ -21,7 +21,7 @@ let nativeReady=false,mode='off',lastSaved=performance.now(),lastTick=performanc
 let fontSize=2,resourceMode='precise',neuralEnabled=true,contrast=false,reduceMotion=false;
 let browserVoiceEnabled=false,identity,saved=null,voiceRun=0,councilState=null,councilParams=null,councilJournal=[];
 let nativeActive=false,nativeBusy=false,nativeConnected=false,nativeVoice='',lastNativeHumanId=0,pendingVoice=null;
-let memoryVault=null,memoryLock=()=>{};
+let memoryVault=null,memoryLock=()=>{},modelChoice='230m',model12Ready=false;
 try{saved=JSON.parse(localStorage.getItem(STORAGE)||'null');}catch{}
 if(saved&&typeof saved==='object'){
  profile=typeof saved.profile?.nickname==='string'?{nickname:saved.profile.nickname.slice(0,40)}:null;
@@ -32,8 +32,8 @@ if(saved&&typeof saved==='object'){
  contrast=saved.contrast===true;reduceMotion=saved.reduceMotion===true;
  browserVoiceEnabled=saved.browserVoiceEnabled===true;lastNativeHumanId=Number.isSafeInteger(saved.lastNativeHumanId)?saved.lastNativeHumanId:0;
 }
-identity=restoreIdentity(saved?.identity);memoryVault=saved?.memoryVault??null;councilState=saved?.councilState||{version:1,forces:{...identity.acquired.forces},globalEndurance:identity.acquired.endurance};councilParams=saved?.councilParams||null;try{councilJournal=JSON.parse(localStorage.getItem("bonze-diagnostics")||"[]");}catch{}
-function webState(){return {profile,history:history.slice(-30),fontSize,resourceMode,neuralEnabled,contrast,reduceMotion,identity,browserVoiceEnabled,lastNativeHumanId,councilState,councilParams,memoryVault};}
+identity=restoreIdentity(saved?.identity);memoryVault=saved?.memoryVault??null;modelChoice=saved?.modelChoice==='12b'?'12b':'230m';councilState=saved?.councilState||{version:1,forces:{...identity.acquired.forces},globalEndurance:identity.acquired.endurance};councilParams=saved?.councilParams||null;try{councilJournal=JSON.parse(localStorage.getItem("bonze-diagnostics")||"[]");}catch{}
+function webState(){return {profile,history:history.slice(-30),fontSize,resourceMode,neuralEnabled,contrast,reduceMotion,identity,browserVoiceEnabled,lastNativeHumanId,councilState,councilParams,memoryVault,modelChoice};}
 function saveNativeWeb(){if(isNative&&nativeConnected)window.BonzeAndroid.command('save-web',JSON.stringify({web:webState(),weights:trainedWeights}),'');}
 function save(){
  try{localStorage.setItem(STORAGE,JSON.stringify(webState()));if(!isNative)localStorage.setItem('bonze-diagnostics',JSON.stringify(councilJournal));}
@@ -137,7 +137,7 @@ function handleText(text,source='text'){
  el('brain-status').textContent='Réponse du mode textuel léger.';
  finishReply(answer(clean,profile||{}).text,token);
 }
-function configData(){return JSON.stringify({mode:resourceMode,neural:neuralEnabled,readText:browserVoiceEnabled,mood:describedMood||'curiosite',nickname:profile?.nickname||'',voice:nativeVoice,identity});}
+function configData(){return JSON.stringify({mode:resourceMode,neural:neuralEnabled,readText:browserVoiceEnabled,mood:describedMood||'curiosite',nickname:profile?.nickname||'',voice:nativeVoice,identity,model:modelChoice});}
 function configureNative(){if(isNative&&nativeConnected)window.BonzeAndroid.configureNative(configData());}
 function applyNativeHistory(rows){
  if(!Array.isArray(rows))return;
@@ -161,6 +161,9 @@ window.BonzeNativeEvent=e=>{
    try{localStorage.setItem(STORAGE,JSON.stringify(e.restoredWeb));if(e.restoreWeights)localStorage.setItem('bonze-expert-weights',JSON.stringify(e.restoreWeights));if(e.restoreJournal)localStorage.setItem('bonze-diagnostics',JSON.stringify(e.restoreJournal));window.BonzeAndroid.command('restore-ack','','');location.reload();return;}catch{el('profile-status').textContent='Écriture de la restauration impossible : la copie native attend toujours.';return;}
   }
   nativeActive=e.active===true;nativeBusy=e.busy===true;
+  model12Ready=e.model12Ready===true;modelChoice=e.model==='12b'?'12b':'230m';
+  el('local-model').value=modelChoice;el('local-model').querySelector('option[value="12b"]').disabled=!model12Ready;
+  el('local-model-status').textContent='Moteur actif : '+(modelChoice==='12b'?'Liquid 1.2B Q4':'Liquid 230M Q4')+'. Liquid 1.2B '+(model12Ready?'installé et vérifié.':'non installé.')+' Aucun modèle supplémentaire chargé sans demande.';
   if(Number.isSafeInteger(e.importedThrough))lastNativeHumanId=Math.max(lastNativeHumanId,e.importedThrough);
   applyNativeHistory(e.history);el('message').disabled=nativeBusy;el('send-message').disabled=nativeBusy;
   el('native-status').textContent=String(e.status||'');state(e.state);
@@ -214,6 +217,24 @@ el('reduce-motion').addEventListener('change',e=>{reduceMotion=e.target.checked;
 visualSettings();
 el('voice').checked=browserVoiceEnabled;el('native-voice-row').hidden=!isNative;
 el('native-voice').addEventListener('change',e=>{const wanted=e.target.value;pendingVoice=wanted;nativeVoice=wanted;stopAll();configureNative();});
+el('local-model-row').hidden=!isNative;
+el('local-model').value=modelChoice;
+el('local-model').querySelector('option[value="12b"]').disabled=true;
+el('local-model').addEventListener('change',e=>{
+ const requested=e.target.value;
+ if(requested==='12b'&&!model12Ready){el('local-model').value=modelChoice;return;}
+ stopAll('Changement de moteur : conversation arrêtée.');modelChoice=requested;save();configureNative();
+ el('local-model-status').textContent='Sélection demandée : '+(requested==='12b'?'Liquid 1.2B':'Liquid 230M')+'. Chargement au prochain message.';
+});
+el('local-model-import').addEventListener('click',()=>{
+ stopAll('Import local : conversation arrêtée.');
+ if(isNative)nativeCommand('model-import');
+});
+window.BonzeModelEvent=e=>{
+ el('local-model-status').textContent=String(e.message||'Import terminé.');
+ if(e.success&&isNative)nativeCommand('sync');
+};
+
 el('voice').addEventListener('change',()=>{browserVoiceEnabled=el('voice').checked;el('voice-status').textContent=browserVoiceEnabled?'Voix locale choisie si disponible.':'Lecture désactivée.';if(!browserVoiceEnabled)window.speechSynthesis?.cancel();configureNative();save();});
 setupEditor({getIdentity:()=>identity,setIdentity:i=>{identity=i;renderAppearance(face,i);describedMood='';draw();save();},root:el('avatar-fields'),description:el('avatar-description')});
 const privateMemory=setupMemoryUI({scope:identity.seed,getVault:()=>memoryVault,saveVault:envelope=>{memoryVault=envelope;save();saveNativeWeb();},stop:()=>stopAll('Coffre : conversation arrêtée.')});
