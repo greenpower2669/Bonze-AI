@@ -125,7 +125,7 @@ var SYNS={
 "ensemble":["ensemble","tous les deux","en duo"],"explorer":["explorer","découvrir","examiner"]
 };
 // Synonym substitution is opt-in and only across reviewed, meaning-preserving slots.
-var ITEMS=[],byIntent={};
+var ITEMS=[],byIntent={},corpus=root.BonzeCorpus||null;
 for(var r=0;r<ROLES.length;r++){
  var role=ROLES[r],topics=LINES[role];
  for(var intent in topics)if(Object.prototype.hasOwnProperty.call(topics,intent)){
@@ -193,10 +193,34 @@ function choose(input){
   if(s.families.indexOf(c.family)!==-1)weight*=.28;
   ranked.push({card:c,weight:weight});
  }
+ // Virtual families are indexed in compressed grammar; never allocate 18,000 strings.
+ if(corpus&&corpus.sizeFor(intent)>0){
+  for(var p=0;p<corpus.roles.length;p++){
+   var role=corpus.roles[p],strength=role==='sage'?.57:finite(force[role],.38,0,1);
+   var stamina=role==='sage'?1:finite(endurance[role],.8,0,1);
+   var virtualWeight=3*(.25+strength*(.4+.6*stamina));
+   if(role==='sage'&&(intent==='question'||intent==='correction'||intent==='confusion'))virtualWeight*=2.5;
+   if((intent==='inquietude'||intent==='tristesse')&&role==='humour')virtualWeight=0;
+   var recentInRole=0;for(var u=0;u<s.families.length;u++)if(s.families[u].indexOf(intent+'/'+role+'/')===0)recentInRole++;
+   virtualWeight*=Math.pow(.88,recentInRole);
+   ranked.push({card:{virtual:true,role:role,intent:intent},weight:virtualWeight});
+  }
+ }
  var total=0;for(i=0;i<ranked.length;i++)total+=ranked[i].weight;
  // One random draw, with weights and recent-card penalties, not uniform random.
  var needle=rand(s)*total,pick=ranked[ranked.length-1].card;
  for(i=0;i<ranked.length;i++){needle-=ranked[i].weight;if(needle<=0){pick=ranked[i].card;break;}}
+ if(pick.virtual){
+  var variants=corpus.sizeFor(intent),best=null,bestPenalty=1e6;
+  // Sampling is bounded and avoids recent cards and sentence families.
+  for(var attempt=0;attempt<32;attempt++){
+   var index=Math.floor(rand(s)*variants),item=corpus.render(pick.role,intent,index);
+   var penalty=(s.recent.indexOf(item.id)<0?0:100)+(s.families.indexOf(item.family)<0?0:10);
+   if(penalty<bestPenalty){best=item;bestPenalty=penalty;}
+   if(!penalty)break;
+  }
+  pick=best;
+ }
  // Fixed-scope validated lexical alternatives; never change negation, facts, names, or safety texts.
  var body=pick.body,substitutions=[];
  body=body.replace(/\[\[([a-z]+)\]\]/g,function(_,key){
@@ -206,8 +230,10 @@ function choose(input){
   substitutions.push({slot:key,value:chosen});return chosen;
  });
  s.turns++;s.recent.push(pick.id);s.recent=s.recent.slice(-16);s.families.push(pick.family);s.families=s.families.slice(-8);
- return {text:body,emotion:pick.role==='sage'?'calme':pick.role,card:pick.id,family:pick.family,intent:intent,detected:local,semanticUsed:intent===semantic,state:s,trace:{cardsConsidered:candidates.length,substitutions:substitutions,source:'authored-repertoire',modelGenerated:false}};
+ return {text:body,emotion:pick.role==='sage'?'calme':pick.role,card:pick.id,family:pick.family,intent:intent,detected:local,semanticUsed:intent===semantic,state:s,trace:{cardsConsidered:ranked.length,substitutions:substitutions,source:'authored-repertoire',composed:pick.composed===true,modelGenerated:false}};
 }
 function run(json){var input=JSON.parse(json);return JSON.stringify(choose(input));}
-root.BonzeRepertoire={run:run,choose:choose,detect:detect,stats:function(){var per={};for(var p in byIntent)per[p]=byIntent[p].length;return {cards:ITEMS.length,roles:ROLES.slice(),byIntent:per};},roles:ROLES.slice(),intents:INTENTS.slice()};
+root.BonzeRepertoire={run:run,choose:choose,detect:detect,stats:function(){var per={};for(var p in byIntent)per[p]=byIntent[p].length;var perRole={},virtualCards=0;for(var i=0;i<ROLES.length;i++){var n=ROLES[i],local=ITEMS.filter(function(c){return c.role===n;}).length,composed=corpus?corpus.countPerRole:0;perRole[n]=local+composed;virtualCards+=composed;}
+  if(corpus)for(var j=0;j<corpus.intents.length;j++){var intent=corpus.intents[j];per[intent]=(per[intent]||0)+ROLES.length*corpus.sizeFor(intent);}
+  return {cards:ITEMS.length+virtualCards,materializedCards:ITEMS.length,virtualCards:virtualCards,perRole:perRole,roles:ROLES.slice(),byIntent:per};},roles:ROLES.slice(),intents:INTENTS.slice()};
 })(typeof globalThis!=='undefined'?globalThis:this);
