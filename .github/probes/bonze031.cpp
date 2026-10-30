@@ -36,7 +36,7 @@ static Result generate(llama_model* model,llama_context* ctx,const std::vector<R
  std::string reply;int n=0;
  try {
   for(;n<72;n++){
-   const auto t=llama_sampler_sample(sampler,ctx,-1);
+   auto t=llama_sampler_sample(sampler,ctx,-1);
    if(llama_vocab_is_eog(vocab,t))break;
    llama_sampler_accept(sampler,t);
    char piece[512];const int len=llama_token_to_piece(vocab,t,piece,sizeof(piece),0,true);
