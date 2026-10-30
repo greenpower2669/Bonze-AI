@@ -73,3 +73,7 @@ Voix expérimentale : les segments de moins de32codepoints IPA non blancs passen
 
 ## BONZE-032 — Orientation répertoire simulé (30/10/2026)
 Fab privilégie des réponses françaises préécrites avec simulation des huit tendances et du sage, anti-repioche et variation contrôlée. Liquid 230M ne sert qu'à classer une situation : aucun LLM ne rédige la réponse. Le noyau partagé `core/repertoire.js` fournit 183 cartes expérimentales, mémoire courte des choix, sous-ensembles de synonymes relus et repli lexical. Pont Android Rhino `ScriptedDialogue.java`, `BonzeInference.classify()` et WebApp en place sur branche BONZE-032. Les supports de mémoire à fiches (S–V–C, provenance, renforcement/déclin, tiroirs, corpus import/export) ainsi que la fiabilité Piper sur Samsung restent à réaliser. Documentation : `docs/repertoire-simule-bonze-032.md`. Ni Release ni fusion main autorisées implicitement.
+
+
+## BONZE-034 — 2 000 formulations par émotion
+La grammaire locale `core/repertoire-corpus.js` compose 2 000 textes distincts pour chacune des huit tendances plus le sage à partir de 200 noyaux sémantiques, cinq amorces et deux conclusions par noyau, ainsi que 162 points de vue émotionnels par intention. Le répertoire existant de 183 cartes reste préservé. Choix paresseux et pondéré, sans tableau de 18 000 chaînes en RAM. Il s'agit de **18 000 variantes construites et testées, pas de 18 000 situations originales**. Piper et classement Liquid restent à évaluer sur Samsung ; pas de nouveau MoE neuronal. Voir `docs/repertoire-simule-bonze-032.md`.

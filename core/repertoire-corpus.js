@@ -129,7 +129,7 @@ play:["À toi d'inventer le prochain rebondissement !","On essaie cette piste im
 acknowledge:["Je te laisse apprécier ce moment.","Qu'aimerais-tu faire ensuite ?"],
 open:["Qu'en penses-tu ?","Tu peux me raconter la suite."],
 farewell:["À bientôt !","Prends soin de toi."],
-careful:["Si tu as une source, nous pouvons la confronter à cette idée.","Je préfère confirmer les faits avant d'aller plus loin."]
+careful:["Si tu as une source, nous pouvons la vérifier.","Je préfère confirmer les faits avant d'aller plus loin."]
 };
 var SAFE_INTENTS=Object.keys(CORES);
 function validate(){

@@ -21,3 +21,10 @@ test('stop cannot discard inference completion bookkeeping from the main queue',
  assert.ok(!service.includes('main.removeCallbacksAndMessages(null)'));
  assert.ok(service.includes('finally{generating.set(false);}'));
 });
+
+test('BONZE-034 compressed repertoire is loaded by Android before selection',()=>{
+ const bridge=read('android/app/src/main/java/fr/bonzeai/companion/ScriptedDialogue.java');
+ assert.ok(bridge.includes('core/repertoire-corpus.js'));
+ assert.ok(bridge.indexOf('core/repertoire-corpus.js')<bridge.indexOf('core/repertoire.js'));
+ assert.ok(service.includes('scriptedReply(text,semantic,turn)'));
+});

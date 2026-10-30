@@ -86,3 +86,47 @@ test('malformed state is validated and kept bounded',()=>{
   assert.equal(o.state.recent.length,16);
   assert.ok(o.text.length>0);
 });
+
+test('BONZE-034: exactly 2,000 composed variants per role with 18,000 unique rendered texts',()=>{
+ const cat=sandbox.BonzeCorpus,all=new Set();
+ assert.equal(engine.stats().virtualCards,18000);
+ for(const role of cat.roles){
+  let count=0;
+  for(const intent of cat.intents)for(let i=0;i<cat.sizeFor(intent);i++){
+   const item=cat.render(role,intent,i);
+   assert.equal(item.role,role);assert.equal(item.intent,intent);
+   assert.ok(item.body.length<=220,'Piper chunk budget: '+item.id);
+   assert.ok(!item.body.includes('[['),'unresolved synonym token');
+   assert.ok(!all.has(item.body),'literal duplicate '+item.id);
+   all.add(item.body);count++;
+  }
+  assert.equal(count,2000,role);
+ }
+ assert.equal(all.size,18000);
+ assert.equal(engine.stats().materializedCards,183,'no eager allocation of 18k strings');
+});
+test('BONZE-034: distinct emotional semantic lenses alter the same scenario',()=>{
+ const cat=sandbox.BonzeCorpus;
+ const same=cat.roles.map(role=>cat.render(role,'inquietude',0));
+ assert.equal(new Set(same.map(x=>x.body)).size,9);
+ assert.ok(same.every(x=>x.body.includes("Dis-moi ce qui t'inquiète")));
+});
+test('BONZE-034: natural sampling uses broad catalogue without huge conversation memory',()=>{
+ let state=null,chosen=new Set(),virtual=0;
+ for(let i=0;i<250;i++){
+  const x=say('Imagine une nouvelle histoire',state,{seed:6751});
+  state=x.state;chosen.add(x.card);
+  if(x.trace.composed)virtual++;
+  assert.ok(x.emotion,'role emotion metadata');
+  assert.ok(x.text.length<=220);
+ }
+ assert.ok(virtual>=150,virtual+' composed replies of 250');
+ assert.ok(chosen.size>=160,chosen.size+' unique replies');
+ assert.ok(state.recent.length<=16&&state.families.length<=8);
+});
+test('BONZE-034: high-risk requests remain restricted authored cards',()=>{
+ const ask=say('Je suis en danger immédiat',null,{semantic:'humour'});
+ assert.equal(ask.intent,'urgence');assert.equal(ask.trace.composed,false);
+ const name=say('Comment tu t’appelles ?',null,{semantic:'jeu'});
+ assert.equal(name.intent,'identite');assert.equal(name.text,"Je m'appelle Bonze AI ! Et toi ?");
+});

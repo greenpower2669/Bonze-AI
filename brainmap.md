@@ -100,3 +100,5 @@ Préflight qualité : PiperPhonetics.speechPhonemes applique le plancher expéri
 - `android/app/src/main/java/fr/bonzeai/companion/ScriptedDialogue.java` : exécution Rhino des fiches et état persistant.
 - `BonzeInference.kt` : classification Liquid seulement ; génération de phrases libre remplacée dans le service.
 - BONZE-033 encore ouvert : mémoire associative à tiroirs / fiches de phrases évolutives et stabilité Piper.
+
+- BONZE-034 : `core/repertoire-corpus.js` (200 noyaux sémantiques, 162 perspectives par rôle et intention, 18 000 répliques composables indexées à la demande) et `tests/repertoire.test.mjs` ; détails dans `docs/repertoire-simule-bonze-032.md`.

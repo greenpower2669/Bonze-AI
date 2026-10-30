@@ -105,3 +105,11 @@ Voir `docs/architecture-memoire-a-tiroirs.md`. Il s'agit d'une **mission ouverte
 - [ ] Diagnostiquer Piper qui « saute » sur Samsung : tracer causes lexicales, segments courts, changement de voix et erreurs PCM, corriger après reproductions. Pas de correction certifiée dans ce lot.
 - [ ] Valider compilation, stabilité, temps de classification Liquid et RAM de l'APK sur appareil avant toute publication. Aucun merge main sans autorisation.
 Voir `docs/repertoire-simule-bonze-032.md`.
+
+
+### BONZE-034 — Demande du 30 octobre, 2 000 par émotion
+- [x] Construire de façon paresseuse au moins 2 000 textes distincts pour chacun des huit rôles émotionnels et le rôle sage, avec mémoire limitée et familles anti-répétition (18 000 composables, 183 cartes initiales conservées).
+- [x] Fournir des points de vue émotionnels et des thèmes rédigés, et une grammaire de transformation testable plutôt que recopier des milliers de variantes.
+- [ ] Valider la richesse qualitative, la pertinence en contexte et le taux de répétition sur vrais échanges vocaux.
+- [ ] Valider sur Samsung l'exactitude et la latence de classement Liquid et la stabilité de Piper. Ne pas annoncer un APK prêt sans CI Android complète.
+- [ ] Poursuivre BONZE-033 : vraies fiches mémoire apprenantes (SVC, liens synonymiques, renforcement/oubli et import/export de corpus).

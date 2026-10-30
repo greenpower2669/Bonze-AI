@@ -156,3 +156,12 @@ Constats fondés sur la capture d'essai et la lecture de `BonzeInference.kt`, `D
 - [ ] Mesurer précision de Liquid, CPU, PSS, p50/p95 et comparaison au repli lexical sans prétendre au gain mémoire MoE.
 - [ ] Diagnostiquer Piper `piper-short-unstable`, `lexicon-oov`, `lexicon-number`, discontinuités PCM/AudioTrack, et corriger seulement avec logs puis écoute Samsung.
 - [ ] Garder la publication en suspens tant que l'APK issu de BONZE-032 n'est pas vérifié et approuvé ; aucune fusion main.
+
+
+### BONZE-034 — Extension des répliques par émotion
+- [x] Ajouter `core/repertoire-corpus.js` : 200 noyaux sémantiques, 162 points de vue propres aux rôles et intentions, 5 amorces + 2 conclusions = **2 000 formulations distinctes pour chaque rôle** (8 émotions + sage, 18 000 au total) calculées à la demande.
+- [x] Préserver les 183 cartes anciennes, leurs tests, mémoire anti-répétition et moteur commun Web / Android Rhino.
+- [x] Ajouter des tests de compte, unicité littérale, rôles contextualisés, durée de texte et diversité de tirage.
+- [ ] Confirmer compilations CI Android, tests audio/lexique/PCM et écoute Piper sur Samsung (certaines phrases nouvelles peuvent avoir des mots absents du lexique).
+- [ ] Mesurer variété perçue : 18 000 combinaisons ne signifient pas 18 000 idées indépendantes. Enrichir le noyau suivant retours.
+- [ ] Poursuivre la mémoire évolutive BONZE-033 et l'import/export de fiches, non réalisés.

@@ -46,3 +46,12 @@ Construire des cartes versionnées \`sujet / verbe / compléments / intention / 
 - Mixtral MoE, sélection d'experts vs poids résidents : https://arxiv.org/abs/2401.04088
 - Android TextToSpeech / gestion des voix locales : https://developer.android.com/reference/android/speech/tts/TextToSpeech
 - Conditions/diagnostics propres au projet : \`docs/moe-piper-study.md\`, \`docs/piper-integration.md\`.
+
+
+## Avenant BONZE-034 — 2 000 répliques par émotion (30 octobre 2026)
+
+Demande Fab : **2 000 formulations réellement sélectionnables pour chacun des huit rôles émotionnels et 2 000 pour le sage**, sans charger les 18 000 textes en RAM ni rédiger artificiellement des variantes proches à la main.
+
+Implémentation : `core/repertoire-corpus.js` contient **200 noyaux sémantiques français rédigés** répartis sur 18 intentions, avec **10 constructions composables par noyau** (5 amorces × 2 conclusions), plus **162 points de vue émotionnels situés** (9 rôles × 18 intentions). Chaque rôle peut construire 2 000 phrases distinctes, donc **18 000 formulations composables vérifiées**, plus les **183 cartes initiales**. Elles ne sont **pas** 18 000 scènes originales rédigées individuellement. Les catégories `urgence` et `identite` restent volontairement sur le petit catalogue fixe existant ; pas de paraphrase en urgence. L'arbitre échantillonne paresseusement les fiches en évitant les derniers identifiants et leurs familles ; aucune matérialisation d'un tableau de 18 000 chaînes à l'initialisation. Les mêmes mécanismes Web et Rhino Android sont utilisés. Tous les messages générés respectent le budget de 220 caractères pour limiter les découpages vocaux ; cela ne prouve pas la diction Piper (lexique et PCM à éprouver sur le téléphone).
+
+Tests `tests/repertoire.test.mjs` : décompte par rôle, unicité littérale globale, rôles sémantiquement différenciés, limites de longueur, protections urgence/identité, tirage sur 250 tours et état anti-répétition borné. L'assertion d'unicité porte sur **les textes construits**, pas sur une mesure de richesse lexicale, de compréhension ou sur une écoute réelle. Aucune Release ni fusion main demandée ; code en PR brouillon BONZE-032, validation APK Android toujours ouverte.
