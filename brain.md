@@ -77,3 +77,7 @@ Fab privilégie des réponses françaises préécrites avec simulation des huit 
 
 ## BONZE-034 — 2 000 formulations par émotion
 La grammaire locale `core/repertoire-corpus.js` compose 2 000 textes distincts pour chacune des huit tendances plus le sage à partir de 200 noyaux sémantiques, cinq amorces et deux conclusions par noyau, ainsi que 162 points de vue émotionnels par intention. Le répertoire existant de 183 cartes reste préservé. Choix paresseux et pondéré, sans tableau de 18 000 chaînes en RAM. Il s'agit de **18 000 variantes construites et testées, pas de 18 000 situations originales**. Piper et classement Liquid restent à évaluer sur Samsung ; pas de nouveau MoE neuronal. Voir `docs/repertoire-simule-bonze-032.md`.
+
+
+### BONZE-035/036 — petites associations et voix stable
+La mémoire de sélection n'enregistre que des relations catégorie/rôle, poids bornés et ancienneté, avec historique des structures. Ce n'est pas une mémoire autobiographique. En cas d'échec Piper sans PCM, TTS local Android prend le relais pour la session et expose sa cause ; après PCM déjà audible, pas de relecture. Rapport CI du corpus vs lexique produit. Signature de debug d'une branche différente de la version installée : **mises à jour Android non certifiées**. Fiches personnelles SVC encore ouvertes.

@@ -167,7 +167,7 @@ function cleanState(old,seed){
  old=old&&typeof old==='object'?old:{};
  var rec=Array.isArray(old.recent)?old.recent.filter(function(x){return typeof x==='string'&&x.length<80;}).slice(-16):[];
  var fam=Array.isArray(old.families)?old.families.filter(function(x){return typeof x==='string'&&x.length<80;}).slice(-8):[];
- var associations=Array.isArray(old.associations)?old.associations.filter(function(a){return a&&typeof a.key==='string'&&/^[a-z]+\/[a-z]+$/.test(a.key)&&a.key.length<60&&isFinite(a.strength)&&a.strength>=0&&a.strength<=1&&isFinite(a.seen)&&a.seen>=0;}).slice(-24).map(function(a){return {key:a.key,strength:finite(a.strength,0,0,1),seen:finite(a.seen,0,0,1e7)|0};}):[];
+ var associations=Array.isArray(old.associations)?old.associations.filter(function(a){return a&&typeof a.key==='string'&&a.key.length<60&&INTENTS.indexOf(a.key.split('/')[0])>=0&&ROLES.indexOf(a.key.split('/')[1])>=0&&isFinite(a.strength)&&a.strength>=0&&a.strength<=1&&isFinite(a.seen)&&a.seen>=0;}).slice(-24).map(function(a){return {key:a.key,strength:finite(a.strength,0,0,1),seen:finite(a.seen,0,0,1e7)|0};}):[];
  var forms=Array.isArray(old.recentForms)?old.recentForms.filter(function(f){return typeof f==='string'&&f.length<80;}).slice(-8):[];
  return {version:1,seed:finite(old.seed,finite(seed,0x7c25b,-2147483647,2147483647),-2147483647,2147483647)|0,turns:finite(old.turns,0,0,10000000)|0,recent:rec,families:fam,
   lastIntent:INTENTS.indexOf(old.lastIntent)>=0?old.lastIntent:'',lastRole:ROLES.indexOf(old.lastRole)>=0?old.lastRole:'',recentForms:forms,associations:associations};

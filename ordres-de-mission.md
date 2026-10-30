@@ -113,3 +113,6 @@ Voir `docs/repertoire-simule-bonze-032.md`.
 - [ ] Valider la richesse qualitative, la pertinence en contexte et le taux de répétition sur vrais échanges vocaux.
 - [ ] Valider sur Samsung l'exactitude et la latence de classement Liquid et la stabilité de Piper. Ne pas annoncer un APK prêt sans CI Android complète.
 - [ ] Poursuivre BONZE-033 : vraies fiches mémoire apprenantes (SVC, liens synonymiques, renforcement/oubli et import/export de corpus).
+
+### BONZE-035/036 — continuité courte / Piper
+Arbitrage d'émotions avec liens renforcés/oubli contextuel borné, sans collecte de faits personnels ; relance de jeu sur « et après » ; repli de voix Android constant après un échec Piper avant audio, sans redémarrer une phrase déjà parlée. Audit CI de couverture du dictionnaire de 18 000 variantes. Tests Samsung et certificat de signature ouverts. Référence : todo.md.

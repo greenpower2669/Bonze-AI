@@ -143,3 +143,10 @@ test('BONZE-035: an urgent situation always outranks a continuing game',()=>{
  const first=say('Imagine un dragon',null,{seed:1});
  assert.equal(say('Je suis en danger immédiat',first.state,{semantic:'jeu'}).intent,'urgence');
 });
+
+test('BONZE-035: accented emotional intentions retain categorical associations after restart',()=>{
+ let state=null;for(let i=0;i<40;i++){const r=say('Je suis en colère',state);state=r.state;}
+ assert.ok(state.associations.some(x=>x.key.startsWith('contrarié/')));
+ const restarted=say('Je suis en colère',JSON.parse(JSON.stringify(state)));
+ assert.ok(restarted.state.associations.some(x=>x.key.startsWith('contrarié/')));
+});

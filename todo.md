@@ -165,3 +165,13 @@ Constats fondés sur la capture d'essai et la lecture de `BonzeInference.kt`, `D
 - [ ] Confirmer compilations CI Android, tests audio/lexique/PCM et écoute Piper sur Samsung (certaines phrases nouvelles peuvent avoir des mots absents du lexique).
 - [ ] Mesurer variété perçue : 18 000 combinaisons ne signifient pas 18 000 idées indépendantes. Enrichir le noyau suivant retours.
 - [ ] Poursuivre la mémoire évolutive BONZE-033 et l'import/export de fiches, non réalisés.
+
+## BONZE-035/036 — continuité et voix de secours, 30/10/2026
+
+- [x] Liens associatifs locaux (maximum 24, poids renforcé à l'usage et affaibli par ancienneté, sans stockage du texte de l'utilisateur). Les scènes de jeu peuvent continuer à « Et après ? ». Les variantes gardent 8 dernières structures pour éviter de recycler la même amorce.
+- [x] Migration non destructive des anciennes sauvegardes du répertoire ; tests Node et Android dédiés. Les inventaires des sauvegardes chiffrées incluent les associations bornées.
+- [x] Lors d'une erreur Piper **avant** le premier son, afficher le motif et garder la voix Android de secours pour la session ; ne jamais rejouer l'intégralité après un son Piper. Exposer le moteur réellement utilisé dans diagnostics et l'interface.
+- [x] Ajouter l'audit de couverture lexicale des 18 000 formulations sur le dictionnaire réellement embarqué dans le build, ainsi qu'un artefact de rapport CI.
+- [ ] Tester sur Samsung la réelle continuité des histoires, le débit, les silences et le micro en arrière-plan ; mesurer RAM/PSS et latences.
+- [ ] Diagnostiquer pourquoi la signature debug générée dans la nouvelle branche ne correspond pas au certificat de la Release 0.5/0.6. Ne **jamais** désactiver le contrôle ni suggérer une désinstallation sans migration validée : cache CI de signature non transportable d'une branche à l'autre. Aucun APK proposé comme mise à jour sûre tant que ce point n'est pas résolu.
+- [ ] Fiches SVC personnelles, correction/suppression des faits, import/export de corpus et contrôle d'identité : non réalisés ; BONZE-033 reste ouvert.

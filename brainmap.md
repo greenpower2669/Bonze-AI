@@ -102,3 +102,6 @@ Préflight qualité : PiperPhonetics.speechPhonemes applique le plancher expéri
 - BONZE-033 encore ouvert : mémoire associative à tiroirs / fiches de phrases évolutives et stabilité Piper.
 
 - BONZE-034 : `core/repertoire-corpus.js` (200 noyaux sémantiques, 162 perspectives par rôle et intention, 18 000 répliques composables indexées à la demande) et `tests/repertoire.test.mjs` ; détails dans `docs/repertoire-simule-bonze-032.md`.
+
+- BONZE-035 : `core/repertoire.js` associe des catégories/rôles sans texte personnel, conserve les structures récemment jouées et reprend le fil d'une scène ; `core/backup.mjs` valide les états bornés.
+- BONZE-036 : voix de secours par session dans `ConversationService.java`, audit du vocabulaire dans `scripts/audit-piper-corpus.mjs` ; signature de livraison et essais Samsung ouverts. Voir `todo.md`.

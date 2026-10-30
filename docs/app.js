@@ -179,7 +179,9 @@ window.BonzeNativeEvent=e=>{
    const acknowledged=String(e.voice||'');
    if(pendingVoice===acknowledged||pendingVoice&&!e.voices.some(v=>v.name===pendingVoice))pendingVoice=null;
    nativeVoice=pendingVoice||acknowledged;select.value=nativeVoice;
+   if(e.piperFallback)el('voice-status').textContent='Piper a rencontré une difficulté ; relais vocal Android pour garder une voix régulière.';
    el('voice-status').textContent=nativeVoice?'Voix locale : '+nativeVoice+'. Lecture par phrases et pauses.':'Voix française locale en préparation ou absente.';
+   if(e.piperFallback)el('voice-status').textContent='Relais vocal Android actif : Piper indisponible pour cette conversation.';
   }
  }else if(e.type==='speech-level')speechMotion.level(e.id,e.level,performance.now());
  else if(e.type==='speech-start'){speechMotion.start(e.id,e.text,performance.now());state('speaking');}
