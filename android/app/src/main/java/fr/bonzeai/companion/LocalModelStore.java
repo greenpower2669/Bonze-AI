@@ -1,6 +1,7 @@
 package fr.bonzeai.companion;
 
 import android.content.Context;
+import android.app.ActivityManager;
 import android.net.Uri;
 import android.os.StatFs;
 import java.io.*;
@@ -21,6 +22,16 @@ public final class LocalModelStore {
   return file.isFile()&&file.length()>=MIN_BYTES&&file.length()<=MAX_BYTES
    &&context.getSharedPreferences("bonze-conversation-v1",Context.MODE_PRIVATE)
      .getString("largeModelSha","").equals(LARGE_SHA256);
+ }
+ /**
+  * Conservative admission guard only; not a prediction of peak llama/Piper memory.
+  * A passing check never proves that Android can load the model safely.
+  */
+ public static boolean memoryAdmitsLarge(Context context){
+  ActivityManager manager=(ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
+  if(manager==null)return false;
+  ActivityManager.MemoryInfo info=new ActivityManager.MemoryInfo();manager.getMemoryInfo(info);
+  return !info.lowMemory&&info.availMem>=1_250_000_000L;
  }
  public static String choice(Context context){
   String selected=context.getSharedPreferences("bonze-conversation-v1",Context.MODE_PRIVATE).getString("modelChoice",SMALL);
