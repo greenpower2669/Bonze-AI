@@ -28,6 +28,7 @@ public final class LocalModelStore {
  }
  public static String install(Context context,Uri uri)throws Exception{
   if(uri==null||!"content".equals(uri.getScheme()))throw new IOException("Source locale SAF uniquement");
+  if(available(context))return "Liquid 1.2B est déjà installé et vérifié : aucun remplacement nécessaire.";
   File dest=destination(context),folder=dest.getParentFile();
   if(!folder.isDirectory()&&!folder.mkdirs())throw new IOException("Dossier de modèles inaccessible");
   StatFs fs=new StatFs(folder.getAbsolutePath());
@@ -41,6 +42,7 @@ public final class LocalModelStore {
     if(in==null)throw new IOException("Fichier inaccessible");
     byte[] chunk=new byte[65536];int len;
     while((len=in.read(chunk))!=-1){
+     if(Thread.currentThread().isInterrupted())throw new IOException("Import interrompu");
      bytes+=len;
      if(bytes>MAX_BYTES)throw new IOException("Fichier GGUF trop volumineux");
      digest.update(chunk,0,len);out.write(chunk,0,len);
