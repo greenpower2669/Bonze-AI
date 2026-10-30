@@ -28,7 +28,8 @@ object BonzeInference {
         if (selected == LocalModelStore.LARGE && !LocalModelStore.memoryAdmitsLarge(context)) {
             // Stop experimenting with the heavy model when Android reports low headroom.
             context.getSharedPreferences("bonze-conversation-v1", Context.MODE_PRIVATE)
-                .edit().putString("modelChoice", LocalModelStore.SMALL).apply()
+                .edit().putString("modelChoice", LocalModelStore.SMALL)
+                        .putString("modelLastFallback", "RAM Android insuffisante pour tenter Liquid 1.2B ; retour au 230M.").apply()
             selected = LocalModelStore.SMALL
         }
         val model = loaded ?: run {
@@ -46,19 +47,22 @@ object BonzeInference {
                 // Do not continually retry the heavy model after one failed allocation.
                 if (selected == LocalModelStore.LARGE)
                     context.getSharedPreferences("bonze-conversation-v1", Context.MODE_PRIVATE)
-                        .edit().putString("modelChoice", LocalModelStore.SMALL).apply()
+                        .edit().putString("modelChoice", LocalModelStore.SMALL)
+                        .putString("modelLastFallback", "Allocation mémoire impossible pour le 1.2B ; retour au 230M.").apply()
                 loaded = null; loadedChoice = ""
                 throw IllegalStateException("Mémoire insuffisante au chargement du modèle", oom)
             } catch (failure: Exception) {
                 if (selected == LocalModelStore.LARGE)
                     context.getSharedPreferences("bonze-conversation-v1", Context.MODE_PRIVATE)
-                        .edit().putString("modelChoice", LocalModelStore.SMALL).apply()
+                        .edit().putString("modelChoice", LocalModelStore.SMALL)
+                        .putString("modelLastFallback", "Chargement du 1.2B impossible ; retour au 230M.").apply()
                 loaded = null; loadedChoice = ""
                 throw failure
             } catch (failure: LinkageError) {
                 if (selected == LocalModelStore.LARGE)
                     context.getSharedPreferences("bonze-conversation-v1", Context.MODE_PRIVATE)
-                        .edit().putString("modelChoice", LocalModelStore.SMALL).apply()
+                        .edit().putString("modelChoice", LocalModelStore.SMALL)
+                        .putString("modelLastFallback", "Chargement du 1.2B impossible ; retour au 230M.").apply()
                 loaded = null; loadedChoice = ""
                 throw failure
             }
