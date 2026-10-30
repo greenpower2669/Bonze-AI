@@ -182,3 +182,15 @@ Rapport complet : \`docs/history/bonze031-evolution-2026-10-30.md\`. Aucun APK n
 - [ ] Renforcer isolation familiale, rappels de mémoire contrôlés et migrations ; le coffre à tiroirs ne doit pas être branché automatiquement à l'écoute sans authentification sûre.
 - [ ] Évaluer amélioration Piper et vrai MoE neuronal après mesures, sans promettre de voix émotionnelle entraînée.
 - [ ] Ne publier aucune nouvelle Release ni merger dans main sans validation explicite ; `bonze-ai-v0.6.0` demeure le point de retour installable.
+
+## 30/10 — point d'arrêt précis du chantier 0.7.0-dev
+- [x] Corriger `const llama_token` ; comparer réellement Liquid 230M et 1.2B sur GitHub Actions `41096101109`. Rapport `docs/bench-dialogue-fr-bonze031-results.md`, JSONL et lignes source conservés en artefact GitHub. Résultat : 1.2B parfois plus naturel, mais hallucination météo et faux ton rassurant sur santé ; pas de victoire vérifiée.
+- [x] Implémenter `KnowledgeGuard.java`, journalisation réelle et tests Java séparés ; les règles ne sont pas un MoE neuronal.
+- [x] Mettre à jour les scènes explicites dans `DialogueMemory` et tester forêt → Lune → Mars.
+- [x] Corriger concurrence d'ouverture du coffre après mauvais mot de passe ; epoch, rejet d'opération périmée, écriture interdite après verrouillage, test navigateur. SW v10.
+- [x] Ajouter job CI `android-package-check` sans publication pour construire APK réel, vérifier aapt/permissions/lint/apksigner/empreinte, signer **avec une clé éphémère non livrable en mise à jour**. Ce job ne remet pas de nouveau paquet à Fab.
+- [ ] Terminer exécution et consulter résultats du job de paquet, puis corriger toute erreur démontrée.
+- [ ] Bench supplémentaire : faire correspondre les consignes sécurité de Bonze, ajouter de nombreuses scènes/plusieurs seeds, puis évaluer vrai template multi-rôles sur Android ; tester physiquement Samsung.
+- [ ] Revoir sauvegarde durable de signature ; tester ancienne install 0.6 en mise à jour et retour arrière avant d'autoriser un APK de test direct. Ne pas réclamer de désinstallation.
+- [ ] Compléter mémoire familiale autorisée, IA du savoir au-delà de heuristiques, apprentissage des experts/ablation, et Piper/voix française.
+- [ ] Aucune fusion main, aucun tag, aucune Release ni AAB publiés sans validation Fab. Dernier APK publiquement vérifié : `Bonze-AI-v0.6.0-debug.apk`.
