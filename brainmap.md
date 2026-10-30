@@ -92,3 +92,9 @@ Préflight qualité : PiperPhonetics.speechPhonemes applique le plancher expéri
 ## Orientation future — mémoire à tiroirs
 
 - `docs/architecture-memoire-a-tiroirs.md` : demande BONZE-030, index local léger, tiroirs contextuels privés, récupération à la demande, provenance/oubli/archives, permissions, migration et tests. **Cible non implémentée en 0.6.0** ; ne pas la confondre avec les tiroirs de l'interface ou les mémoires vivantes du dépôt.
+
+## BONZE-031 — piste expérimentale de dialogue (30/10/2026)
+- Branche isolée : `feature/bonze031-dialogue-natural-v1`, issue du HEAD documentaire `445408e`, sans modification de la 0.6.0 publiée.
+- `DialogueMemory.context()` cite désormais quelques tours `human` **et** `bot` en ordre chronologique, avec budget strict ; `BonzeInference.reply` place ce contexte cité dans le message utilisateur, sous personnalité courte positive. L'AAR `Llama.complete` n'expose pas des rôles multiples ; ne pas confondre ces citations avec un historique ChatML natif.
+- `tests/DialogueMemoryTest.java` : test JVM local ciblé passé. Aucun build Android, test LLM réel, benchmark ou validation Samsung sur cette branche à ce stade.
+- `docs/bench-dialogue-fr-bonze031.md` : protocole, variantes et scénarios reproductibles. `todo.md` : résultats en attente. Pas de Release ni merge.
