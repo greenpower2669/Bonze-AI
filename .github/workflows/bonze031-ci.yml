@@ -1,0 +1,83 @@
+name: Bonze 031 — experimental validation (no release)
+on:
+  push:
+    branches: [feature/bonze031-dialogue-natural-v1]
+    paths: ['core/**', 'tests/**', 'android/**', '.github/probes/bonze031.cpp', '.github/workflows/bonze031-ci.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unit:
+    name: JS and Java regressions
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '17'}
+      - run: node --test tests/*.test.mjs
+      - name: Native dialogue and session tests
+        run: |
+          mkdir -p /tmp/bonze-jvm
+          javac -d /tmp/bonze-jvm android/app/src/main/java/fr/bonzeai/companion/DialogueMemory.java tests/DialogueMemoryTest.java
+          java -cp /tmp/bonze-jvm DialogueMemoryTest
+          javac -d /tmp/bonze-jvm android/app/src/main/java/fr/bonzeai/companion/VoiceSession.java tests/VoiceSessionTest.java
+          java -cp /tmp/bonze-jvm VoiceSessionTest
+      - run: python tests/test_piper_lexicon.py
+
+  android-compile:
+    name: Compile Android source (no APK publication)
+    needs: unit
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '17'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '8.9'}
+      - name: Fetch pinned Piper AAR and voice for dependency resolution
+        run: bash scripts/fetch-piper.sh
+      - name: Compile Kotlin and Java (no release, no signing)
+        run: gradle --no-daemon :androidApp:compileDebugKotlin :androidApp:compileDebugJavaWithJavac
+      - name: Verify no Internet permission in source
+        run: |
+          if grep -q 'android.permission.INTERNET' android/app/src/main/AndroidManifest.xml; then exit 1; fi
+
+  compare-models:
+    name: Optional CPU probe — 230M vs 1.2B (manual)
+    if: github.event_name == 'workflow_dispatch'
+    needs: unit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: /tmp/llama
+          key: bonze-llama-probe-2da6686
+      - name: Build exact llama.cpp version from Bonze 0.6 dependency
+        run: |
+          if ! test -d /tmp/llama/.git; then git clone https://github.com/ggml-org/llama.cpp /tmp/llama; fi
+          git -C /tmp/llama checkout 2da668617612d2df773f966e3b0ee22dc2beef7b
+          cmake -S /tmp/llama -B /tmp/llama/build -DBUILD_SHARED_LIBS=OFF -DGGML_NATIVE=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=OFF -DLLAMA_BUILD_TOOLS=OFF -DLLAMA_CURL=OFF
+          cmake --build /tmp/llama/build --target llama -j 4
+          c++ -std=c++17 -I/tmp/llama/include -I/tmp/llama/ggml/include .github/probes/bonze031.cpp /tmp/llama/build/src/libllama.a /tmp/llama/build/ggml/src/libggml.a /tmp/llama/build/ggml/src/libggml-cpu.a /tmp/llama/build/ggml/src/libggml-base.a -fopenmp -lpthread -ldl -o /tmp/bonze031-probe
+      - name: Evaluate current 230M, then release its weights
+        run: |
+          curl -fL --retry 4 "https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LFM2.5-230M-Q4_K_M.gguf" -o /tmp/model.gguf
+          echo "7bbd90384d3deffe4c646ec9643b212802d32d4ce417c90a1ec9282100650062  /tmp/model.gguf" | sha256sum -c
+          /tmp/bonze031-probe /tmp/model.gguf "LFM2.5-230M Q4" > bonze-230m.jsonl
+          rm /tmp/model.gguf
+      - name: Evaluate alternative 1.2B; never load models simultaneously
+        run: |
+          curl -fL --retry 4 "https://huggingface.co/LiquidAI/LFM2.5-1.2B-Instruct-GGUF/resolve/main/LFM2.5-1.2B-Instruct-Q4_K_M.gguf" -o /tmp/model.gguf
+          echo "b1b3de114215d9507409a662a501a631095a479a419584e8a2ded6304b19b4f5  /tmp/model.gguf" | sha256sum -c
+          /tmp/bonze031-probe /tmp/model.gguf "LFM2.5-1.2B Q4" > bonze-12b.jsonl
+          rm /tmp/model.gguf
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bonze031-comparison-raw
+          path: bonze-*.jsonl
+          if-no-files-found: ignore
