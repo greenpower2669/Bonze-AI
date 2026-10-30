@@ -188,3 +188,5 @@ jobs:
 # BONZE-032: one-time opt-in benchmark after fixing mutable token and model switch (no release).
 
 # BONZE-032: explicit one-time package validation after knowledge/memory fixes (no APK published).
+
+# One-time Bonze AI Dev 0.7.0 package build requested; side-by-side install; no Release.
