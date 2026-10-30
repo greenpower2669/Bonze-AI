@@ -19,8 +19,8 @@ export function setupMemoryUI({scope,getVault,saveVault,stop}){
  }
  function newId(){return 'm-'+Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');}
  el('memory-unlock').addEventListener('click',async()=>{
-  stop();lock();
   const pass=el('memory-password').value;
+  stop();lock();
   // stop() intentionally locks first; retrieve secret from a fresh explicit input below.
   if(!pass){status('Entre ta phrase secrète.');return;}
   try{
