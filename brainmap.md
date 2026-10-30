@@ -98,3 +98,11 @@ Préflight qualité : PiperPhonetics.speechPhonemes applique le plancher expéri
 - `DialogueMemory.context()` cite désormais quelques tours `human` **et** `bot` en ordre chronologique, avec budget strict ; `BonzeInference.reply` place ce contexte cité dans le message utilisateur, sous personnalité courte positive. L'AAR `Llama.complete` n'expose pas des rôles multiples ; ne pas confondre ces citations avec un historique ChatML natif.
 - `tests/DialogueMemoryTest.java` : test JVM local ciblé passé. Aucun build Android, test LLM réel, benchmark ou validation Samsung sur cette branche à ce stade.
 - `docs/bench-dialogue-fr-bonze031.md` : protocole, variantes et scénarios reproductibles. `todo.md` : résultats en attente. Pas de Release ni merge.
+
+## Développement expérimental du 30/10 — BONZE-031/030 (pas dans la Release 0.6.0)
+- Détails et limites : \`docs/history/bonze031-evolution-2026-10-30.md\`.
+- \`core/memory-drawers.mjs\` : index local à neuf catégories, consentement d'écriture, recherche à budget, version/migration/effacement, pas de persistance autonome.
+- \`core/memory-vault.mjs\` : enveloppe AES-GCM/PBKDF2 par instance, déverrouillage par phrase secrète ; \`docs/memory-ui.js\` : interface de gestion manuelle accessible. Coffre inclus sous forme chiffrée dans \`.bonze\` et précache PWA v9.
+- \`core/council.js\` : statut épistémique traçable et prudence sur le savoir ; n'est pas un expert neuronal factuel.
+- \`.github/probes/bonze031.cpp\` : quatre variantes R0/A1/A2/A3 ; \`scripts/score-dialogue.mjs\` et \`.github/workflows/bonze031-ci.yml\` préparent la comparaison réelle 230M/1.2B sans publier.
+- CI \`41090306459\` validée : JS/JVM, navigateur hors ligne/coffre et compilation Android de sources. Aucun essai Samsung, APK publié ou adoption 1.2B. \`todo.md\` conserve les validations ouvertes.
