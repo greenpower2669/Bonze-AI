@@ -31,3 +31,9 @@ Prochaine expérience reproductible : intégrer une voix SIWIS candidate dans un
 L'expressivité autorisée dépend des paramètres réellement exposés : durée/débit, silences, variations discrètes. Ne pas promettre des émotions vocales entraînées ou une modification de timbre absentes du moteur. Un même locuteur pour toute la conversation.
 
 **Piper non embarqué dans 0.4.** TTS Android : sélection d'une voix française ne nécessitant pas le réseau, débit discrètement modulé. Sa présence dépend de l'appareil. Reconnaissance : `createOnDeviceSpeechRecognizer`, API 31+, sans fallback réseau ; documentation https://developer.android.com/reference/android/speech/SpeechRecognizer . Le mode avion et les paquets français installés restent à tester physiquement.
+
+
+## Erratum sur le contrat — 30 octobre 2026
+Les « spécialités candidates » (reformulation, raisonnement, etc.) envisagées ci-dessus étaient une hypothèse de développement et **ne doivent pas remplacer les huit personnalités neuronales émotionnelles définies par Fab**. Pour chaque émotion (joie, peur, colère, calme, réflexion, empathie, curiosité, humour) un expert neuronal propre doit contribuer au contenu sous son prisme incarné. L'arbitre reste généraliste, pondère les productions et forme la réponse unique. Un tronc de langage partagé et des adaptateurs d'émotion entraînés, avec mélange neuronal et preuves d'ablation, sont une piste plus fidèle que huit domaines de connaissance.
+
+**Candidat intermédiaire** `feature/moe-emotions-incarnees-v1` : routage top2 entraîné réellement exploité, inférences successives du même modèle dense depuis deux prismes, proposition journalisée puis synthèse neutre pondérée. Cette variante n'entraîne pas encore huit adaptateurs neuronaux de langage, et des prompts émotionnels ne suffisent pas à satisfaire le contrat. Mesurer sur Samsung latence et qualité avant mise à disposition ; ne pas déclarer le vrai MoE livré.

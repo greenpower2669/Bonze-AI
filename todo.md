@@ -161,3 +161,10 @@ Référence : Liquid AI recommande le LFM2.5-230M pour extraction / agents lége
 - [ ] Terminer une voie d'export JSON lisible depuis Android en conservant la confirmation du verrouillage du téléphone et le choix explicite du fichier, avertir que le JSON n'est pas chiffré ; ou privilégier l'export `.bonze` chiffré si la confidentialité familiale ne peut pas être garantie.
 - [ ] Diagnostiquer le blocage concret rencontré par Fab sur Samsung (authentification, phrase secrète, ouverture du sélecteur de fichier, écriture Android SAF) et couvrir erreurs/cancel/retour depuis arrière-plan.
 - [ ] Tests JS/JVM et CI Android complets, essais sur Samsung, vérification Release/signature puis APK direct avant d'annoncer un export corrigé. **La 0.6.0 en ligne reste inchangée ; aucun APK nouveau, aucune fusion dans main.**
+
+
+## Correctif de contrat MoE émotionnel (30 octobre 2026)
+- [x] Conserver le contrat original dans brain.md / ordres-de-mission.md : huit experts neuronaux émotionnels incarnés, non huit domaines de connaissance ; arbitre généraliste et neutre.
+- [x] Candidat `feature/moe-emotions-incarnees-v1` : exploiter le routeur neuronal `weights.gate` (top2) pour choisir les experts actifs ; produire via passes distinctes du modèle partagé une proposition réelle par expert, puis restituer avec pondération et journal réel. Les effets doivent être testés et les limites affichées.
+- [ ] **CONTRAT ENCORE OUVERT** : expertises neuronales du langage réellement séparées (adaptateurs/FFN) entraînées sous huit prismes émotionnels, mélange par arbitre lors de l'inférence, tests d'ablation à chaque couche ou sortie, comparatif même corpus, mesure CPU/RAM/latence et écoute Samsung. Le candidat actuel ne remplit pas encore cette exigence.
+- [ ] Vérifier par CI la branche de travail et le comportement Android réel ; aucun changement de numéro de version, publication d'APK ou fusion main sans preuves suffisantes.

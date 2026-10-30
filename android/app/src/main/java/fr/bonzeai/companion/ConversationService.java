@@ -28,7 +28,7 @@ public final class ConversationService extends Service {
  private final DialogueMemory memory=new DialogueMemory();
  private final String boot=UUID.randomUUID().toString();
  private Listener listener;private SpeechRecognizer recognizer;private TextToSpeech tts;
- private android.content.SharedPreferences prefs;private DiagnosticJournal journal;private long diagnosticTurn;private EmotionalCouncil council;private long councilAt;private String policyHint="";private PiperVoice piper;private String speechEngine="";
+ private android.content.SharedPreferences prefs;private DiagnosticJournal journal;private long diagnosticTurn;private EmotionalCouncil council;private long councilAt;private String policyHint="",councilPlan="";private PiperVoice piper;private String speechEngine="";
  private PowerManager.WakeLock cpu;
  private AudioManager audio;private AudioFocusRequest focus;
  private boolean promoted,recording,disposed,localVoiceReady,voiceInitFinished;
@@ -140,7 +140,7 @@ public final class ConversationService extends Service {
   String text=DialogueMemory.clean(raw,600).trim();if(text.isEmpty())return;
   final long epoch=workEpoch;
   final long turn=++diagnosticTurn;updateCouncil(text);
-  final String prompt=memory.prompt(text),contextData=memory.context(),hint=policyHint;
+  final String prompt=memory.prompt(text),contextData=memory.context(),hint=policyHint,expertPlan=councilPlan;
   journal.add("input",turn,DiagnosticJournal.fields("source",fromVoice?"voice":"text","text",text,"prompt",prompt,"context",contextData,"policyHint",hint,"epoch",epoch));
   memory.add("human",text);saveMemory();lastHeardAt=SystemClock.elapsedRealtime();
   if(fromVoice)session.awaiting();setState("thinking","Je réfléchis à ce que tu viens de me dire.");holdCpu();
@@ -148,12 +148,12 @@ public final class ConversationService extends Service {
   if(!generating.compareAndSet(false,true)){complete(epoch,"Ma précédente pensée se termine encore. Redis-moi ta phrase dans un instant ?",fromVoice);return;}
   final boolean eco=economy;
   inference.execute(()->{
-   String result,errorName="";long began=SystemClock.elapsedRealtime(),cpuBegan=SystemClock.currentThreadTimeMillis();
-   try{BonzeInference.setEconomy(eco);result=BonzeInference.reply(getApplicationContext(),prompt,contextData,hint);}
+   String result,errorName="";JSONObject expertEvidence=null;long began=SystemClock.elapsedRealtime(),cpuBegan=SystemClock.currentThreadTimeMillis();
+   try{BonzeInference.setEconomy(eco);JSONObject generated=BonzeInference.replyWithCouncil(getApplicationContext(),prompt,contextData,expertPlan);result=generated.optString("answer","");expertEvidence=generated.optJSONObject("arbitration");}
    catch(Exception|LinkageError error){errorName=error.getClass().getSimpleName();result="Je cherche encore mes mots. Tu peux me le dire autrement ?";}
    finally{generating.set(false);}
-   final String answer=result,failure=errorName;final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
-   main.post(()->{lastLatency=elapsed;lastCpu=cpuTime;journal.add("generation",turn,DiagnosticJournal.fields("output",answer,"error",failure,"latencyMs",elapsed,"repeatPrevious",memory.repeats(answer),"discarded",disposed||epoch!=workEpoch));if(!disposed&&epoch==workEpoch)complete(epoch,answer,fromVoice);});
+   final String answer=result,failure=errorName;final JSONObject evidence=expertEvidence;final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
+   main.post(()->{lastLatency=elapsed;lastCpu=cpuTime;if(evidence!=null)journal.add("expert-proposals",turn,evidence);journal.add("generation",turn,DiagnosticJournal.fields("output",answer,"error",failure,"latencyMs",elapsed,"repeatPrevious",memory.repeats(answer),"discarded",disposed||epoch!=workEpoch));if(!disposed&&epoch==workEpoch)complete(epoch,answer,fromVoice);});
   });
  }
  private String lightReply(String text){
@@ -305,7 +305,7 @@ public final class ConversationService extends Service {
   try{JSONArray rows=new JSONArray(prefs.getString("history","[]"));for(int i=Math.max(0,rows.length()-30);i<rows.length();i++){JSONObject r=rows.optJSONObject(i);if(r!=null)memory.add(r.optLong("id",System.currentTimeMillis()+i),r.optString("role"),r.optString("text"));}memory.setScene(prefs.getString("scene",""));}catch(JSONException ignored){}
  }
 
- private void updateCouncil(String text){if(council==null)return;long now=SystemClock.elapsedRealtime();try{JSONObject r=council.run(text,DiagnosticJournal.fields("familiar",memory.size()>0,"scene",!memory.scene().isEmpty()),Math.min(30,(now-councilAt)/1000.0),state);councilAt=now;policyHint=r.optString("hint");JSONObject forces=r.getJSONObject("state").getJSONObject("forces");double max=-1;for(Iterator<String> it=forces.keys();it.hasNext();){String k=it.next();if(forces.optDouble(k)>max){max=forces.optDouble(k);mood=k;}}journal.add("council",diagnosticTurn,r);}catch(Exception e){journal.add("council-error",diagnosticTurn,DiagnosticJournal.fields("error",e.getClass().getSimpleName()));}}
+ private void updateCouncil(String text){if(council==null)return;long now=SystemClock.elapsedRealtime();try{JSONObject r=council.run(text,DiagnosticJournal.fields("familiar",memory.size()>0,"scene",!memory.scene().isEmpty()),Math.min(30,(now-councilAt)/1000.0),state);councilAt=now;policyHint=r.optString("hint");councilPlan=r.optJSONObject("arbitration")==null?"{}":r.optJSONObject("arbitration").toString();JSONObject forces=r.getJSONObject("state").getJSONObject("forces");double max=-1;for(Iterator<String> it=forces.keys();it.hasNext();){String k=it.next();if(forces.optDouble(k)>max){max=forces.optDouble(k);mood=k;}}journal.add("council",diagnosticTurn,r);}catch(Exception e){journal.add("council-error",diagnosticTurn,DiagnosticJournal.fields("error",e.getClass().getSimpleName()));}}
  private void councilTick(){if(disposed)return;if(session.active()||listener!=null){updateCouncil("");if(listener!=null&&council!=null){JSONObject e=base("emotion-state");try{e.put("council",council.snapshot());listener.onEvent(e.toString());}catch(JSONException ignored){}}}main.postDelayed(this::councilTick,10000);}
  public void configureCouncil(String json)throws JSONException{if(council==null)throw new IllegalStateException();council.configure(new JSONObject(json));journal.add("admin-council",diagnosticTurn,council.snapshot());publish();}
  public JSONObject diagnostics(){return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"journal",journal.copy(),"resources",resourceObject(),"engine",speechEngine,"preferredVoice",voiceName,"model","LFM2.5-230M dense");}
