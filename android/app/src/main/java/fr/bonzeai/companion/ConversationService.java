@@ -323,7 +323,7 @@ public final class ConversationService extends Service {
  private JSONObject resourceObject(){try{return new JSONObject(resources());}catch(JSONException e){return new JSONObject();}}
  public JSONObject backupData(){
   JSONArray rows=new JSONArray();for(DialogueMemory.Entry e:memory.entries())rows.put(DiagnosticJournal.fields("id",e.id,"role",e.role,"text",e.text));
-  return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"native",DiagnosticJournal.fields("schema",1,"history",rows,"scene",memory.scene(),"mode",mode,"neural",neural,"readText",readText,"voice",voiceName,"mood",mood),"journal",journal.copy());
+  return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"native",DiagnosticJournal.fields("schema",1,"history",rows,"scene",memory.scene(),"mode",mode,"neural",neural,"readText",readText,"voice",voiceName,"mood",mood,"model",LocalModelStore.choice(this)),"journal",journal.copy());
  }
  public void prepareModelImport(){
   stop(request,"Import d’un modèle : conversation arrêtée.");inference.execute(BonzeInference::release);
@@ -334,8 +334,11 @@ public final class ConversationService extends Service {
   if(data.length()>4*1024*1024)throw new IllegalArgumentException("size");
   JSONObject root=new JSONObject(data),web=root.getJSONObject("web"),identity=web.getJSONObject("identity");
   if(root.getInt("schema")!=1||identity.getInt("version")!=1||identity.getString("seed").isEmpty()||identity.getString("seed").length()>128)throw new IllegalArgumentException("schema");
-  JSONObject n=root.optJSONObject("native");if(n==null)n=DiagnosticJournal.fields("schema",1,"history",web.optJSONArray("history"),"scene","","mode",web.optString("resourceMode","text"),"neural",web.optBoolean("neuralEnabled",false),"readText",false,"voice","");
-  String nextMode=n.getString("mode");JSONArray rows=n.getJSONArray("history"),trace=root.getJSONArray("journal");
+  JSONObject n=root.optJSONObject("native");if(n==null)n=DiagnosticJournal.fields("schema",1,"history",web.optJSONArray("history"),"scene","","mode",web.optString("resourceMode","text"),"neural",web.optBoolean("neuralEnabled",false),"readText",false,"voice","","model",web.optString("modelChoice","230m"));
+  String nextMode=n.getString("mode");String requestedModel=n.optString("model",LocalModelStore.SMALL);
+  if(!LocalModelStore.SMALL.equals(requestedModel)&&!LocalModelStore.LARGE.equals(requestedModel))throw new IllegalArgumentException("model");
+  String nextModel=LocalModelStore.LARGE.equals(requestedModel)&&LocalModelStore.available(this)?LocalModelStore.LARGE:LocalModelStore.SMALL;
+  JSONArray rows=n.getJSONArray("history"),trace=root.getJSONArray("journal");
   if(n.getInt("schema")!=1||!Arrays.asList("precise","eco","light","text","off").contains(nextMode)||rows.length()>30||trace.length()>200||trace.toString().length()>1000000)throw new IllegalArgumentException("data");
   for(int j=0;j<rows.length();j++){JSONObject r=rows.getJSONObject(j);if(!Arrays.asList("human","bot").contains(r.getString("role"))||r.getString("text").length()>1200)throw new IllegalArgumentException("history");}
   JSONObject nextWeights=root.optJSONObject("weights");if(nextWeights!=null&&nextWeights.length()==0)nextWeights=null;JSONObject backupCouncil=root.optJSONObject("council");if(backupCouncil==null)backupCouncil=DiagnosticJournal.fields("state",DiagnosticJournal.fields("version",1,"forces",identity.getJSONObject("acquired").getJSONObject("forces"),"globalEndurance",identity.getJSONObject("acquired").optDouble("endurance",.85)));JSONObject nextCouncil=council==null?null:council.validate(backupCouncil,nextWeights);
@@ -347,7 +350,7 @@ public final class ConversationService extends Service {
   boolean committed=prefs.edit().putString("rollback",rollback.toString()).putString("restoredWeb",web.toString())
    .putString("restoredWeights",root.optJSONObject("weights")==null?"{}":root.optJSONObject("weights").toString()).putString("history",rows.toString()).putString("scene",n.optString("scene","")).putString("mode",nextMode)
    .putBoolean("neural",n.optBoolean("neural",false)).putBoolean("readText",n.optBoolean("readText",false)).putString("voice",n.optString("voice",""))
-   .putBoolean("imported",true).putLong("importedThrough",0).putString("journal",trace.toString()).putString("lastWeb",web.toString()).putString("lastWeights",nextWeights==null?"{}":nextWeights.toString()).putString("council-state",nextCouncil==null?"{}":nextCouncil.getJSONObject("state").toString()).putString("council-params",nextCouncil==null?"{}":nextCouncil.getJSONObject("params").toString()).putString("voiceChoiceV2",n.optString("voice","piper-mls")).commit();
+   .putString("modelChoice",nextModel).putBoolean("imported",true).putLong("importedThrough",0).putString("journal",trace.toString()).putString("lastWeb",web.toString()).putString("lastWeights",nextWeights==null?"{}":nextWeights.toString()).putString("council-state",nextCouncil==null?"{}":nextCouncil.getJSONObject("state").toString()).putString("council-params",nextCouncil==null?"{}":nextCouncil.getJSONObject("params").toString()).putString("voiceChoiceV2",n.optString("voice","piper-mls")).commit();
   if(!committed)throw new java.io.IOException("Storage");
   mode=nextMode;economy="eco".equals(mode);neural=n.optBoolean("neural",false);readText=n.optBoolean("readText",false);mood=n.optString("mood","curiosite");
   memory.clear();loadMemory();journal.reload();if(council!=null&&nextCouncil!=null)council.adopt(nextCouncil,nextWeights);selectVoice(n.optString("voice",""));publish();
