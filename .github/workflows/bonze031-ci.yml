@@ -61,6 +61,59 @@ jobs:
         run: |
           if grep -q 'android.permission.INTERNET' android/app/src/main/AndroidManifest.xml; then exit 1; fi
 
+  android-package-check:
+    name: Build and inspect experimental APK (no release, no APK artifact)
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[bonze-build]')
+    needs: [unit, browser, android-compile]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '17'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '8.9'}
+      - name: Install SDK and pinned original 230M GGUF
+        run: |
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
+          test -x "$SDKMANAGER"
+          "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
+          mkdir -p android/app/src/main/assets/models
+          curl -fL --retry 4 --output android/app/src/main/assets/models/LFM2.5-230M-Q4_K_M.gguf "https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LFM2.5-230M-Q4_K_M.gguf"
+          echo "7bbd90384d3deffe4c646ec9643b212802d32d4ce417c90a1ec9282100650062  android/app/src/main/assets/models/LFM2.5-230M-Q4_K_M.gguf" | sha256sum -c
+          curl -fL --retry 4 --output android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt "https://huggingface.co/LiquidAI/LFM2.5-230M-GGUF/resolve/main/LICENSE"
+          test -s android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt
+      - name: Fetch pinned Piper runtime/voice and prepare ephemeral test signature
+        run: |
+          bash scripts/fetch-piper.sh
+          mkdir -p "$HOME/.android"
+          keytool -genkeypair -keystore "$HOME/.android/debug.keystore" -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 365 -dname "CN=Bonze Experimental CI,O=Bonze,C=FR"
+      - name: Build real APK and lint without publishing it
+        run: |
+          gradle --no-daemon :androidApp:assembleDebug :androidApp:lintDebug
+          APK="$(find android/app/build/outputs/apk/debug -name '*.apk' -type f -print -quit)"
+          test -n "$APK" && test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | head -n 1 | tee package.txt
+          grep -q "name='fr.bonzeai.companion'" package.txt
+          grep -q "versionCode='7'" package.txt
+          grep -q "versionName='0.7.0-dev'" package.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | tee permissions.txt
+          ! grep -q android.permission.INTERNET permissions.txt
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK" | tee signature-ci.txt
+          sha256sum "$APK" | tee package-sha256.txt
+          echo "Build verified. Temporary test signature: this APK is not an updatable release and is NOT published."
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bonze031-package-inspection
+          path: |
+            package.txt
+            permissions.txt
+            signature-ci.txt
+            package-sha256.txt
+            android/app/build/reports/lint-results-debug.html
+          if-no-files-found: ignore
+
   compare-models:
     name: Optional CPU probe — 230M vs 1.2B (manual)
     if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[bonze-benchmark]')
