@@ -35,3 +35,13 @@ test('scripted repertoire ledgers survive encrypted export, with strict bounds',
  const invalid=data();invalid.repertoire={...ledger,recent:Array(100).fill('salut/joie/0')};
  assert.throws(()=>validateBackup(invalid));
 });
+
+test('BONZE-035: encrypted backups retain bounded categorical associations without transcript',async()=>{
+ const d=data(),ledger={version:1,seed:42,turns:3,recent:[],families:[],lastIntent:'jeu',
+ lastRole:'curiosite',recentForms:['jeu/1'],associations:[{key:'jeu/curiosite',strength:.75,seen:3}]};
+ d.web.scriptedState=ledger;d.repertoire=ledger;
+ const saved=await openBackup(await sealBackup(d,'une phrase secrète longue'),'une phrase secrète longue');
+ assert.deepEqual(saved.repertoire,ledger);
+ const broken=data();broken.repertoire={...ledger,associations:[{key:'x',strength:2,seen:3}]};
+ assert.throws(()=>validateBackup(broken));
+});

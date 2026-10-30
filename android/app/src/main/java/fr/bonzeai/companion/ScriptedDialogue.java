@@ -27,7 +27,7 @@ final class ScriptedDialogue {
         try {old=new JSONObject(p.getString("bonze-repertoire-v1", "{}"));}
         catch (JSONException invalid) {old=new JSONObject();}
         if (!old.has("seed")) old.put("seed", new SecureRandom().nextInt());
-        state=old;
+        state=canonical(old);
         org.mozilla.javascript.Context cx=org.mozilla.javascript.Context.enter();
         try {
             cx.setOptimizationLevel(-1);
@@ -61,6 +61,17 @@ final class ScriptedDialogue {
             return result;
         } finally {org.mozilla.javascript.Context.exit();}
     }
-    void adopt(JSONObject restored){if(restored!=null)state=restored;}
+    static JSONObject canonical(JSONObject raw) throws JSONException {
+        JSONObject result=new JSONObject(raw==null?"{}":raw.toString());
+        if(!result.has("version"))result.put("version",1);
+        if(result.optInt("version")!=1)throw new JSONException("repertoire-version");
+        if(!result.has("seed"))result.put("seed",new SecureRandom().nextInt());
+        if(!result.has("turns"))result.put("turns",0);
+        if(!result.has("recent"))result.put("recent",new org.json.JSONArray());
+        if(!result.has("families"))result.put("families",new org.json.JSONArray());
+        if(result.optJSONArray("recent")==null||result.optJSONArray("families")==null)throw new JSONException("repertoire-list");
+        return result;
+    }
+    void adopt(JSONObject restored) throws JSONException {if(restored!=null)state=canonical(restored);}
     JSONObject state(){return state;}
 }

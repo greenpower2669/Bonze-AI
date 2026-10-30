@@ -16,7 +16,14 @@ function repertoireState(s){
  if(!plain(s)||s.version!==1||!Number.isSafeInteger(s.seed)||!Number.isSafeInteger(s.turns)||s.turns<0||s.turns>10000000)fail();
  if(!Array.isArray(s.recent)||s.recent.length>16||!Array.isArray(s.families)||s.families.length>8)fail();
  for(const x of [...s.recent,...s.families])if(typeof x!=='string'||x.length>80)fail();
- return {version:1,seed:s.seed,turns:s.turns,recent:[...s.recent],families:[...s.families]};
+ const associations=s.associations??[],recentForms=s.recentForms??[];
+ if(!Array.isArray(associations)||associations.length>24||associations.some(a=>!plain(a)||typeof a.key!=='string'||a.key.length>60||!Number.isFinite(a.strength)||a.strength<0||a.strength>1||!Number.isSafeInteger(a.seen)||a.seen<0||a.seen>10000000))fail();
+ if(!Array.isArray(recentForms)||recentForms.length>8||recentForms.some(x=>typeof x!=='string'||x.length>80))fail();
+ const intents=['salut','merci','tristesse','inquietude','contrarié','jeu','humour','curiosite','question','identite','correction','affection','depart','fatigue','surprise','demande','reussite','confusion','discussion','urgence'];
+ const roles=['joie','peur','colere','calme','reflexion','empathie','curiosite','humour','sage'];
+ return {version:1,seed:s.seed,turns:s.turns,recent:[...s.recent],families:[...s.families],
+ lastIntent:intents.includes(s.lastIntent)?s.lastIntent:'',lastRole:roles.includes(s.lastRole)?s.lastRole:'',
+ recentForms:[...recentForms],associations:associations.map(a=>({key:a.key,strength:a.strength,seen:a.seen}))};
 }
 export function validateBackup(input){
  if(!plain(input)||input.schema!==1||!plain(input.web)||JSON.stringify(input).length>MAX/2)fail();

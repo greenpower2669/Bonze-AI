@@ -130,3 +130,16 @@ test('BONZE-034: high-risk requests remain restricted authored cards',()=>{
  const name=say('Comment tu t’appelles ?',null,{semantic:'jeu'});
  assert.equal(name.intent,'identite');assert.equal(name.text,"Je m'appelle Bonze AI ! Et toi ?");
 });
+
+test('BONZE-035: categorical associations survive bounded repeated play and protect follow-up continuity',()=>{
+ let state=null,first=say('Imagine un dragon',state,{seed:114});state=first.state;
+ assert.equal(state.lastIntent,'jeu');assert.equal(state.associations.length,1);
+ let next=say('Et après ?',state);assert.equal(next.intent,'jeu');state=next.state;
+ for(let i=0;i<300;i++){let r=say(i%2?'Raconte une blague':'Coucou',state);state=r.state;}
+ assert.ok(state.associations.length<=24);assert.ok(state.recentForms.length<=8);
+ assert.ok(state.recent.length<=16);assert.ok(!JSON.stringify(state).includes('Imagine un dragon'));
+});
+test('BONZE-035: an urgent situation always outranks a continuing game',()=>{
+ const first=say('Imagine un dragon',null,{seed:1});
+ assert.equal(say('Je suis en danger immédiat',first.state,{semantic:'jeu'}).intent,'urgence');
+});

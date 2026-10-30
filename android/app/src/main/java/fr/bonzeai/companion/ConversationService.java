@@ -342,9 +342,13 @@ public final class ConversationService extends Service {
   JSONObject nextWeights=root.optJSONObject("weights");if(nextWeights!=null&&nextWeights.length()==0)nextWeights=null;JSONObject backupCouncil=root.optJSONObject("council");if(backupCouncil==null)backupCouncil=DiagnosticJournal.fields("state",DiagnosticJournal.fields("version",1,"forces",identity.getJSONObject("acquired").getJSONObject("forces"),"globalEndurance",identity.getJSONObject("acquired").optDouble("endurance",.85)));JSONObject nextCouncil=council==null?null:council.validate(backupCouncil,nextWeights);
   JSONObject restoredRepertoire=root.optJSONObject("repertoire");if(restoredRepertoire==null)restoredRepertoire=web.optJSONObject("scriptedState");
   if(restoredRepertoire!=null){
+   // An initial 032 state may have a seed but no choice history yet; upgrade it safely.
+   restoredRepertoire=ScriptedDialogue.canonical(restoredRepertoire);
    if(restoredRepertoire.optInt("version",0)!=1||restoredRepertoire.toString().length()>4096)throw new IllegalArgumentException("repertoire");
    JSONArray recent=restoredRepertoire.optJSONArray("recent"),families=restoredRepertoire.optJSONArray("families");
    if(recent==null||families==null||recent.length()>16||families.length()>8||!restoredRepertoire.has("seed")||!restoredRepertoire.has("turns"))throw new IllegalArgumentException("repertoire");
+   if(restoredRepertoire.optJSONArray("associations")!=null&&restoredRepertoire.optJSONArray("associations").length()>24)throw new IllegalArgumentException("repertoire");
+   if(restoredRepertoire.optJSONArray("recentForms")!=null&&restoredRepertoire.optJSONArray("recentForms").length()>8)throw new IllegalArgumentException("repertoire");
    for(int k=0;k<recent.length();k++)if(!(recent.opt(k) instanceof String)||recent.optString(k).length()>80)throw new IllegalArgumentException("repertoire");
    for(int k=0;k<families.length();k++)if(!(families.opt(k) instanceof String)||families.optString(k).length()>80)throw new IllegalArgumentException("repertoire");
   }

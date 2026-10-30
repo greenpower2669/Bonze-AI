@@ -167,7 +167,10 @@ function cleanState(old,seed){
  old=old&&typeof old==='object'?old:{};
  var rec=Array.isArray(old.recent)?old.recent.filter(function(x){return typeof x==='string'&&x.length<80;}).slice(-16):[];
  var fam=Array.isArray(old.families)?old.families.filter(function(x){return typeof x==='string'&&x.length<80;}).slice(-8):[];
- return {version:1,seed:finite(old.seed,finite(seed,0x7c25b,-2147483647,2147483647),-2147483647,2147483647)|0,turns:finite(old.turns,0,0,10000000)|0,recent:rec,families:fam};
+ var associations=Array.isArray(old.associations)?old.associations.filter(function(a){return a&&typeof a.key==='string'&&/^[a-z]+\/[a-z]+$/.test(a.key)&&a.key.length<60&&isFinite(a.strength)&&a.strength>=0&&a.strength<=1&&isFinite(a.seen)&&a.seen>=0;}).slice(-24).map(function(a){return {key:a.key,strength:finite(a.strength,0,0,1),seen:finite(a.seen,0,0,1e7)|0};}):[];
+ var forms=Array.isArray(old.recentForms)?old.recentForms.filter(function(f){return typeof f==='string'&&f.length<80;}).slice(-8):[];
+ return {version:1,seed:finite(old.seed,finite(seed,0x7c25b,-2147483647,2147483647),-2147483647,2147483647)|0,turns:finite(old.turns,0,0,10000000)|0,recent:rec,families:fam,
+  lastIntent:INTENTS.indexOf(old.lastIntent)>=0?old.lastIntent:'',lastRole:ROLES.indexOf(old.lastRole)>=0?old.lastRole:'',recentForms:forms,associations:associations};
 }
 function rand(s){s.seed=((Math.imul?Math.imul(s.seed,1664525):s.seed*1664525)+1013904223)|0;return (s.seed>>>0)/4294967296;}
 function choose(input){
@@ -180,15 +183,19 @@ function choose(input){
  var denied=contains(norm(txt),'pas triste|ne suis pas triste|pas peur|ne suis pas inquiet|pas drole|ce n est pas drole');
  var intent=uncertain&&!denied&&barred.indexOf(semantic)<0&&INTENTS.indexOf(semantic)>=0?semantic:local;
  if(local==='urgence'||local==='correction'||local==='tristesse'||local==='inquietude')intent=local;
+ if((local==='discussion'||local==='question')&&contains(norm(txt),'continue|la suite|et apres|et ensuite|et puis|poursuis')&&
+   ['jeu','humour','curiosite','discussion'].indexOf(s.lastIntent)>=0)intent=s.lastIntent;
  var force=input.forces&&typeof input.forces==='object'?input.forces:{};
  var endurance=input.endurances&&typeof input.endurances==='object'?input.endurances:{};
- var candidates=byIntent[intent]||byIntent.discussion,ranked=[];
+ var candidates=byIntent[intent]||byIntent.discussion,ranked=[],affinity={};
+ for(var a=0;a<s.associations.length;a++){var link=s.associations[a];affinity[link.key]=link.strength*Math.pow(.98,Math.min(250,Math.max(0,s.turns-link.seen)));}
  for(var i=0;i<candidates.length;i++){
   var c=candidates[i],strength=c.role==='sage'?0.57:finite(force[c.role],.38,0,1);
   var stamina=c.role==='sage'?1:finite(endurance[c.role],.8,0,1);
   var weight=.25+strength*(.4+.6*stamina);
   if(c.role==='sage'&&(intent==='question'||intent==='urgence'||intent==='correction'||intent==='confusion'))weight*=2.5;
   if((intent==='inquietude'||intent==='tristesse'||intent==='urgence')&&c.role==='humour')weight=0;
+  weight*=1+.30*(affinity[intent+'/'+c.role]||0);
   if(s.recent.indexOf(c.id)!==-1)weight*=.025;
   if(s.families.indexOf(c.family)!==-1)weight*=.28;
   ranked.push({card:c,weight:weight});
@@ -202,7 +209,7 @@ function choose(input){
    if(role==='sage'&&(intent==='question'||intent==='correction'||intent==='confusion'))virtualWeight*=2.5;
    if((intent==='inquietude'||intent==='tristesse')&&role==='humour')virtualWeight=0;
    var recentInRole=0;for(var u=0;u<s.families.length;u++)if(s.families[u].indexOf(intent+'/'+role+'/')===0)recentInRole++;
-   virtualWeight*=Math.pow(.88,recentInRole);
+   virtualWeight*=Math.pow(.88,recentInRole)*(1+.30*(affinity[intent+'/'+role]||0));
    ranked.push({card:{virtual:true,role:role,intent:intent},weight:virtualWeight});
   }
  }
@@ -215,7 +222,8 @@ function choose(input){
   // Sampling is bounded and avoids recent cards and sentence families.
   for(var attempt=0;attempt<32;attempt++){
    var index=Math.floor(rand(s)*variants),item=corpus.render(pick.role,intent,index);
-   var penalty=(s.recent.indexOf(item.id)<0?0:100)+(s.families.indexOf(item.family)<0?0:10);
+   var penalty=(s.recent.indexOf(item.id)<0?0:100)+(s.families.indexOf(item.family)<0?0:10)+
+    (s.recentForms.indexOf(intent+'/'+item.form)<0?0:4);
    if(penalty<bestPenalty){best=item;bestPenalty=penalty;}
    if(!penalty)break;
   }
@@ -230,6 +238,14 @@ function choose(input){
   substitutions.push({slot:key,value:chosen});return chosen;
  });
  s.turns++;s.recent.push(pick.id);s.recent=s.recent.slice(-16);s.families.push(pick.family);s.families=s.families.slice(-8);
+ if(typeof pick.form==='number'){s.recentForms.push(intent+'/'+pick.form);s.recentForms=s.recentForms.slice(-8);}
+ // Retain only categorical links, never the raw user's phrase or inferred personal facts.
+ var key=intent+'/'+pick.role,found=-1;
+ for(var a=0;a<s.associations.length;a++)if(s.associations[a].key===key)found=a;
+ if(found>=0){s.associations[found].strength=Math.min(1,s.associations[found].strength*.92+.12);s.associations[found].seen=s.turns;}
+ else s.associations.push({key:key,strength:.35,seen:s.turns});
+ if(s.associations.length>24)s.associations=s.associations.slice(-24);
+ s.lastIntent=intent;s.lastRole=pick.role;
  return {text:body,emotion:pick.role==='sage'?'calme':pick.role,card:pick.id,family:pick.family,intent:intent,detected:local,semanticUsed:intent===semantic,state:s,trace:{cardsConsidered:ranked.length,substitutions:substitutions,source:'authored-repertoire',composed:pick.composed===true,modelGenerated:false}};
 }
 function run(json){var input=JSON.parse(json);return JSON.stringify(choose(input));}
