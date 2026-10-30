@@ -28,7 +28,7 @@ public final class ConversationService extends Service {
  private final DialogueMemory memory=new DialogueMemory();
  private final String boot=UUID.randomUUID().toString();
  private Listener listener;private SpeechRecognizer recognizer;private TextToSpeech tts;
- private android.content.SharedPreferences prefs;private DiagnosticJournal journal;private long diagnosticTurn;private EmotionalCouncil council;private long councilAt;private String policyHint="";private PiperVoice piper;private String speechEngine="";
+ private android.content.SharedPreferences prefs;private DiagnosticJournal journal;private long diagnosticTurn;private EmotionalCouncil council;private ScriptedDialogue scripted;private long councilAt;private String policyHint="";private PiperVoice piper;private String speechEngine="";
  private PowerManager.WakeLock cpu;
  private AudioManager audio;private AudioFocusRequest focus;
  private boolean promoted,recording,disposed,localVoiceReady,voiceInitFinished;
@@ -47,7 +47,7 @@ public final class ConversationService extends Service {
  @Override public void onCreate(){
   super.onCreate();prefs=getSharedPreferences("bonze-conversation-v1",MODE_PRIVATE);
   mode=prefs.getString("mode","precise");neural=prefs.getBoolean("neural",true);readText=prefs.getBoolean("readText",false);economy="eco".equals(mode);
-  journal=new DiagnosticJournal(prefs);try{council=new EmotionalCouncil(this,prefs);}catch(Exception e){journal.add("council-error",0,DiagnosticJournal.fields("error",e.getClass().getSimpleName()));}councilAt=SystemClock.elapsedRealtime();main.postDelayed(this::councilTick,10000);piper=new PiperVoice(getApplicationContext());voiceName=prefs.getString("voiceChoiceV2","piper-mls");loadMemory();audio=(AudioManager)getSystemService(AUDIO_SERVICE);
+  journal=new DiagnosticJournal(prefs);try{council=new EmotionalCouncil(this,prefs);}catch(Exception e){journal.add("council-error",0,DiagnosticJournal.fields("error",e.getClass().getSimpleName()));}councilAt=SystemClock.elapsedRealtime();main.postDelayed(this::councilTick,10000);piper=new PiperVoice(getApplicationContext());try{scripted=new ScriptedDialogue(this,prefs);}catch(Exception e){journal.add("repertoire-init-error",0,DiagnosticJournal.fields("error",e.getClass().getSimpleName()));}voiceName=prefs.getString("voiceChoiceV2","piper-mls");loadMemory();audio=(AudioManager)getSystemService(AUDIO_SERVICE);
   cpu=((PowerManager)getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"BonzeAI:Conversation");cpu.setReferenceCounted(false);
   ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).createNotificationChannel(new NotificationChannel("bonze-dialogue","Conversation Bonze",NotificationManager.IMPORTANCE_LOW));
   IntentFilter filter=new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
@@ -144,17 +144,33 @@ public final class ConversationService extends Service {
   journal.add("input",turn,DiagnosticJournal.fields("source",fromVoice?"voice":"text","text",text,"prompt",prompt,"context",contextData,"policyHint",hint,"epoch",epoch));
   memory.add("human",text);saveMemory();lastHeardAt=SystemClock.elapsedRealtime();
   if(fromVoice)session.awaiting();setState("thinking","Je réfléchis à ce que tu viens de me dire.");holdCpu();
-  if(!neural||!Arrays.asList("precise","eco").contains(mode)){complete(epoch,lightReply(text),fromVoice);return;}
-  if(!generating.compareAndSet(false,true)){complete(epoch,"Ma précédente pensée se termine encore. Redis-moi ta phrase dans un instant ?",fromVoice);return;}
-  final boolean eco=economy;
+  // The neural model classifies only. Every spoken sentence comes from a reviewed card.
+  if(!neural||!Arrays.asList("precise","eco").contains(mode)){complete(epoch,scriptedReply(text,"",turn),fromVoice);return;}
+  if(!generating.compareAndSet(false,true)){complete(epoch,"Je termine un classement. Redis-moi ça dans un instant ?",fromVoice);return;}
   inference.execute(()->{
-   String result,errorName="";long began=SystemClock.elapsedRealtime(),cpuBegan=SystemClock.currentThreadTimeMillis();
-   try{BonzeInference.setEconomy(eco);result=BonzeInference.reply(getApplicationContext(),prompt,contextData,hint);}
-   catch(Exception|LinkageError error){errorName=error.getClass().getSimpleName();result="Je cherche encore mes mots. Tu peux me le dire autrement ?";}
+   String category="",errorName="";long began=SystemClock.elapsedRealtime(),cpuBegan=SystemClock.currentThreadTimeMillis();
+   try{category=BonzeInference.classify(getApplicationContext(),text);}
+   catch(Exception|LinkageError error){errorName=error.getClass().getSimpleName();}
    finally{generating.set(false);}
-   final String answer=result,failure=errorName;final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
-   main.post(()->{lastLatency=elapsed;lastCpu=cpuTime;journal.add("generation",turn,DiagnosticJournal.fields("output",answer,"error",failure,"latencyMs",elapsed,"repeatPrevious",memory.repeats(answer),"discarded",disposed||epoch!=workEpoch));if(!disposed&&epoch==workEpoch)complete(epoch,answer,fromVoice);});
+   final String semantic=category,failure=errorName;final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
+   main.post(()->{
+    lastLatency=elapsed;lastCpu=cpuTime;
+    journal.add("semantic-classification",turn,DiagnosticJournal.fields("candidate",semantic,"error",failure,"latencyMs",elapsed,"discarded",disposed||epoch!=workEpoch));
+    if(!disposed&&epoch==workEpoch)complete(epoch,scriptedReply(text,semantic,turn),fromVoice);
+   });
   });
+ }
+ private String scriptedReply(String text,String semantic,long turn){
+  if(scripted==null)return lightReply(text);
+  try{
+   boolean vary="humour".equals(mood)||"curiosite".equals(mood);
+   JSONObject result=scripted.choose(text,semantic,council==null?null:council.snapshot(),vary);
+   journal.add("repertoire",turn,DiagnosticJournal.fields("card",result.optString("card"),"intent",result.optString("intent"),"role",result.optString("emotion"),"detected",result.optString("detected"),"semanticUsed",result.optBoolean("semanticUsed"),"trace",result.optJSONObject("trace")));
+   return result.getString("text");
+  }catch(Exception|LinkageError error){
+   journal.add("repertoire-error",turn,DiagnosticJournal.fields("error",error.getClass().getSimpleName()));
+   return lightReply(text);
+  }
  }
  private String lightReply(String text){
   if(text.toLowerCase(Locale.FRANCE).matches(".*comment tu t.appelles.*"))return "Je m'appelle Bonze AI ! Et toi ?";
@@ -308,7 +324,7 @@ public final class ConversationService extends Service {
  private void updateCouncil(String text){if(council==null)return;long now=SystemClock.elapsedRealtime();try{JSONObject r=council.run(text,DiagnosticJournal.fields("familiar",memory.size()>0,"scene",!memory.scene().isEmpty()),Math.min(30,(now-councilAt)/1000.0),state);councilAt=now;policyHint=r.optString("hint");JSONObject forces=r.getJSONObject("state").getJSONObject("forces");double max=-1;for(Iterator<String> it=forces.keys();it.hasNext();){String k=it.next();if(forces.optDouble(k)>max){max=forces.optDouble(k);mood=k;}}journal.add("council",diagnosticTurn,r);}catch(Exception e){journal.add("council-error",diagnosticTurn,DiagnosticJournal.fields("error",e.getClass().getSimpleName()));}}
  private void councilTick(){if(disposed)return;if(session.active()||listener!=null){updateCouncil("");if(listener!=null&&council!=null){JSONObject e=base("emotion-state");try{e.put("council",council.snapshot());listener.onEvent(e.toString());}catch(JSONException ignored){}}}main.postDelayed(this::councilTick,10000);}
  public void configureCouncil(String json)throws JSONException{if(council==null)throw new IllegalStateException();council.configure(new JSONObject(json));journal.add("admin-council",diagnosticTurn,council.snapshot());publish();}
- public JSONObject diagnostics(){return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"journal",journal.copy(),"resources",resourceObject(),"engine",speechEngine,"preferredVoice",voiceName,"model","LFM2.5-230M dense");}
+ public JSONObject diagnostics(){return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"journal",journal.copy(),"resources",resourceObject(),"engine",speechEngine,"preferredVoice",voiceName,"model","LFM2.5-230M classification only; authored replies");}
  private JSONObject resourceObject(){try{return new JSONObject(resources());}catch(JSONException e){return new JSONObject();}}
  public JSONObject backupData(){
   JSONArray rows=new JSONArray();for(DialogueMemory.Entry e:memory.entries())rows.put(DiagnosticJournal.fields("id",e.id,"role",e.role,"text",e.text));
