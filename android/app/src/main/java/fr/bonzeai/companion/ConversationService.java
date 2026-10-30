@@ -119,7 +119,7 @@ public final class ConversationService extends Service {
         &&(LocalModelStore.SMALL.equals(chosenModel)||LocalModelStore.available(this))
         &&!chosenModel.equals(activeModel)){
     if(session.active())stop(request,"Changement de moteur : conversation arrêtée.");
-    prefs.edit().putString("modelChoice",chosenModel).apply();
+    prefs.edit().putString("modelChoice",chosenModel).remove("modelLastFallback").apply();
     inference.execute(BonzeInference::release);
     journal.add("model-choice",diagnosticTurn,DiagnosticJournal.fields("selected",chosenModel));
    }
@@ -299,7 +299,8 @@ public final class ConversationService extends Service {
   JSONObject o=base("snapshot");try{
    if(council!=null)o.put("council",council.snapshot());
    o.put("active",session.active()).put("state",state).put("busy","thinking".equals(state)).put("status",status).put("voice",voiceName)
-    .put("model",LocalModelStore.choice(this)).put("model12Ready",LocalModelStore.available(this));
+    .put("model",LocalModelStore.choice(this)).put("model12Ready",LocalModelStore.available(this))
+    .put("modelFallback",prefs.getString("modelLastFallback",""));
    JSONArray rows=new JSONArray();for(DialogueMemory.Entry e:memory.entries())rows.put(new JSONObject().put("id",e.id).put("role",e.role).put("text",e.text));o.put("history",rows).put("importedThrough",prefs.getLong("importedThrough",0));
    JSONArray voices=new JSONArray();voices.put(new JSONObject().put("name","piper-mls").put("quality",400));if(voiceInitFinished&&tts!=null)for(Voice v:localVoices())voices.put(new JSONObject().put("name",v.getName()).put("quality",v.getQuality()));o.put("voices",voices);
    if(prefs.contains("restoredWeb")){o.put("restoredWeb",new JSONObject(prefs.getString("restoredWeb","{}")));o.put("restoreWeights",new JSONObject(prefs.getString("restoredWeights","{}")));o.put("restoreJournal",journal.copy());}
