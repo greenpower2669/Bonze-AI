@@ -36,7 +36,7 @@ export function setupMemoryUI({scope,getVault,saveVault,stop}){
    state=opened;secret=pass;access=auth;el('memory-editor').hidden=false;
    status('Coffre ouvert : '+state.items.length+' souvenir(s). Consultation manuelle uniquement.');
   }catch(e){if(issued===epoch){lock();status(e.message);}}
-  finally{el('memory-password').value='';}
+  finally{if(issued===epoch)el('memory-password').value='';}
  });
  el('memory-lock').addEventListener('click',lock);
  el('memory-add').addEventListener('click',async()=>{
