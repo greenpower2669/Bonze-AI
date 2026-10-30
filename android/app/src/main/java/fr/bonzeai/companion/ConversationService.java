@@ -340,7 +340,7 @@ public final class ConversationService extends Service {
   if(n.getInt("schema")!=1||!Arrays.asList("precise","eco","light","text","off").contains(nextMode)||rows.length()>30||trace.length()>200||trace.toString().length()>1000000)throw new IllegalArgumentException("data");
   for(int j=0;j<rows.length();j++){JSONObject r=rows.getJSONObject(j);if(!Arrays.asList("human","bot").contains(r.getString("role"))||r.getString("text").length()>1200)throw new IllegalArgumentException("history");}
   JSONObject nextWeights=root.optJSONObject("weights");if(nextWeights!=null&&nextWeights.length()==0)nextWeights=null;JSONObject backupCouncil=root.optJSONObject("council");if(backupCouncil==null)backupCouncil=DiagnosticJournal.fields("state",DiagnosticJournal.fields("version",1,"forces",identity.getJSONObject("acquired").getJSONObject("forces"),"globalEndurance",identity.getJSONObject("acquired").optDouble("endurance",.85)));JSONObject nextCouncil=council==null?null:council.validate(backupCouncil,nextWeights);
-  JSONObject restoredRepertoire=root.optJSONObject("repertoire");
+  JSONObject restoredRepertoire=root.optJSONObject("repertoire");if(restoredRepertoire==null)restoredRepertoire=web.optJSONObject("scriptedState");
   if(restoredRepertoire!=null){
    if(restoredRepertoire.optInt("version",0)!=1||restoredRepertoire.toString().length()>4096)throw new IllegalArgumentException("repertoire");
    JSONArray recent=restoredRepertoire.optJSONArray("recent"),families=restoredRepertoire.optJSONArray("families");
