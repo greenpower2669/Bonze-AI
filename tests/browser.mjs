@@ -76,6 +76,7 @@ try{
  check(await page.locator('#memory-editor').isHidden(),'memory locks on demand');
  await page.locator('#memory-password').fill('une phrase incorrecte longue');
  await page.locator('#memory-unlock').click();
+ await page.waitForFunction(()=>document.getElementById('memory-status').textContent.includes('incorrecte'));
  check(await page.locator('#memory-editor').isHidden(),'wrong password cannot open drawers');
  await page.locator('#memory-password').fill('ma phrase secrète privée bonze');
  await page.locator('#memory-unlock').click();
