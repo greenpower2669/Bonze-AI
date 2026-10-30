@@ -23,18 +23,45 @@ object BonzeInference {
 
     @JvmStatic @Synchronized
     fun reply(context: Context, text: String, contextData: String, hint: String): String = runBlocking {
-        val selected = LocalModelStore.choice(context)
+        var selected = LocalModelStore.choice(context)
         if (loadedChoice != selected) release()
+        if (selected == LocalModelStore.LARGE && !LocalModelStore.memoryAdmitsLarge(context)) {
+            // Stop experimenting with the heavy model when Android reports low headroom.
+            context.getSharedPreferences("bonze-conversation-v1", Context.MODE_PRIVATE)
+                .edit().putString("modelChoice", LocalModelStore.SMALL).apply()
+            selected = LocalModelStore.SMALL
+        }
         val model = loaded ?: run {
             val path = if (selected == LocalModelStore.LARGE) {
                 check(LocalModelStore.available(context)) { "Liquid 1.2B absent ou non vérifié" }
                 LocalModelStore.destination(context)
             } else ensureModel(context)
-            Llama.loadModel(
-                path.absolutePath,
-                LlamaConfig(contextSize = 2048, threads = 3, temperature = 0.45f,
-                    topP = 0.9f, topK = 50, gpuLayers = 0)
-            ).also { loaded = it; loadedChoice = selected }
+            try {
+                Llama.loadModel(
+                    path.absolutePath,
+                    LlamaConfig(contextSize = 2048, threads = 3, temperature = 0.45f,
+                        topP = 0.9f, topK = 50, gpuLayers = 0)
+                ).also { loaded = it; loadedChoice = selected }
+            } catch (oom: OutOfMemoryError) {
+                // Do not continually retry the heavy model after one failed allocation.
+                if (selected == LocalModelStore.LARGE)
+                    context.getSharedPreferences("bonze-conversation-v1", Context.MODE_PRIVATE)
+                        .edit().putString("modelChoice", LocalModelStore.SMALL).apply()
+                loaded = null; loadedChoice = ""
+                throw IllegalStateException("Mémoire insuffisante au chargement du modèle", oom)
+            } catch (failure: Exception) {
+                if (selected == LocalModelStore.LARGE)
+                    context.getSharedPreferences("bonze-conversation-v1", Context.MODE_PRIVATE)
+                        .edit().putString("modelChoice", LocalModelStore.SMALL).apply()
+                loaded = null; loadedChoice = ""
+                throw failure
+            } catch (failure: LinkageError) {
+                if (selected == LocalModelStore.LARGE)
+                    context.getSharedPreferences("bonze-conversation-v1", Context.MODE_PRIVATE)
+                        .edit().putString("modelChoice", LocalModelStore.SMALL).apply()
+                loaded = null; loadedChoice = ""
+                throw failure
+            }
         }
         // The Android AAR accepts one system + one user message, not a list of chat roles.
         // Previous dialogue is therefore quoted as untrusted USER context, never promoted
