@@ -48,3 +48,6 @@
 6. Validation réelle sur Samsung, mode avion, voix/Piper/Stop/veille/TalkBack, mémoire, température, et validation humaine du dialogue avant clôture.
 
 Statut : développement incrémental **partiellement achevé**, 0.6.0 reste le retour vérifié. Conserver la branche et les TODO ; ne pas confondre tests automatisés, compilation et validation utilisateur.
+
+## Étape suivante : sélection Liquid 1.2B sur Android (30/10, branche uniquement)
+Correctif C++ du benchmark : token de décodage désormais mutable. Un sélecteur a été codé : Liquid 230M par défaut, Liquid 1.2B-Instruct Q4_K_M seulement après import explicite du GGUF depuis ACTION_OPEN_DOCUMENT, vérification SHA-256, contrôle d'espace et copie privée sur thread de fond. Aucun accès réseau ni autre modèle embarqué. Bonze unload l'ancien avant chargement du nouveau. La préférence est stockée côté Android et Web, incluse dans l'export `.bonze` v1, avec retour sûr au 230M quand le 1.2B n'est pas présent. Les tests statiques de sélection/import et de sauvegarde sont ajoutés. La vérification Android matérielle, la compatibilité du 1.2B avec le backend natif, les pics RAM et la qualité vocale sont encore inconnus : ne pas considérer cette option comme validée sur Samsung. Pas de modification du tag 0.6.0, ni de `main`, ni de publication APK.
