@@ -154,6 +154,16 @@ public final class ConversationService extends Service {
   journal.add("input",turn,DiagnosticJournal.fields("source",fromVoice?"voice":"text","text",text,"prompt",prompt,"context",contextData,"policyHint",hint,"epoch",epoch));
   memory.add("human",text);saveMemory();lastHeardAt=SystemClock.elapsedRealtime();
   if(fromVoice)session.awaiting();setState("thinking","Je réfléchis à ce que tu viens de me dire.");holdCpu();
+  // The rule-based knowledge boundary is transparent in private diagnostics.
+  // It is distinct from neural generation and only covers narrow, reproducible cases.
+  String plain=text.toLowerCase(Locale.FRANCE);
+  boolean explicitFiction=plain.contains("dans notre histoire")||plain.startsWith("imagine ")
+    ||plain.contains("dans notre jeu");
+  String guarded=KnowledgeGuard.reply(text,explicitFiction);
+  if(guarded!=null){
+   journal.add("knowledge-guard",turn,DiagnosticJournal.fields("mechanism","authored-offline-rule","output",guarded));
+   complete(epoch,guarded,fromVoice);return;
+  }
   if(!neural||!Arrays.asList("precise","eco").contains(mode)){complete(epoch,lightReply(text),fromVoice);return;}
   if(!generating.compareAndSet(false,true)){complete(epoch,"Ma précédente pensée se termine encore. Redis-moi ta phrase dans un instant ?",fromVoice);return;}
   final boolean eco=economy;
