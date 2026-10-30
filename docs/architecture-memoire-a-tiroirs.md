@@ -47,3 +47,7 @@ Une carte centrale minuscule fournit les noms des tiroirs, leur périmètre et l
 - APK/AAB et Release uniquement après CI, signature et accord de Fab sur le périmètre de publication.
 
 **État : proposition enregistrée ; code, tests et APK correspondants non encore réalisés.**
+
+## Mise en œuvre expérimentale du 30 octobre 2026 — sur branche BONZE-031
+Un premier noyau fonctionne en branche isolée : \`core/memory-drawers.mjs\` (index léger + rappel borné), \`core/memory-vault.mjs\` (chiffrement local par phrase secrète), \`docs/memory-ui.js\` (écriture volontaire, recherche, oubli et verrouillage) ; inclusion de l'enveloppe chiffrée dans \`.bonze\` schema 1. Tests JS, navigateur hors ligne et compilation Android de source validés par \`41090306459\`.
+**Attention :** les tiroirs ne sont **pas encore connectés à la génération vocale automatique** ; l'identification familiale solide n'est pas implémentée, et la mémoire instantanée existante n'est pas chiffrée par ce prototype. Le module pur attend du caller une autorisation authentifiée, ce booléen ne l'authentifie pas. La seule barrière disponible pour le nouveau coffre est sa phrase secrète. La version 0.6.0 publiée ne possède pas cette fonction et reste le point de retour. Prochaines étapes : authentification, migrations et tests interpersonnels, intégration conditionnelle des extraits, preuve de pertinence/latence et décision humaine de Fab avant Release.
