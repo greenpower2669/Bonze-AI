@@ -75,6 +75,8 @@ jobs:
           test -s android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt
       - name: Fetch pinned Piper runtime and French voice
         run: bash scripts/fetch-piper.sh
+      - name: Audit speech coverage against the actual Piper lexicon
+        run: node scripts/audit-piper-corpus.mjs
       - name: Compile APK and run Android lint
         env:
           ANDROID_USER_HOME: ${{ runner.temp }}/bonze-android-user
