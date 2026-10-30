@@ -113,3 +113,11 @@ Contrats : préserver `fr.bonzeai.companion`, signature et données ; ne jamais 
 - [ ] Continuer l'authentification des personnes, le rappel sélectif sûr et les migrations, puis apprentissage experts/arbitre/voix Piper et tests Samsung.
 - [ ] Conserver l'interdiction de merge \`main\` et de Release sans accord explicite ; la 0.6.0 reste publiée, aucun nouvel APK signé ou AAB.
 Rapport de passation exact : \`docs/history/bonze031-evolution-2026-10-30.md\` et tâches \`todo.md\`.
+
+## BONZE-032 — expérimentation de moteur, à ne pas clôturer
+- [x] Coder sélection accessible Liquid 230M ou 1.2B, fichier Q4_K_M importable **hors ligne** depuis Android SAF et SHA-256 strict, pas de chargement simultané. Défaut inchangé : 230M.
+- [x] Ajouter garde d'espace, copie temporaire et vérification complète ; sauvegarder le choix, refuser un gros modèle absent au lieu d'un plantage.
+- [x] Corriger l'erreur de compilation C++ du banc de comparaison ; régressions JavaScript et compilation Android de source sur CI intermédiaire vertes.
+- [ ] Vérifier le benchmark réel 230M/1.2B et les résultats français (humour, suite du dialogue, répétition, hallucinations), RAM/PSS et latence sur Samsung avant adoption recommandée.
+- [ ] Vérifier APK complet, signature identique 0.6, tests Android instrumentés/Piper/Stop/veille, compatibilité de sauvegarde, stockage et ressources puis validation Fab.
+- [ ] Aucune Release ni merge `main` sans autorisation. Aucun APK de cette branche publié.
