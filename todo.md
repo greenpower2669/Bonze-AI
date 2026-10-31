@@ -226,3 +226,26 @@ Source exacte publiée : `fdd4ba9477fbb87f72b7f69a2a0ec225bd471fbb`, code versio
 - [ ] Essai réel Samsung : voix continue, écran éteint, débit Piper, écoute/lecture, casque et mesure des sous-alimentations et bascules vocales.
 - [ ] Si pauses entre blocs, prototyper une préparation audio en avance ou une file tamponnée ; éviter de prétendre corriger le gap sans mesure.
 - [ ] Réconcilier les PR #3 (répertoire 18k) et #4 (mémoire/personnalisation) ; résorber signature incompatible avant livraison sûre de mise à jour, sans écraser 0.7.0-dev.
+
+
+### BONZE-041 — chantier de correction générale 31/10
+- [x] Réunir BONZE-039/040 et les 18 000 répliques de BONZE-037 sur une branche non destructive, sans prétendre à 18 000 sujets distincts ; ajout test de critique « naze/perroquet ».
+- [x] Remplacer la réponse de secours unique par une sélection locale d'intention/émotion avec journalisation explicite, dès écho Liquid, erreur du modèle et en mode léger ; intégration Web et native.
+- [x] Piper : produire et lire le flux PCM complet dans un AudioTrack, appliquer un gain commun, préremplir avant jeu, tracer les durées/underruns et le passage éventuel à Android TTS.
+- [x] Sauvegarde chiffrée : préserver répertoire natif et Web, validation stricte, migration ancienne version, test JS.
+- [x] Renommer la candidate installable séparément en 0.8.0-dev/code 8, package `fr.bonzeai.companion.dev`, conserver 0.7 en place.
+- [x] CI `41201859372` : tests JVM/JS, interface Playwright, compilation Kotlin/Java, lexique Piper complet et construction/inspection Android **réussis**.
+- [x] APK expérimental 0.8.0-dev code 8 construit en parallèle (`fr.bonzeai.companion.dev`, 271 244 969 octets), contrôlé par `aapt` et `apksigner`, zéro permission INTERNET, somme SHA-256 GitHub vérifiée ; artefact Actions `13043251678`. Aucune Release publiée.
+- [ ] Vérifier sur Samsung réel : double installation sans suppression, mémoire chiffrée, critique « naze », dialogue continu, coupures, latence première syllabe, Bluetooth/casque, niveau sonore, arrêt immédiat, journal anonymisé.
+- [ ] Après tests appareils, décider du mécanisme de signature de mise à jour et du passage de BONZE-037/039/040/041 dans la branche de référence ; aucun merge main sans autorisation.
+- [ ] Optimiser latence voix : envisager moteur et buffers anticipés, sans réintroduire de blancs ou de traitements simultanés non sûrs.
+
+### BONZE-041 — publication directe GitHub sans ZIP (31/10/2026)
+- [x] APK parallèle 0.8.0-dev vérifié, SHA-256 `dac8a4401e7a223d0982a7209d99a905dd6145fabbbf65da16db027394d20954`, artefact 13043251678.
+- [x] Pipeline de prérelease directe ajouté à `.github/workflows/bonze031-ci.yml` : téléchargement de l'artefact déjà validé, checksum, package et signature, `gh release create` en préversion avec `.apk` et `.sha256` uniquement.
+- [ ] **BLOCAGE GitHub 403** sur la création Release par `GITHUB_TOKEN` (run `41229649266`, job `124621558159`) : `HTTP 403 Resource not accessible by integration` malgré `permissions: contents: write`. Les tests JS/JVM, Playwright et compilation sont verts ; le contrôle des bytes et manifest de l'APK est vert ; seule l'API GitHub Releases refuse l'écriture.
+- [ ] Faire autoriser à GitHub Actions l'écriture des contenus/releases pour ce dépôt (Settings → Actions → General → Workflow permissions → Read and write permissions, ou règle d'organisation si verrouillé). Rejouer ensuite le job de publication et vérifier la présence réelle de l'asset `.apk` dans `bonze-ai-v0.8.0-dev-parallel`. **Ne pas inventer de lien direct ni publier via ZIP par défaut.**
+
+- [ ] **Nouvelle tentative après demande Fab** : relance du job `124621558159` de la CI `41229649266` réussie techniquement (attempt 2, job `124624995495`), vérifications du même APK `.apk` OK, mais `gh release create` refuse toujours : **HTTP 403 Resource not accessible by integration**. Confirmer dans Settings → Actions → General → Workflow permissions que `Read and write permissions` est **coché et enregistré après rechargement** ; vérifier les restrictions d'organisation si besoin ; relancer la publication uniquement après déblocage. Aucun lien `.apk` GitHub Release 0.8 créé.
+
+- [ ] **Troisième tentative 31/10 — preuve complémentaire :** le job `124626465866` (run `41229649266`, tentative 3) montre explicitement `GITHUB_TOKEN Permissions: Contents: write / Actions: read`, et pourtant la commande `gh release create` renvoie encore **`HTTP 403 Resource not accessible by integration`**. La capture utilisateur indique `Read and write permissions` sélectionné. Ne plus attribuer le blocage à l'absence de ce simple réglage. Rechercher une restriction effective propre à l'API Releases, aux règles du dépôt ou au contexte du jeton ; ne pas répéter les essais à l'identique. Le `.apk` 0.8 déjà validé reste dans l'artefact 13043251678 ; **aucune Release 0.8 publiée**.

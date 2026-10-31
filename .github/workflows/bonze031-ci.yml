@@ -1,7 +1,7 @@
 name: Bonze 031 — experimental validation (no release)
 on:
   push:
-    branches: [feature/bonze031-dialogue-natural-v1, feature/bonze039-svc-personalisation-v1, feature/bonze040-dialogue-voice-diagnostics]
+    branches: [feature/bonze031-dialogue-natural-v1, feature/bonze039-svc-personalisation-v1, feature/bonze040-dialogue-voice-diagnostics, feature/bonze041-conversation-audio-integration]
     paths: ['core/**', 'docs/**', 'tests/**', 'android/**', '.github/probes/bonze031.cpp', '.github/workflows/bonze031-ci.yml']
   workflow_dispatch:
 permissions:
@@ -59,6 +59,11 @@ jobs:
         with: {gradle-version: '8.9'}
       - name: Fetch pinned Piper AAR and voice for dependency resolution
         run: bash scripts/fetch-piper.sh
+      - name: Verify all scripted French phrases against packaged Piper lexicon
+        run: node scripts/audit-piper-corpus.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: bonze041-piper-audit, path: piper-corpus-report.json, if-no-files-found: ignore}
       - name: Compile Kotlin and Java (no release, no signing)
         run: gradle --no-daemon :androidApp:compileDebugKotlin :androidApp:compileDebugJavaWithJavac
       - name: Verify no Internet permission in source
@@ -99,8 +104,8 @@ jobs:
           test -n "$APK" && test -s "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | head -n 1 | tee package.txt
           grep -q "name='fr.bonzeai.companion'" package.txt
-          grep -q "versionCode='7'" package.txt
-          grep -q "versionName='0.7.0-dev'" package.txt
+          grep -q "versionCode='8'" package.txt
+          grep -q "versionName='0.8.0-dev'" package.txt
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | tee permissions.txt
           ! grep -q android.permission.INTERNET permissions.txt
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK" | tee signature-ci.txt
@@ -111,22 +116,22 @@ jobs:
           gradle --no-daemon -PbonzeParallelInstall=true :androidApp:assembleDebug
           APK="$(find android/app/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' -print -quit)"
           test -n "$APK" && test -s "$APK"
-          cp "$APK" Bonze-AI-v0.7.0-dev-parallel.apk
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging Bonze-AI-v0.7.0-dev-parallel.apk | head -n 1 | tee package-parallel.txt
+          cp "$APK" Bonze-AI-v0.8.0-dev-parallel.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging Bonze-AI-v0.8.0-dev-parallel.apk | head -n 1 | tee package-parallel.txt
           grep -q "name='fr.bonzeai.companion.dev'" package-parallel.txt
-          grep -q "versionCode='7'" package-parallel.txt
-          grep -q "versionName='0.7.0-dev'" package-parallel.txt
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions Bonze-AI-v0.7.0-dev-parallel.apk | tee permissions-parallel.txt
+          grep -q "versionCode='8'" package-parallel.txt
+          grep -q "versionName='0.8.0-dev'" package-parallel.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions Bonze-AI-v0.8.0-dev-parallel.apk | tee permissions-parallel.txt
           ! grep -q android.permission.INTERNET permissions-parallel.txt
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs Bonze-AI-v0.7.0-dev-parallel.apk | tee signature-parallel.txt
-          sha256sum Bonze-AI-v0.7.0-dev-parallel.apk | tee Bonze-AI-v0.7.0-dev-parallel.sha256
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs Bonze-AI-v0.8.0-dev-parallel.apk | tee signature-parallel.txt
+          sha256sum Bonze-AI-v0.8.0-dev-parallel.apk | tee Bonze-AI-v0.8.0-dev-parallel.sha256
       - name: Keep experimental APK accessible without GitHub Release
         uses: actions/upload-artifact@v4
         with:
-          name: bonze-ai-0.7.0-dev-parallel-apk
+          name: bonze-ai-0.8.0-dev-parallel-apk
           path: |
-            Bonze-AI-v0.7.0-dev-parallel.apk
-            Bonze-AI-v0.7.0-dev-parallel.sha256
+            Bonze-AI-v0.8.0-dev-parallel.apk
+            Bonze-AI-v0.8.0-dev-parallel.sha256
             package-parallel.txt
             permissions-parallel.txt
             signature-parallel.txt
@@ -143,6 +148,73 @@ jobs:
             package-sha256.txt
             android/app/build/reports/lint-results-debug.html
           if-no-files-found: ignore
+
+  github-apk-direct-release:
+    name: Publish approved 0.8.0-dev APK as direct GitHub Release asset
+    if: github.event_name == 'push' && github.ref == 'refs/heads/feature/bonze041-conversation-audio-integration' && contains(github.event.head_commit.message, '[publish-bonze-080]')
+    needs: [unit, browser, android-compile]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Get the already tested parallel APK (build 41201859372)
+        uses: actions/download-artifact@v4
+        with:
+          name: bonze-ai-0.8.0-dev-parallel-apk
+          run-id: 41201859372
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: release-assets
+      - name: Verify exact APK bytes, checksum and absence of a previous tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd release-assets
+          test -s Bonze-AI-v0.8.0-dev-parallel.apk
+          test "$(stat -c '%s' Bonze-AI-v0.8.0-dev-parallel.apk)" = 271244969
+          echo "dac8a4401e7a223d0982a7209d99a905dd6145fabbbf65da16db027394d20954  Bonze-AI-v0.8.0-dev-parallel.apk" | sha256sum -c
+          sha256sum -c Bonze-AI-v0.8.0-dev-parallel.sha256
+          grep -F "fr.bonzeai.companion.dev" package-parallel.txt
+          grep -F "versionCode='8'" package-parallel.txt
+          grep -F "versionName='0.8.0-dev'" package-parallel.txt
+          ! grep -q "android.permission.INTERNET" permissions-parallel.txt
+          grep -q "^Verifies$" signature-parallel.txt
+          cd ..
+          if gh release view bonze-ai-v0.8.0-dev-parallel --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::The release tag already exists. Refusing to overwrite."
+            exit 1
+          fi
+      - name: Publish prerelease with direct .apk and checksum (no ZIP)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat > release-notes.md <<'NOTES'
+          🌱 Bonze AI 0.8.0-dev — version de test parallèle pour Android.
+
+          Installable à côté de Bonze 0.7.0-dev : identifiant distinct fr.bonzeai.companion.dev.
+          VersionCode 8, versionName 0.8.0-dev.
+          Dialogue local, répertoire émotionnel de 18 000 formulations, contrôle anti-répétition,
+          correction audio Piper (flux continu), mémoire SVC et personnalisation,
+          export JSON de diagnostics anonymisés.
+
+          Le modèle et la voix sont embarqués ; aucune permission INTERNET.
+
+          Signature de test temporaire : ce fichier APK n'est pas une mise à jour de Bonze 0.7 et
+          les futures versions de cette variante peuvent ne pas accepter une mise à jour sur place.
+          Conservez Bonze 0.7 et ses données. Faites une sauvegarde avant tout essai important.
+          La qualité audio réelle doit encore être testée sur téléphone Samsung.
+
+          Compilation vérifiée : https://github.com/greenpower2669/Bonze-AI/actions/runs/41201859372
+          Branche de développement conservée, aucune fusion dans main.
+          NOTES
+          gh release create bonze-ai-v0.8.0-dev-parallel \
+            release-assets/Bonze-AI-v0.8.0-dev-parallel.apk \
+            release-assets/Bonze-AI-v0.8.0-dev-parallel.sha256 \
+            --repo "$GITHUB_REPOSITORY" \
+            --target cd17a6bfd8ac07fd80cabf32c2ca989b900690be \
+            --title "🌱 Bonze AI 0.8.0-dev — APK parallèle" \
+            --notes-file release-notes.md \
+            --prerelease
 
   compare-models:
     name: Optional CPU probe — 230M vs 1.2B (manual)
@@ -191,4 +263,4 @@ jobs:
 
 # BONZE-032: explicit one-time package validation after knowledge/memory fixes (no APK published).
 
-# One-time Bonze AI Dev 0.7.0 package build requested; side-by-side install; no Release.
+# BONZE-041: separate test package built only with [bonze-build]; no Release, no in-place upgrade.
