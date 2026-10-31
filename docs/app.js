@@ -256,6 +256,14 @@ el('voice').addEventListener('change',()=>{browserVoiceEnabled=el('voice').check
 setupEditor({getIdentity:()=>identity,setIdentity:i=>{identity=i;renderAppearance(face,i);describedMood='';draw();save();},root:el('avatar-fields'),description:el('avatar-description')});
 const privateMemory=setupMemoryUI({scope:identity.seed,getVault:()=>memoryVault,saveVault:envelope=>{memoryVault=envelope;save();saveNativeWeb();},stop:()=>stopAll('Coffre : conversation arrêtée.')});
 memoryLock=privateMemory.lock;
+el('diagnostics-export').addEventListener('click',()=>{
+ if(!isNative){el('diagnostics-status').textContent='L’export des mesures audio nécessite l’application Android.';return;}
+ el('diagnostics-status').textContent='Choisis le dossier où enregistrer le journal technique.';
+ window.BonzeAndroid.command('export-diagnostics','','');
+});
+window.BonzeDiagnosticsEvent=e=>{
+ el('diagnostics-status').textContent=String(e?.message||'Résultat de diagnostic indisponible.');
+};
 el('voice-sample').addEventListener('click',()=>{stopAll();if(['off','text'].includes(resourceMode)){el('voice-status').textContent='Choisis un mode avec voix pour écouter cet essai.';return;}const sample='Bonjour, je suis ton petit compagnon. Tu veux jouer avec moi ?';closeSettings();el('answer').textContent=sample;if(isNative)nativeCommand('describe',sample);else browserSpeak(sample,true);});
 el('avatar-read').addEventListener('click',()=>{stopAll();if(isNative)nativeCommand('describe',describe(identity));else browserSpeak(describe(identity),true);});
 el('resources-refresh').addEventListener('click',()=>{

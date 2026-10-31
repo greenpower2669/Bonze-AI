@@ -151,7 +151,12 @@
   <button id="backup-rollback" type="button" class="secondary-button">Rétablir l'état précédant la dernière restauration</button>
   <p id="backup-status" class="hint" role="status">Aucune sauvegarde vérifiée.</p>
  </details>
- <details><summary>Administration</summary>
+ <details id="diagnostics-panel"><summary>🛠️ Journal de diagnostic vocal et conversationnel</summary>
+   <p class="hint">Export local, sans Internet. Enregistre les durées du modèle, les réponses répétées, la préparation audio et les sous-alimentations du lecteur. Le fichier exclut volontairement les paroles, les textes de réponse, les souvenirs et le surnom.</p>
+   <button type="button" id="diagnostics-export" class="secondary-button">💾 Enregistrer un log technique anonymisé</button>
+   <p id="diagnostics-status" class="hint" role="status">Journal limité aux dernières opérations ; export disponible dans l'application Android.</p>
+  </details>
+  <details><summary>Administration</summary>
   <button id="admin-open" type="button" class="secondary-button">Ouvrir la console avec le code Android</button>
   <p class="hint">Le code de verrouillage du téléphone autorise les actions d'administration. Ce mécanisme ne distingue pas encore plusieurs membres d'une famille connaissant le même code.</p>
   <section id="admin-console" hidden aria-label="Diagnostic administrateur">
