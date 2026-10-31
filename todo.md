@@ -261,3 +261,13 @@ Source exacte publiée : `fdd4ba9477fbb87f72b7f69a2a0ec225bd471fbb`, code versio
 - [ ] Essayer sur Samsung : comportement après 20 tours, histoire/« et après », questions précises, négations, fausse classification, critique « naze », piper OOV/nombres/courtes phrases, casque/veille/Stop et latence. Évaluer si le mode strictement répertoire répond suffisamment aux questions non sociales.
 - [ ] Conserver l'APK 0.8 précédent intact jusqu'à validation ; résoudre séparément l'erreur GitHub Release 403. Ne pas fabriquer de lien .apk direct sans asset GitHub Releases réel ; **jamais un ZIP comme livraison utilisateur**.
 Traçabilité : `docs/bonze043-dialogue-voix-integration.md`. Aucun merge `main`, aucune Release et aucune suppression des branches sources.
+
+### BONZE-044 — simplification demandée par Fab (31/10/2026)
+- [x] Décision inscrite en mission : catalogue composé de 18 000 formes (2 000/rôle) comme source exclusive de phrase ; Liquid ne rédige plus de réponses libres.
+- [x] Variante contrôlée initiale : modèle local choisit uniquement l'indice 0–4 parmi des substitutions rédigées, validées ensuite par Java ; 0 conserve la phrase initiale. Aucun texte du modèle directement envoyé à Piper.
+- [x] Mode précis : inférence de variation uniquement s'il existe des synonymes éligibles ; modes éco/léger : catalogue direct, sans coût de variation.
+- [x] Corriger la persistance du choix Piper même quand Android TTS ne s'est pas encore initialisé ; journal des choix et tests JVM de substitution hostile/invalide.
+- [ ] CI complète au **commit exact BONZE-044** : Node, JVM, audit lexique Piper, Kotlin/Java et navigateur ; corriger tout échec prouvé avant de proposer un APK.
+- [ ] Étendre le lexique des substitutions avec une validation stricte des accords, négations, sens et compatibilité phonétique ; mesurer la latence cumulée classement + variation sur Samsung. Une série de quatre paires équivalentes est une preuve de fonctionnement, pas un transformateur linguistique abouti.
+- [ ] Tests physiques Samsung : réponses pertinentes sur des échanges concrets, dix à vingt tours sans répétitions, journal de classification/variation, préférences Piper après redémarrage, phrases courtes/chiffres/OOV et casque. Revoir les réponses factuelles si les cartes sont trop génériques.
+- [ ] Publication `.apk` GitHub direct bloquée séparément par erreur API Releases 403 ; aucune Release, ZIP ou fusion dans `main` sans accord explicite.

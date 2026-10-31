@@ -2,6 +2,8 @@
 
 ## IMMUTABLE / À PRÉSERVER
 
+- **BONZE-044 — architecture de dialogue explicitement choisie par Fab (31/10/2026) :** au moins **2 000 formes compositionnelles par rôle** (neuf rôles actuels, 18 000 formes virtuelles) constituent le fonds de phrases. **Le modèle Liquid n'écrit plus les répliques prononcées** : il aide à reconnaître une intention et choisit uniquement des **indices de synonymes/variantes prévalidés** à partir de la phrase rédigée dans notre répertoire. La phrase originale gagne toujours si l'analyse est incertaine, si la transformation modifie le sens, ou si le modèle échoue. Le contrôle anti-répétition et la cohérence du contexte précèdent Piper. Garder ce principe lors des reprises : ne jamais réintroduire la génération libre Liquid comme chemin prioritaire. Une adaptation réelle à toute question factuelle et la qualité des synonymes exigent des essais sur appareil.
+
 - Android application ID et namespace existants : `fr.bonzeai.companion` ; ne pas renommer.
 - Branche de travail : `feature/offline-bonsaiv1`, PR #1 ; aucun merge main sans accord explicite de Fab.
 - Android sans permission INTERNET ; modèle embarqué et aucun fallback cloud vocal.
