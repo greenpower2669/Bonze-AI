@@ -181,7 +181,7 @@ Constats fondés sur la capture d'essai et la lecture de `BonzeInference.kt`, `D
 - [x] Réécrire 22 expressions à OOV du grand catalogue tout en vérifiant 18 000 formulations différentes de 220 caractères maximum.
 - [x] Auditer aussi toutes les 183 cartes historiques et les substitutions `[[...]]` ; rapport de mots absents comme artefact GitHub Actions ; échec CI explicite en présence d'un OOV.
 - [x] Réécrire 12 anciens mots inconnus (deux passages CI) sans altérer les règles, sauvegardes et réponses sensibles.
-- [ ] Vérifier le dernier audit de dictionnaire Piper sur le nouveau commit ; viser zéro OOV pour le catalogue complet (sans présumer de qualité audio ou lexique des entrées libres utilisateur).
+- [x] Audit complet dictionnaire Piper **réussi** dans la CI Android `41168090932` sur le commit `71bee685b` (0 mot manquant dans les 18 000 combinaisons, 183 cartes et synonymes). Ne prouve pas la qualité PCM ni les entrées libres utilisateur.
 - [ ] Retrouver une chaîne de signature APK réellement compatible avec v0.6/v0.7, *sans publier de clé privée* et sans contourner le contrôle du certificat. Le cache GitHub Actions de la branche de PR ne retrouve pas le certificat attendu ; une fusion autorisée dans la branche de développement disposant du cache, ou une signature sécurisée, est nécessaire.
 - [ ] Réconcilier avec `bonze-ai-v0.7.0-dev` actuellement publiée depuis une branche parallèle avant changement versionCode (>7), livraison APK ou fusion ; conserver toutes les fonctionnalités de cette branche.
 - [ ] Test réel Piper sur Samsung : silence de lancement, volume, OOV des propos utilisateurs, PCM continu, accès micro et gestion d'arrière-plan.
