@@ -186,3 +186,5 @@ Constats fondés sur la capture d'essai et la lecture de `BonzeInference.kt`, `D
 - [ ] Réconcilier avec `bonze-ai-v0.7.0-dev` actuellement publiée depuis une branche parallèle avant changement versionCode (>7), livraison APK ou fusion ; conserver toutes les fonctionnalités de cette branche.
 - [ ] Test réel Piper sur Samsung : silence de lancement, volume, OOV des propos utilisateurs, PCM continu, accès micro et gestion d'arrière-plan.
 - [ ] BONZE-033 : associations mémorielles structurées S–V–C, apprentissage explicite, import/export et oubli/suppression encore à coder.
+
+- [x] BONZE-037 : CI Android `41168090932`, validation JS/navigateur **verte**, audit Piper du lexique embarqué **vert** (0 OOV parmi 18 000 formules + 183 cartes + synonymes), **3 tests hors ligne émulateur réussis**. Compilation Android et lint réussis. Le job de livraison `android-debug` reste **en échec uniquement au contrôle du certificat de signature** ; publication correctement refusée. Ne pas présenter cela comme un APK installable.
