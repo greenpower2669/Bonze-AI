@@ -222,7 +222,7 @@ Source exacte publiée : `fdd4ba9477fbb87f72b7f69a2a0ec225bd471fbb`, code versio
 - [x] Anti-écho entrée utilisateur et anti-répétition dernier Bonze, avec respect des demandes de répétition explicite et tests Java.
 - [x] Prébuffer audio Piper et `WRITE_BLOCKING` sur le thread de lecture, journaliser `generationMs`, `playbackMs`, `underruns`, échec Piper et éventuelle bascule Android.
 - [x] Ajouter Options > Journal de diagnostic : export JSON par `ACTION_CREATE_DOCUMENT`, sécurisé sans phrases utilisateur, sortie modèle, surnoms ni contenus mémoire ; contrôle navigateur.
-- [ ] Vérifier la CI complète (JVM/JS, Playwright, compilation Kotlin/Java) du HEAD BONZE-040.
+- [x] CI `41200356136` sur le correctif `8d3c224a` : régressions JVM/JS, interface Playwright hors ligne, compilation Kotlin/Java Android **toutes réussies**. N'inclut ni APK signé ni essai audio matériel.
 - [ ] Essai réel Samsung : voix continue, écran éteint, débit Piper, écoute/lecture, casque et mesure des sous-alimentations et bascules vocales.
 - [ ] Si pauses entre blocs, prototyper une préparation audio en avance ou une file tamponnée ; éviter de prétendre corriger le gap sans mesure.
 - [ ] Réconcilier les PR #3 (répertoire 18k) et #4 (mémoire/personnalisation) ; résorber signature incompatible avant livraison sûre de mise à jour, sans écraser 0.7.0-dev.
