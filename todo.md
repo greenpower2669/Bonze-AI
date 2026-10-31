@@ -296,3 +296,9 @@ Traçabilité : `docs/bonze043-dialogue-voix-integration.md`. Aucun merge `main`
 - [x] Vérifier la documentation officielle GitHub REST Releases : créer une Release vers un commit modifiant `.github/workflows/` requiert `Workflows: write`, permission inaccessible au `GITHUB_TOKEN` natif ; le 403 peut être déclenché même avec `Contents: write`. https://docs.github.com/en/rest/releases/releases#create-a-release
 - [ ] Faire autoriser par le propriétaire un jeton restreint à ce seul dépôt (GitHub App ou fine-grained) avec `Contents: write` + `Workflows: write`, en secret GitHub Actions. Contrôler le périmètre ; ne jamais écrire le jeton dans le dépôt.
 - [ ] Publier uniquement après validation explicite et au SHA du vrai APK, avec vérification du package, des empreintes et de l'asset direct `.apk`. Éviter toute tentative identique avec le GITHUB_TOKEN seul et toute fusion pour contourner la règle.
+
+### Vérification BONZE-046 exécutée — 31/10/2026
+- [x] CI complète sur `a0cc30ad`: run [41243984444](https://github.com/greenpower2669/Bonze-AI/actions/runs/41243984444) **success**, JS/JVM, Playwright, compilation Kotlin/Java, lexique Piper, lint, packaging et signature.
+- [x] APK parallèle inspecté : `fr.bonzeai.companion.dev`, version `0.8.0-dev` code 8, permission INTERNET absente. SHA-256 `17132763676c6a9fc38a6157fd4f42597563fab29459d961a2a42576888253a3`, certificat expérimental SHA-256 `92a261c8025c3fd63f4a3bd9d63692259a7e69e8fe10f9cb622201a2dd83e052`, artefact interne 13058891315.
+- [ ] Écoute humaine et essais Samsung, Bluetooth, veille, Stop, 20 tours, sous-titres, performances et prononciation des horaires.
+- [ ] Fournir un **APK direct GitHub Release** uniquement après résolution autorisée du blocage Workflows write, contrôle du SHA et accord de Fab. L'artefact Actions n'est pas un APK téléchargeable directement sans ZIP ; ne pas recommander une réinstallation destructrice de la 0.7.

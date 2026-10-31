@@ -112,3 +112,6 @@ Sur `feature/bonze042-field-fixes`, le stock de 18 000 formes virtuelles demeure
 
 ## BONZE-046 — horaires français et Piper (31/10/2026)
 La notation horaire française avec `h`, comme `15h30`, `1h00` et `21 h 01`, est normalisée en mots avant le phonémiseur Piper. Heures 0–23 et minutes 0–59 seulement ; accords féminins « une heure », « vingt et une heures ». Texte affiché intact, choix de voix préservé ; rejets explicites des formats invalides. Prétest Java local valide ; GitHub Actions et voix Samsung restent à vérifier. Aucun APK/merge/Release autorisé.
+
+### BONZE-046 — preuve d'empaquetage Android (31/10/2026)
+Le workflow GitHub Actions `41243984444` a réussi sur le commit `a0cc30ad` (sources BONZE-046 issues de `25768e03`). Tests JVM/JS, interface navigateur, audit lexique Piper, compilation Android, lint et création du paquet parallèle ont abouti. APK test `fr.bonzeai.companion.dev`, code 8 / `0.8.0-dev`, sans permission INTERNET, certificat éphémère SHA-256 `92a261c8025c3fd63f4a3bd9d63692259a7e69e8fe10f9cb622201a2dd83e052`, SHA-256 fichier `17132763676c6a9fc38a6157fd4f42597563fab29459d961a2a42576888253a3`. Artefact Actions 13058891315, non Release directe. Ne pas assimiler ce build à une validation acoustique Samsung ou une distribution sûre avec la même signature que les versions précédentes.
