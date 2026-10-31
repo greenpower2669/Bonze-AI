@@ -93,6 +93,17 @@ try{
   await page.locator('#memory-confirm').check();
   await page.locator('#memory-svc-save').click();
   await page.waitForFunction(()=>document.getElementById('memory-status').textContent.includes('Fiche SVC corrigée'));
+  await page.locator('#memory-subject').fill('Pipo');
+  await page.locator('#memory-verb').fill('habite');
+  await page.locator('#memory-complement').fill('sur la lune');
+  await page.locator('#memory-trust').selectOption('declare');
+  await page.locator('#memory-confirm').check();
+  await page.locator('#memory-svc-save').click();
+  await page.waitForFunction(()=>document.getElementById('memory-status').textContent.includes('Contradiction'));
+  await page.locator('#memory-trust').selectOption('conteste');
+  await page.locator('#memory-svc-save').click();
+  await page.waitForFunction(()=>document.getElementById('memory-status').textContent.includes('Fiche SVC enregistrée'));
+  check(!(await page.evaluate(()=>localStorage.getItem('bonze-proto-01'))).includes('sur la lune'),'contested SVC still encrypted');
   await page.locator('#memory-lock').click();
  check(await page.locator('#memory-editor').isHidden(),'memory locks on demand');
  await page.locator('#memory-password').fill('une phrase incorrecte longue');
