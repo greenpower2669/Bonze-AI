@@ -82,7 +82,7 @@ object BonzeInference {
                 previous + "\nMessage actuel : " + text.take(500)
         val rawLabel = Llama.complete(model, prompt = prompt, systemPrompt = intentSystem,
             maxTokens = 20).text
-        IntentClassify.label(rawLabel)00)
+        IntentClassify.label(rawLabel)
     }
 
     /** Initialise le modèle à partir des poids inclus dans l'APK, sans réseau. */
