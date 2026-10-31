@@ -110,6 +110,14 @@
     <textarea id="memory-text" rows="3" maxlength="360"></textarea>
     <label class="check" for="memory-confirm"><input type="checkbox" id="memory-confirm"> Je confirme l'enregistrement ou la suppression demandée.</label>
     <button type="button" id="memory-add" class="secondary-button">Enregistrer ce souvenir</button>
+     <fieldset id="memory-svc-fields"><legend>🧩 Fiche structurée S–V–C</legend>
+      <p class="hint">Sujet, verbe et complément. Une contradiction doit être examinée avant d'être mémorisée. Aucun apprentissage vocal automatique.</p>
+      <label for="memory-subject">Sujet</label><input id="memory-subject" maxlength="100" placeholder="Ex. Pipo">
+      <label for="memory-verb">Verbe ou relation</label><input id="memory-verb" maxlength="60" placeholder="Ex. habite">
+      <label for="memory-complement">Complément</label><textarea id="memory-complement" maxlength="220" rows="2" placeholder="Ex. dans une forêt"></textarea>
+      <button type="button" id="memory-svc-save" class="secondary-button">Enregistrer la fiche SVC</button>
+      <button type="button" id="memory-svc-cancel" class="secondary-button">Annuler la modification</button>
+     </fieldset>
     <label for="memory-query">Chercher un souvenir dans les tiroirs</label>
     <input id="memory-query" type="text" maxlength="200" placeholder="Ex. Pipo ou forêt">
     <button id="memory-find" type="button" class="secondary-button">Chercher (3 extraits maximum)</button>
