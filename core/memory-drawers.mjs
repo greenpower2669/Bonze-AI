@@ -20,7 +20,7 @@ function validateSVC(v){
 function svcRelation(v){return norm(v.subject)+'|'+norm(v.verb);}
 function svcDuplicate(items,row,id){return Boolean(row.svc&&items.some(v=>v.id!==id&&v.svc&&
  svcRelation(v.svc)===svcRelation(row.svc)&&norm(v.svc.complement)===norm(row.svc.complement)));}
-function svcConflict(items,row,id){return Boolean(row.svc&&row.status!=='fiction'&&items.some(v=>v.id!==id&&v.svc&&v.status!=='fiction'&&
+function svcConflict(items,row,id){return Boolean(row.svc&&row.status!=='fiction'&&items.some(v=>v.id!==id&&v.svc&&v.status!=='fiction'&&v.status!=='conteste'&&
  svcRelation(v.svc)===svcRelation(row.svc)&&norm(v.svc.complement)!==norm(row.svc.complement)));}
 
 const clean=(s,n)=>String(s??'').normalize('NFC').replace(/[\u0000-\u001f\u007f\u2028\u2029]/g,' ').replace(/\s+/g,' ').trim().slice(0,n);

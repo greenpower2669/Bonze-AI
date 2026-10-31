@@ -19,3 +19,16 @@ test('BONZE-039: SVC crosses the authenticated encrypted vault without leaking p
  drawers=revise(drawers,access,'memory001',{confirmed:true,text:'Un souvenir non structuré'});
  assert.equal(drawers.items[0].svc,undefined);
 });
+
+test('BONZE-039: contested variants coexist with a declared fact and restore from ciphertext',async()=>{
+ const scope='owner-contested-00001',access={verified:true,scope};
+ let state=createDrawers(scope);
+ const row=(id,complement,status)=>({id,kind:'connaissances',text:'Pipo habite '+complement,
+  svc:{subject:'Pipo',verb:'habite',complement},status,provenance:'human',confirmed:true});
+ state=remember(state,access,row('memory101','dans la forêt','declare'));
+ state=remember(state,access,row('memory102','sur la lune','conteste'));
+ const envelope=await encryptDrawers(state,access,'une phrase secrète de test validée');
+ const restored=await decryptDrawers(envelope,scope,'une phrase secrète de test validée');
+ assert.deepEqual(restoreDrawers(restored,access),state);
+ assert.throws(()=>remember(state,access,row('memory103','dans un jardin','declare')),/Contradiction/);
+});
