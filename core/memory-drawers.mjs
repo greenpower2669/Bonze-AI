@@ -9,6 +9,20 @@ export const DRAWER_KINDS=Object.freeze([
 ]);
 const STATUSES=new Set(['declare','observe','verifie','hypothese','fiction','conteste']);
 const MAX_ITEMS=300,MAX_TEXT=360,MAX_TAGS=6;
+function validateSVC(v){
+ if(v==null)return null;
+ assert(v&&typeof v==='object'&&!Array.isArray(v),'Fiche SVC invalide');
+ for(const [key,max] of [['subject',100],['verb',60],['complement',220]]){
+  assert(typeof v[key]==='string'&&v[key].length>=2&&v[key].length<=max&&clean(v[key],max)===v[key],'Fiche SVC invalide');
+ }
+ return {subject:v.subject,verb:v.verb,complement:v.complement};
+}
+function svcRelation(v){return norm(v.subject)+'|'+norm(v.verb);}
+function svcDuplicate(items,row,id){return Boolean(row.svc&&items.some(v=>v.id!==id&&v.svc&&
+ svcRelation(v.svc)===svcRelation(row.svc)&&norm(v.svc.complement)===norm(row.svc.complement)));}
+function svcConflict(items,row,id){return Boolean(row.svc&&row.status!=='fiction'&&items.some(v=>v.id!==id&&v.svc&&v.status!=='fiction'&&
+ svcRelation(v.svc)===svcRelation(row.svc)&&norm(v.svc.complement)!==norm(row.svc.complement)));}
+
 const clean=(s,n)=>String(s??'').normalize('NFC').replace(/[\u0000-\u001f\u007f\u2028\u2029]/g,' ').replace(/\s+/g,' ').trim().slice(0,n);
 const norm=s=>clean(s,512).toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 const words=s=>new Set(norm(s).match(/[\p{L}\p{N}]{3,}/gu)||[]);
@@ -51,8 +65,13 @@ export function remember(state,access,item){
  assert(/^[a-zA-Z0-9_-]{8,80}$/.test(id),'Identifiant unique explicite requis');
  assert(!state.items.some(v=>v.id===id),'Souvenir déjà présent');
  assert(state.items.length<MAX_ITEMS,'Index plein : archiver ou supprimer explicitement');
+ const svc=validateSVC(item.svc);
+ if(svc)assert(text===[svc.subject,svc.verb,svc.complement].join(' '),'Fiche SVC et texte différents');
  const row={id,kind:item.kind,text,tags,status:item.status,provenance:item.provenance,
-   source:clean(item.source,140),createdAt:at,updatedAt:at,revision:1,archived:false};
+   source:clean(item.source,140),createdAt:at,updatedAt:at,revision:1,archived:false,
+   ...(svc?{svc}:{})};
+ assert(!svcDuplicate(state.items,row,id),'Fiche SVC déjà présente');
+ assert(!svcConflict(state.items,row,id)||row.status==='conteste','Contradiction SVC : noter contesté');
  const next=copy(state);next.items.push(row);next.revision++;
  return next;
 }
@@ -60,10 +79,16 @@ export function revise(state,access,id,patch){
  checked(state);assert(authorization(access,state.scope),'Accès non authentifié');
  const next=copy(state),row=next.items.find(x=>x.id===id);
  assert(row,'Souvenir absent');assert(patch?.confirmed===true,'Confirmation requise');
- if(patch.text!==undefined){const t=clean(patch.text,MAX_TEXT);assert(t.length>=3,'Contenu vide');row.text=t;}
+ if(patch.text!==undefined){const t=clean(patch.text,MAX_TEXT);assert(t.length>=3,'Contenu vide');row.text=t;if(patch.svc===undefined)delete row.svc;}
  if(patch.status!==undefined){assert(STATUSES.has(patch.status),'Statut invalide');row.status=patch.status;}
  if(patch.kind!==undefined){assert(DRAWER_KINDS.includes(patch.kind),'Catégorie invalide');row.kind=patch.kind;}
+ if(patch.svc!==undefined){
+  if(patch.svc===null)delete row.svc;
+  else {row.svc=validateSVC(patch.svc);assert(row.text===[row.svc.subject,row.svc.verb,row.svc.complement].join(' '),'Fiche SVC et texte différents');}
+ }
  if(patch.archived!==undefined)row.archived=patch.archived===true;
+ assert(!svcDuplicate(next.items,row,id),'Fiche SVC déjà présente');
+ assert(!svcConflict(next.items,row,id)||row.status==='conteste','Contradiction SVC : noter contesté');
  row.updatedAt=stamp(patch.at);row.revision++;next.revision++;
  return next;
 }
@@ -112,6 +137,10 @@ export function restoreDrawers(value,access){
     DRAWER_KINDS.includes(row.kind)&&typeof row.text==='string'&&row.text.length<=MAX_TEXT&&
     STATUSES.has(row.status)&&['human','observation','source','test'].includes(row.provenance)&&
     Number.isSafeInteger(row.updatedAt),'Souvenir corrompu');
+  if(row.svc){const structured=validateSVC(row.svc);assert(row.text===[structured.subject,structured.verb,structured.complement].join(' '),'Souvenir SVC corrompu');
+   assert(!svcDuplicate(state.items,row,row.id),'Fiche SVC dupliquée');
+   assert(!svcConflict(state.items,row,row.id)||row.status==='conteste','Contradiction SVC corrompue');
+  }
   ids.add(row.id);
  }
  return state;
