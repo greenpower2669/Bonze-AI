@@ -44,8 +44,10 @@ test('BONZE-043: Liquid classifies only, repertoire is the speaking source and P
  assert.ok(service.includes('scriptedReply(text,chosenLabel,turn)'));
  assert.ok(service.includes('ReplyQuality.review(text,candidate,memory.repeats(candidate),recentBot)'));
  assert.ok(classifier.includes('LABELS.contains(first)'));
- const failed=service.slice(service.indexOf('public void failed(String reason,boolean hadAudio)'),
-  service.indexOf('private void androidSpeech(',service.indexOf('public void failed(String reason,boolean hadAudio)')));
+ const failedStart=service.indexOf('public void failed(String reason,boolean hadAudio)');
+ const selectedAndroidStart=service.indexOf('}else androidSpeech(epoch,0);',failedStart);
+ assert.ok(failedStart>0&&selectedAndroidStart>failedStart);
+ const failed=service.slice(failedStart,selectedAndroidStart);
  assert.ok(failed.includes('"nextEngine","none"'));
  assert.ok(!failed.includes('androidSpeech(epoch,0)'), 'a failed Piper voice must not silently become Android TTS');
  assert.ok(service.includes('}else androidSpeech(epoch,0);'),'Android remains explicitly selectable');
