@@ -52,3 +52,20 @@ test('BONZE-038: rejects hostile backups, duplicates and oversized memories',()=
  assert.throws(()=>validateFactMemory({...m,cards:Array(FACT_LIMIT+1).fill(m.cards[0])}),/invalide/);
  assert.throws(()=>addFact(m,access,fact('xx','Pipo','habite','une maison')),/Identifiant/);
 });
+
+test('BONZE-038: no silent truncation of user-authored facts',()=>{
+ const m=createFactMemory(scope);
+ assert.throws(()=>addFact(m,access,fact('memory001','Pipo','habite','x'.repeat(300))),/sans troncature/);
+ assert.throws(()=>addFact(m,access,fact('memory001',{bad:true},'habite','dans le jardin')),/textuels/);
+});
+test('BONZE-038: prepared bridge remains user-approved and compatible with encrypted drawers',async()=>{
+ const {toConfirmedDrawerItem}=await import('../core/memory-svc.mjs');
+ let mem=createFactMemory(scope);
+ mem=addFact(mem,access,fact('memory001','Pipo','habite','dans la forêt',{tags:['dragon']}));
+ assert.throws(()=>toConfirmedDrawerItem(mem,access,'memory001'),/Confirmation explicite/);
+ assert.throws(()=>toConfirmedDrawerItem(mem,other,'memory001',{confirmed:true}),/authentifié/);
+ const card=toConfirmedDrawerItem(mem,access,'memory001',{confirmed:true});
+ assert.equal(card.text,'Pipo habite dans la forêt');assert.equal(card.kind,'connaissances');
+ assert.deepEqual(card.tags,['dragon']);assert.equal(card.confirmed,true);
+ assert.equal(JSON.stringify(card).includes('password'),false);
+});

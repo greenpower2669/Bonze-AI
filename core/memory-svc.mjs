@@ -18,6 +18,9 @@ const copy=x=>JSON.parse(JSON.stringify(x));
 function authorized(state,access){return plain(access)&&access.verified===true&&access.scope===state.scope&&state.scope.length>=8;}
 function accessOrFail(state,access){if(!authorized(state,access))fail('Accès non authentifié au coffre de souvenirs');}
 function checkParts(subject,verb,complement){
+ if(typeof subject!=='string'||typeof verb!=='string'||typeof complement!=='string'||
+  clean(subject,101).length>100||clean(verb,61).length>60||clean(complement,221).length>220)
+  fail('Les champs SVC doivent être textuels et respecter leur limite sans troncature');
  const s=clean(subject,100),v=clean(verb,60),c=clean(complement,220);
  if(s.length<2||v.length<2||c.length<2)fail('Une fiche exige sujet, verbe et complément explicites');
  return {subject:s,verb:v,complement:c};
@@ -116,4 +119,21 @@ export function recallFacts(state,access,query,{limit=3,budget=800,includeFictio
   cards.push(item);spent+=cost;
  }
  return {denied:false,cards,scanned:ranked.length,spent};
+}
+
+/** Compatibility adapter for the already-existing encrypted drawer vault on
+ * feature/bonze031-dialogue-natural-v1. No persistence or authentication here.
+ * The returned item MUST still be approved and written through remember()
+ * then encrypted through encryptDrawers(). Never use an unencrypted shortcut.
+ */
+export function toConfirmedDrawerItem(state,access,id,{kind=null,confirmed=false}={}){
+ checked(state);accessOrFail(state,access);
+ if(confirmed!==true)fail('Confirmation explicite requise avant intégration au coffre');
+ const row=state.cards.find(c=>c.id===id);if(!row)fail('Fiche SVC absente');
+ const text=[row.subject,row.verb,row.complement].join(' ');
+ if(text.length>360)fail('Fiche trop longue pour le coffre existant : réviser avant import');
+ const targetKind=kind||(row.status==='fiction'?'scenes':'connaissances');
+ if(!['personnalite','personnes','relations','connaissances','experiences','competences','missions','scenes'].includes(targetKind))fail('Tiroir incompatible');
+ return {id:row.id,kind:targetKind,text,tags:row.tags.slice(),
+  status:row.status,provenance:row.source,confirmed:true,source:'fiche SVC validée'};
 }
