@@ -1,4 +1,6 @@
 import '../core/council.js';
+import '../core/repertoire-corpus.js';
+import '../core/repertoire.js';
 import {setupBackup} from './backup-ui.js';
 import {setupMemoryUI} from './memory-ui.js';
 import {normalizeStyle,describeStyle} from '../core/personality-style.mjs';
@@ -23,7 +25,7 @@ let fontSize=2,resourceMode='precise',neuralEnabled=true,contrast=false,reduceMo
 let browserVoiceEnabled=false,identity,saved=null,voiceRun=0,councilState=null,councilParams=null,councilJournal=[];
 let nativeActive=false,nativeBusy=false,nativeConnected=false,nativeVoice='',lastNativeHumanId=0,pendingVoice=null;
 let memoryVault=null,memoryLock=()=>{},modelChoice='230m',model12Ready=false;
-let personalization=normalizeStyle();
+let personalization=normalizeStyle(),scriptedState=null;
 try{saved=JSON.parse(localStorage.getItem(STORAGE)||'null');}catch{}
 if(saved&&typeof saved==='object'){
  profile=typeof saved.profile?.nickname==='string'?{nickname:saved.profile.nickname.slice(0,40)}:null;
@@ -34,9 +36,9 @@ if(saved&&typeof saved==='object'){
  contrast=saved.contrast===true;reduceMotion=saved.reduceMotion===true;
  browserVoiceEnabled=saved.browserVoiceEnabled===true;lastNativeHumanId=Number.isSafeInteger(saved.lastNativeHumanId)?saved.lastNativeHumanId:0;
 }
-personalization=normalizeStyle(saved?.personalization);
+personalization=normalizeStyle(saved?.personalization);scriptedState=saved?.scriptedState||null;
 identity=restoreIdentity(saved?.identity);memoryVault=saved?.memoryVault??null;modelChoice=saved?.modelChoice==='12b'?'12b':'230m';councilState=saved?.councilState||{version:1,forces:{...identity.acquired.forces},globalEndurance:identity.acquired.endurance};councilParams=saved?.councilParams||null;try{councilJournal=JSON.parse(localStorage.getItem("bonze-diagnostics")||"[]");}catch{}
-function webState(){return {profile,history:history.slice(-30),fontSize,resourceMode,neuralEnabled,contrast,reduceMotion,identity,browserVoiceEnabled,lastNativeHumanId,councilState,councilParams,memoryVault,modelChoice,personalization};}
+function webState(){return {profile,history:history.slice(-30),fontSize,resourceMode,neuralEnabled,contrast,reduceMotion,identity,browserVoiceEnabled,lastNativeHumanId,councilState,councilParams,memoryVault,modelChoice,personalization,scriptedState};}
 function saveNativeWeb(){if(isNative&&nativeConnected)window.BonzeAndroid.command('save-web',JSON.stringify({web:webState(),weights:trainedWeights}),'');}
 function save(){
  try{localStorage.setItem(STORAGE,JSON.stringify(webState()));if(!isNative)localStorage.setItem('bonze-diagnostics',JSON.stringify(councilJournal));}
@@ -137,8 +139,16 @@ function handleText(text,source='text'){
  identity={...identity,acquired:{...experience(identity,stimulus,'exchange',{familiar}),forces:{...r.state.forces},endurance:r.state.globalEndurance}};
  el('experts-state').textContent=summary;state('thinking');save();
  pendingInput={text:clean,token};
- el('brain-status').textContent='Réponse du mode textuel léger.';
- finishReply(answer(clean,profile||{}).text,token);
+ let spoken=answer(clean,profile||{}).text;
+ try{
+  const selected=globalThis.BonzeRepertoire.choose({text:clean,state:scriptedState,forces:r.state.forces,
+    endurances:r.state.endurances,synonyms:true});
+  scriptedState=selected.state;spoken=selected.text;
+  el('brain-status').textContent='Répertoire local · '+selected.intent+'.';
+  councilJournal.push({at:Date.now(),stage:'repertoire',data:{card:selected.card,intent:selected.intent}});
+  councilJournal=councilJournal.slice(-120);
+ }catch(e){el('brain-status').textContent='Mode local simplifié.';}
+ finishReply(spoken,token);
 }
 function configData(){return JSON.stringify({mode:resourceMode,neural:neuralEnabled,readText:browserVoiceEnabled,mood:describedMood||'curiosite',nickname:profile?.nickname||'',voice:nativeVoice,identity,model:modelChoice,personalization});}
 function configureNative(){if(isNative&&nativeConnected)window.BonzeAndroid.configureNative(configData());}
