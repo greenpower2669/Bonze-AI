@@ -47,7 +47,8 @@ class PiperVoice(private val app: Context) {
             var hadAudio=false
             try {
                 loadDictionary()
-                val phonemes=chunks.map { PiperPhonetics.speechPhonemes(it,dictionary!!) }
+                val spoken=chunks.map { PiperFrenchNumbers.expand(it) }
+                val phonemes=spoken.map { PiperPhonetics.speechPhonemes(it,dictionary!!) }
                 val tts=prepare()
                 val fragments=ArrayList<FloatArray>(chunks.size)
                 var maxAmplitude=0f
@@ -58,7 +59,7 @@ class PiperVoice(private val app: Context) {
                     if(serial.get()!=token)return@execute
                     val config=GenerationConfig(speed=speed,sid=0,
                         phonemeCodepoints=arrayOf(phonemes[i].codePoints().toArray()))
-                    val output=tts.generateWithConfigAndCallback(text,config,PiperCancellation(serial,token))
+                    val output=tts.generateWithConfigAndCallback(spoken[i],config,PiperCancellation(serial,token))
                     if(serial.get()!=token)return@execute
                     check(output.sampleRate in 8000..48000) { "invalid-sample-rate" }
                     check(output.samples.size>100&&output.samples.size<output.sampleRate*45) { "invalid-pcm" }

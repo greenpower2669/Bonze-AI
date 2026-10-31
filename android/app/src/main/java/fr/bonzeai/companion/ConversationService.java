@@ -401,7 +401,7 @@ public final class ConversationService extends Service {
  }
  private static String safeAudioFailure(String reason){
   if(reason==null)return "unknown";
-  for(String code:new String[]{"invalid-pcm","audio-write","audio-prefill-write","playback-timeout","silent-pcm","non-finite-pcm"})
+  for(String code:new String[]{"lexicon-number-format","lexicon-number-range","lexicon-number","lexicon-oov","lexicon-empty","piper-short-unstable","invalid-sample-rate","sample-rate-change","audio-duration-limit","invalid-pcm","audio-write","audio-prefill-write","playback-timeout","silent-pcm","non-finite-pcm"})
    if(reason.contains(code))return code;
   return "piper-runtime";
  }
