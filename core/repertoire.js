@@ -145,7 +145,7 @@ function detect(text){
  if(contains(n,'suicide|me tuer|me faire du mal|danger immediat|au secours|urgence vitale|je suis en danger'))return 'urgence';
  if(contains(n,'au revoir|a bientot|bonne nuit|je dois partir|bye|bisous'))return 'depart';
  if(contains(n,'pas compris|je comprends pas|je ne comprends pas|c est incomprehensible|confus|perdu dans'))return 'confusion';
- if(contains(n,'tu te trompes|c est faux|erreur|corrige|correction|pas juste|tu es naze|tu es nul|tu repètes|tu repetes|tu fais le perroquet'))return 'correction';
+ if(contains(n,'tu te trompes|c est faux|erreur|corrige|correction|pas juste|naze|nul|perroquet|tu repetes|tu fais le perroquet'))return 'correction';
  if(contains(n,'triste|deprime|chagrin|pleurer|peine|malheureux')&&!contains(n,'pas triste|ne suis pas triste'))return 'tristesse';
  if(contains(n,'peur|inquiet|angoisse|stress|effraye|panique')&&!contains(n,'pas peur|plus peur'))return 'inquietude';
  if(contains(n,'colere|enerve|agace|furieux|injustice|frustre'))return 'contrarié';
