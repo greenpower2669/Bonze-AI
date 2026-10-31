@@ -142,3 +142,49 @@ Spécification : `docs/architecture-memoire-a-tiroirs.md`. Cette tâche étend B
 - [ ] Garder le texte et la TTS distincts dans le diagnostic : Piper lit la réponse mais ne crée pas ses formulations. Demander validation Fab avant déclarer l'UX naturelle.
 
 Constats fondés sur la capture d'essai et la lecture de `BonzeInference.kt`, `DialogueMemory.java`, `docs/index.html` sur `feature/offline-bonsaiv1`. Liquid AI classe explicitement le 230M comme non recommandé pour l'écriture créative : https://huggingface.co/LiquidAI/LFM2.5-230M/blob/main/README.md . **Documenté seulement ; aucun code ni APK modifié, aucun merge main.**
+
+
+## BONZE-032 — Version scénarisée avec Liquid classifieur (30/10/2026)
+- [x] Repartir du HEAD 01b1387 (pas de retour à 0.6.0), créer `feature/bonze-032-repertoire-simule`, préserver main et l'application existante.
+- [x] Créer premier catalogue de 183 cartes sur 20 intentions, 8 voix et sage ; choix pondéré par forces/endurance et anti-reprise borné.
+- [x] Ajouter WebApp + Android Rhino, Liquid 230M comme classifieur seulement et repli lexical sans génération de texte.
+- [x] Conserver choix anti-répétition dans état local et export chiffré ; refus de catégories incertaines en contexte critique / négation.
+- [x] Ajouter tests pour sélection, sécurité, synonymes et mémoire bornée, exécuter CI JS.
+- [ ] Vérifier CI Android, tests sur Samsung, mode avion, volume sonore et absence de répétition de voix.
+- [ ] **BONZE-033** : fiches mémoire S–V–C et synonymes, import/export de corpus avec validation, associations contextuelles, renforcement/déclin, index/tirroirs et contrôles de confidentialité.
+- [ ] Étendre progressivement le catalogue selon une matrice d'intentions et de scènes après tests, distinguer les réponses sages des créations humoristiques.
+- [ ] Mesurer précision de Liquid, CPU, PSS, p50/p95 et comparaison au repli lexical sans prétendre au gain mémoire MoE.
+- [ ] Diagnostiquer Piper `piper-short-unstable`, `lexicon-oov`, `lexicon-number`, discontinuités PCM/AudioTrack, et corriger seulement avec logs puis écoute Samsung.
+- [ ] Garder la publication en suspens tant que l'APK issu de BONZE-032 n'est pas vérifié et approuvé ; aucune fusion main.
+
+
+### BONZE-034 — Extension des répliques par émotion
+- [x] Ajouter `core/repertoire-corpus.js` : 200 noyaux sémantiques, 162 points de vue propres aux rôles et intentions, 5 amorces + 2 conclusions = **2 000 formulations distinctes pour chaque rôle** (8 émotions + sage, 18 000 au total) calculées à la demande.
+- [x] Préserver les 183 cartes anciennes, leurs tests, mémoire anti-répétition et moteur commun Web / Android Rhino.
+- [x] Ajouter des tests de compte, unicité littérale, rôles contextualisés, durée de texte et diversité de tirage.
+- [ ] Confirmer compilations CI Android, tests audio/lexique/PCM et écoute Piper sur Samsung (certaines phrases nouvelles peuvent avoir des mots absents du lexique).
+- [ ] Mesurer variété perçue : 18 000 combinaisons ne signifient pas 18 000 idées indépendantes. Enrichir le noyau suivant retours.
+- [ ] Poursuivre la mémoire évolutive BONZE-033 et l'import/export de fiches, non réalisés.
+
+## BONZE-035/036 — continuité et voix de secours, 30/10/2026
+
+- [x] Liens associatifs locaux (maximum 24, poids renforcé à l'usage et affaibli par ancienneté, sans stockage du texte de l'utilisateur). Les scènes de jeu peuvent continuer à « Et après ? ». Les variantes gardent 8 dernières structures pour éviter de recycler la même amorce.
+- [x] Migration non destructive des anciennes sauvegardes du répertoire ; tests Node et Android dédiés. Les inventaires des sauvegardes chiffrées incluent les associations bornées.
+- [x] Lors d'une erreur Piper **avant** le premier son, afficher le motif et garder la voix Android de secours pour la session ; ne jamais rejouer l'intégralité après un son Piper. Exposer le moteur réellement utilisé dans diagnostics et l'interface.
+- [x] Ajouter l'audit de couverture lexicale des 18 000 formulations sur le dictionnaire réellement embarqué dans le build, ainsi qu'un artefact de rapport CI.
+- [ ] Tester sur Samsung la réelle continuité des histoires, le débit, les silences et le micro en arrière-plan ; mesurer RAM/PSS et latences.
+- [ ] Diagnostiquer pourquoi la signature debug générée dans la nouvelle branche ne correspond pas au certificat de la Release 0.5/0.6. Ne **jamais** désactiver le contrôle ni suggérer une désinstallation sans migration validée : cache CI de signature non transportable d'une branche à l'autre. Aucun APK proposé comme mise à jour sûre tant que ce point n'est pas résolu.
+- [ ] Fiches SVC personnelles, correction/suppression des faits, import/export de corpus et contrôle d'identité : non réalisés ; BONZE-033 reste ouvert.
+
+
+### BONZE-037 — audit exhaustif de dictionnaire, 31/10/2026
+- [x] Réécrire 22 expressions à OOV du grand catalogue tout en vérifiant 18 000 formulations différentes de 220 caractères maximum.
+- [x] Auditer aussi toutes les 183 cartes historiques et les substitutions `[[...]]` ; rapport de mots absents comme artefact GitHub Actions ; échec CI explicite en présence d'un OOV.
+- [x] Réécrire 12 anciens mots inconnus (deux passages CI) sans altérer les règles, sauvegardes et réponses sensibles.
+- [x] Audit complet dictionnaire Piper **réussi** dans la CI Android `41168090932` sur le commit `71bee685b` (0 mot manquant dans les 18 000 combinaisons, 183 cartes et synonymes). Ne prouve pas la qualité PCM ni les entrées libres utilisateur.
+- [ ] Retrouver une chaîne de signature APK réellement compatible avec v0.6/v0.7, *sans publier de clé privée* et sans contourner le contrôle du certificat. Le cache GitHub Actions de la branche de PR ne retrouve pas le certificat attendu ; une fusion autorisée dans la branche de développement disposant du cache, ou une signature sécurisée, est nécessaire.
+- [ ] Réconcilier avec `bonze-ai-v0.7.0-dev` actuellement publiée depuis une branche parallèle avant changement versionCode (>7), livraison APK ou fusion ; conserver toutes les fonctionnalités de cette branche.
+- [ ] Test réel Piper sur Samsung : silence de lancement, volume, OOV des propos utilisateurs, PCM continu, accès micro et gestion d'arrière-plan.
+- [ ] BONZE-033 : associations mémorielles structurées S–V–C, apprentissage explicite, import/export et oubli/suppression encore à coder.
+
+- [x] BONZE-037 : CI Android `41168090932`, validation JS/navigateur **verte**, audit Piper du lexique embarqué **vert** (0 OOV parmi 18 000 formules + 183 cartes + synonymes), **3 tests hors ligne émulateur réussis**. Compilation Android et lint réussis. Le job de livraison `android-debug` reste **en échec uniquement au contrôle du certificat de signature** ; publication correctement refusée. Ne pas présenter cela comme un APK installable.

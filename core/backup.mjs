@@ -10,12 +10,30 @@ function rows(items){
  if(!Array.isArray(items)||items.length>30)fail();
  return items.map(r=>{if(!plain(r)||!['human','bot'].includes(r.role)||typeof r.text!=='string'||r.text.length>1200)fail();return{...(Number.isSafeInteger(r.id)&&r.id>0?{id:r.id}:{}),role:r.role,text:r.text};});
 }
+/** Stateless anti-repeat ledger; no user transcript, imported sentences or neural weights. */
+function repertoireState(s){
+ if(s==null)return null;
+ if(!plain(s)||s.version!==1||!Number.isSafeInteger(s.seed)||!Number.isSafeInteger(s.turns)||s.turns<0||s.turns>10000000)fail();
+ if(!Array.isArray(s.recent)||s.recent.length>16||!Array.isArray(s.families)||s.families.length>8)fail();
+ for(const x of [...s.recent,...s.families])if(typeof x!=='string'||x.length>80)fail();
+ const intents=['salut','merci','tristesse','inquietude','contrarié','jeu','humour','curiosite','question','identite','correction','affection','depart','fatigue','surprise','demande','reussite','confusion','discussion','urgence'];
+ const roles=['joie','peur','colere','calme','reflexion','empathie','curiosite','humour','sage'];
+ const associations=s.associations??[],recentForms=s.recentForms??[];
+ if(!Array.isArray(associations)||associations.length>24||associations.some(a=>!plain(a)||typeof a.key!=='string'||a.key.length>60||!intents.includes(a.key.split('/')[0])||!roles.includes(a.key.split('/')[1])||!Number.isFinite(a.strength)||a.strength<0||a.strength>1||!Number.isSafeInteger(a.seen)||a.seen<0||a.seen>10000000))fail();
+ if(!Array.isArray(recentForms)||recentForms.length>8||recentForms.some(x=>typeof x!=='string'||x.length>80))fail();
+
+ return {version:1,seed:s.seed,turns:s.turns,recent:[...s.recent],families:[...s.families],
+ lastIntent:intents.includes(s.lastIntent)?s.lastIntent:'',lastRole:roles.includes(s.lastRole)?s.lastRole:'',
+ recentForms:[...recentForms],associations:associations.map(a=>({key:a.key,strength:a.strength,seen:a.seen}))};
+}
 export function validateBackup(input){
  if(!plain(input)||input.schema!==1||!plain(input.web)||JSON.stringify(input).length>MAX/2)fail();
  const w=input.web,i=w.identity;
  if(!plain(i)||i.version!==1||typeof i.seed!=='string'||i.seed.length<1||i.seed.length>128||!plain(i.acquired)||!plain(i.acquired.forces))fail();
  for(const n of Object.values(i.acquired.forces))if(!Number.isFinite(n)||n<0||n>1)fail();
  const web={identity:restoreIdentity(i),history:rows(w.history||[]),profile:typeof w.profile?.nickname==='string'?{nickname:w.profile.nickname.slice(0,40)}:null,fontSize:[1,2,3].includes(w.fontSize)?w.fontSize:2,resourceMode:modes.includes(w.resourceMode)?w.resourceMode:'text',neuralEnabled:w.neuralEnabled===true,contrast:w.contrast===true,reduceMotion:w.reduceMotion===true,browserVoiceEnabled:w.browserVoiceEnabled===true,lastNativeHumanId:Number.isSafeInteger(w.lastNativeHumanId)?w.lastNativeHumanId:0};
+ web.scriptedState=repertoireState(w.scriptedState);
+ let repertoire=repertoireState(input.repertoire);
  let native=null;
  if(input.native!=null){const n=input.native;if(!plain(n)||n.schema!==1||!modes.includes(n.mode))fail();native={schema:1,history:rows(n.history),scene:String(n.scene||'').slice(0,360),mode:n.mode,neural:n.neural===true,readText:n.readText===true,voice:String(n.voice||'').slice(0,200),mood:String(n.mood||'curiosite').slice(0,30)};}
  let weights=null;if(input.weights!=null){inferExperts('',input.weights);weights=JSON.parse(JSON.stringify(input.weights));}
@@ -23,7 +41,7 @@ export function validateBackup(input){
  let council=null;if(!input.council?.state){const migrated=JSON.parse(globalThis.BonzeCouncil.run(JSON.stringify({state:{version:1,forces:web.identity.acquired.forces,globalEndurance:web.identity.acquired.endurance},seconds:0})));input={...input,council:{state:migrated.state,params:migrated.params}};}
  if(input.council?.state){const c=input.council;if(c.state.version!==1)fail();for(const group of ['forces','endurances'])for(const key of globalThis.BonzeCouncil.names)if(!Number.isFinite(c.state[group]?.[key])||c.state[group][key]<0||c.state[group][key]>1)fail();if(!Number.isFinite(c.state.globalEndurance)||c.state.globalEndurance<0||c.state.globalEndurance>1)fail();
  const result=JSON.parse(globalThis.BonzeCouncil.run(JSON.stringify({state:c.state,params:c.params,weights,seconds:0})));council={state:result.state,params:result.params};web.councilState=result.state;web.councilParams=result.params;}
- return {council,schema:1,createdAt:Number.isFinite(input.createdAt)?input.createdAt:0,web,native,weights,journal};
+ return {council,repertoire,schema:1,createdAt:Number.isFinite(input.createdAt)?input.createdAt:0,web,native,weights,journal};
 }
 function b64(bytes){let s='';for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s);}
 function un64(s,max){if(typeof s!=='string'||s.length>max*2||!/^[A-Za-z0-9+/]*={0,2}$/.test(s))fail();const b=Uint8Array.from(atob(s),c=>c.charCodeAt(0));if(b.length>max)fail();return b;}

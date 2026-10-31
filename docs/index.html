@@ -48,9 +48,9 @@
  <h2>Mes réglages</h2>
  <button id="settings-close" type="button" class="secondary-button">Fermer les options</button>
  <label for="resource-mode">Mode de fonctionnement</label>
- <select id="resource-mode"><option value="precise">Précis · neurones et voix locale</option><option value="eco">Économique · réponses courtes</option><option value="light">Léger · réponses simples et voix</option><option value="text">Texte · sans voix ni modèle de langage</option><option value="off">En pause</option></select>
- <label class="check" for="neural"><input type="checkbox" id="neural" checked> Utiliser mes neurones locaux sur Android</label>
- <p id="brain-status" class="hint" role="status">La WebApp utilise le moteur textuel léger.</p>
+ <select id="resource-mode"><option value="precise">Précis · Liquid classe et la voix est locale</option><option value="eco">Économique · classement Liquid léger</option><option value="light">Léger · fiches de phrases et voix</option><option value="text">Texte · répliques préécrites sans voix</option><option value="off">En pause</option></select>
+ <label class="check" for="neural"><input type="checkbox" id="neural" checked> Utiliser Liquid pour classer les situations (Android)</label>
+ <p id="brain-status" class="hint" role="status">La WebApp utilise des répliques préécrites et leur arbitre émotionnel.</p>
  <label class="check" for="voice"><input type="checkbox" id="voice"> Lire aussi les réponses écrites avec une voix locale</label>
  <p id="voice-status" class="hint">Lecture des réponses écrites désactivée.</p>
  <div id="native-voice-row" hidden><label for="native-voice">Ma voix française locale</label><select id="native-voice" aria-describedby="voice-status"></select></div>
@@ -108,7 +108,7 @@
  <details><summary>Historique des derniers échanges</summary>
   <div id="log" role="log" aria-label="Historique de la conversation"></div>
  </details>
- <p class="hint">Le modèle linguistique LFM2.5-230M est dense : nos huit petits experts émotionnels ne forment pas encore le MoE neuronal complet envisagé. La reconnaissance vocale et la voix nécessitent des moteurs réellement locaux sur Android. Pas d'authentification du propriétaire dans ce prototype. N'entre pas de données sensibles.</p>
+ <p class="hint">Le petit Liquid LFM2.5-230M est utilisé uniquement pour proposer une catégorie ; les réponses sont préécrites. Nos huit tendances émotionnelles ne sont pas des modèles neuronaux autonomes. La reconnaissance vocale et la voix nécessitent des moteurs réellement locaux sur Android. Pas d'authentification du propriétaire dans ce prototype. N'entre pas de données sensibles.</p>
 </aside>
 </main>
 <script type="module" src="./app.js"></script>

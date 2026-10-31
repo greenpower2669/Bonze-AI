@@ -69,3 +69,23 @@ Voix expérimentale : les segments de moins de32codepoints IPA non blancs passen
 - Workflow 40964127638 entièrement réussi : 45 JS, 3 Python, 8 programmes JVM, 51 assertions navigateur, compilation/lint/manifeste/signature, 3 tests Android API 35 hors connexion et publication. Probe vocal 40964127723 vert au même SHA. Capture finale inspectée, visage/légendes/Stop visibles.
 - APK : https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.6.0/Bonze-AI-v0.6.0-debug.apk ; Release : https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.6.0 ; CI : https://github.com/greenpower2669/Bonze-AI/actions/runs/40964127638 .
 - Revue indépendante des changements effectuée. PR #1 en brouillon ; main vérifiée inchangée f5910311f903d8ae4378d62d100129b690fc0e85. Aucun essai physique Samsung ni écoute humaine revendiqués. Archives : sauvegarde.md et docs/history/avenant-0.6-worklog.md.
+
+
+## BONZE-032 — Orientation répertoire simulé (30/10/2026)
+Fab privilégie des réponses françaises préécrites avec simulation des huit tendances et du sage, anti-repioche et variation contrôlée. Liquid 230M ne sert qu'à classer une situation : aucun LLM ne rédige la réponse. Le noyau partagé `core/repertoire.js` fournit 183 cartes expérimentales, mémoire courte des choix, sous-ensembles de synonymes relus et repli lexical. Pont Android Rhino `ScriptedDialogue.java`, `BonzeInference.classify()` et WebApp en place sur branche BONZE-032. Les supports de mémoire à fiches (S–V–C, provenance, renforcement/déclin, tiroirs, corpus import/export) ainsi que la fiabilité Piper sur Samsung restent à réaliser. Documentation : `docs/repertoire-simule-bonze-032.md`. Ni Release ni fusion main autorisées implicitement.
+
+
+## BONZE-034 — 2 000 formulations par émotion
+La grammaire locale `core/repertoire-corpus.js` compose 2 000 textes distincts pour chacune des huit tendances plus le sage à partir de 200 noyaux sémantiques, cinq amorces et deux conclusions par noyau, ainsi que 162 points de vue émotionnels par intention. Le répertoire existant de 183 cartes reste préservé. Choix paresseux et pondéré, sans tableau de 18 000 chaînes en RAM. Il s'agit de **18 000 variantes construites et testées, pas de 18 000 situations originales**. Piper et classement Liquid restent à évaluer sur Samsung ; pas de nouveau MoE neuronal. Voir `docs/repertoire-simule-bonze-032.md`.
+
+
+### BONZE-035/036 — petites associations et voix stable
+La mémoire de sélection n'enregistre que des relations catégorie/rôle, poids bornés et ancienneté, avec historique des structures. Ce n'est pas une mémoire autobiographique. En cas d'échec Piper sans PCM, TTS local Android prend le relais pour la session et expose sa cause ; après PCM déjà audible, pas de relecture. Rapport CI du corpus vs lexique produit. Signature de debug d'une branche différente de la version installée : **mises à jour Android non certifiées**. Fiches personnelles SVC encore ouvertes.
+
+
+### BONZE-037 — couverture réelle des répliques Piper (31/10/2026)
+Révision manuelle de 22 formulations du répertoire de 18 000 variantes, puis des 12 mots inconnus dans les 183 anciennes cartes. Audit de la totalité des combinaisons et de chaque synonyme rédigé, comparés au dictionnaire Piper *effectivement préparé* dans la CI. Contrôle désormais bloquant sur un seul mot absent, rapport `piper-corpus-report.json` disponible comme artefact de test. Couverture complète confirmée sur les 18 000 nouvelles formules au commit 0abf7e8 ; contrôle exhaustif des nouvelles et anciennes cartes confirmé sur le commit `71bee685b`, étape Piper réussie de la CI Android `41168090932`. Ceci ne garantit ni qualité de prononciation, ni zéro coupure PCM, ni fonctionnement sur Samsung.
+
+Une prérelease `bonze-ai-v0.7.0-dev` est publiée **depuis une autre branche** (`feature/bonze031-dialogue-natural-v1`) avec `versionCode=7` ; notre PR #3 est toujours issue du développement 0.6.0 (code 6). Ne pas remplacer la prérelease ou downgrader ; arbitrage de fusion/rebase sur base avancée nécessaire avant toute publication.
+
+Bilan de la CI BONZE-037 `41168090932` : JS et navigateur verts, Android hors ligne émulateur vert, lexique Piper audité sans OOV, compilation/lint verts ; signature APK incompatible avec l'attendu sur cette branche, donc publication bloquée. **Ne jamais déclarer « APK prêt » sans signer avec le certificat attendu et augmenter la version après 0.7.0-dev.**

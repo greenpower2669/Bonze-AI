@@ -23,3 +23,27 @@ test('corrupt identity and unsupported weights are rejected rather than reborn s
 });
 
 test('council forces, all individual endurances, parameters and traces survive authenticated roundtrip',async()=>{const d=data(),r=JSON.parse(globalThis.BonzeCouncil.run(JSON.stringify({text:'un jeu',seconds:2})));d.council={state:r.state,params:r.params};d.journal=[{stage:'council',data:r.trace}];const restored=await openBackup(await sealBackup(d,'une phrase secrète longue'),'une phrase secrète longue');assert.deepEqual(restored.council,d.council);assert.deepEqual(restored.journal,d.journal);d.council.state.version=22;assert.throws(()=>validateBackup(d));});
+
+test('scripted repertoire ledgers survive encrypted export, with strict bounds',async()=>{
+ const d=data();
+ const ledger={version:1,seed:12345,turns:3,recent:['salut/joie/0'],families:['salut/joie']};
+ d.web.scriptedState=ledger;d.repertoire=ledger;
+ const encrypted=await sealBackup(d,'une phrase secrète longue');
+ const restored=await openBackup(encrypted,'une phrase secrète longue');
+ assert.deepEqual(restored.web.scriptedState.recent,ledger.recent);
+ assert.deepEqual(restored.repertoire.recent,ledger.recent);
+ assert.equal(restored.repertoire.lastIntent,'');
+ assert.deepEqual(restored.repertoire.associations,[]);
+ const invalid=data();invalid.repertoire={...ledger,recent:Array(100).fill('salut/joie/0')};
+ assert.throws(()=>validateBackup(invalid));
+});
+
+test('BONZE-035: encrypted backups retain bounded categorical associations without transcript',async()=>{
+ const d=data(),ledger={version:1,seed:42,turns:3,recent:[],families:[],lastIntent:'jeu',
+ lastRole:'curiosite',recentForms:['jeu/1'],associations:[{key:'jeu/curiosite',strength:.75,seen:3}]};
+ d.web.scriptedState=ledger;d.repertoire=ledger;
+ const saved=await openBackup(await sealBackup(d,'une phrase secrète longue'),'une phrase secrète longue');
+ assert.deepEqual(saved.repertoire,ledger);
+ const broken=data();broken.repertoire={...ledger,associations:[{key:'x',strength:2,seen:3}]};
+ assert.throws(()=>validateBackup(broken));
+});

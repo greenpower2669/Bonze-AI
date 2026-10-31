@@ -94,3 +94,29 @@ Livré pour validation, pas clôturé : BONZE-023 corrections d’affichage/disp
 - [ ] **BONZE-030 — Mémoire à tiroirs autonome, locale et sélective** : s'inspirer de Djipie pour une carte d'index compacte, ouvrir uniquement les tiroirs nécessaires au dialogue et gérer séparément mémoire immédiate, personnelle/sociale, apprentissages, scènes, missions et archives. Chaque souvenir doit porter ses droits, origine, fiabilité et règles de correction/oubli. Aucun chargement intégral systématique, aucune dépendance à GitHub ni au cloud. Préserver l'historique, la personnalité, les identités et l'export `.bonze`, effectuer une migration réversible et mesurer l'impact sur Samsung Android 16. Développer par étapes avec tests de confidentialité et validation Fab avant publication.
 
 Voir `docs/architecture-memoire-a-tiroirs.md`. Il s'agit d'une **mission ouverte**, pas d'une capacité déjà livrée par la version 0.6.0. Aucun merge main.
+
+
+## BONZE-032 — Réorientation acceptée oralement le 30 octobre 2026
+- [ ] Remplacer la génération de prose libre par de nombreuses fiches préécrites, combinées aux huit voix émotionnelles et au sage ; Liquid rapide pour classement/sélection, jamais une phrase libre non vérifiée. **Premier lot 183 fiches et sélection partagée réalisés sur branche dédiée**, essais natifs ouverts.
+- [ ] Préserver l'anti-repioche à la GeckoDoku avec mémoire de cartes ET de structures ; noyau initial doté de pénalités et ledger borné. Évaluer répétitions réelles sur conversations longues.
+- [ ] Autoriser variations de synonymes / structures avec whitelist sémantique et garde contre négations/faits. Quelques slots validés seulement, traduction et paraphrase Liquid à évaluer avant activation.
+- [ ] Conserver les huit petits rôles, le sage et leurs arbitrages. Les politiques textuelles sont simulées, et non huit LLM.
+- [ ] Étendre les mémoires à fiches indexées (sujet, verbe, compléments), provenance, intérêts, force et déclin, import/export contrôlé. Non réalisé BONZE-033.
+- [ ] Diagnostiquer Piper qui « saute » sur Samsung : tracer causes lexicales, segments courts, changement de voix et erreurs PCM, corriger après reproductions. Pas de correction certifiée dans ce lot.
+- [ ] Valider compilation, stabilité, temps de classification Liquid et RAM de l'APK sur appareil avant toute publication. Aucun merge main sans autorisation.
+Voir `docs/repertoire-simule-bonze-032.md`.
+
+
+### BONZE-034 — Demande du 30 octobre, 2 000 par émotion
+- [x] Construire de façon paresseuse au moins 2 000 textes distincts pour chacun des huit rôles émotionnels et le rôle sage, avec mémoire limitée et familles anti-répétition (18 000 composables, 183 cartes initiales conservées).
+- [x] Fournir des points de vue émotionnels et des thèmes rédigés, et une grammaire de transformation testable plutôt que recopier des milliers de variantes.
+- [ ] Valider la richesse qualitative, la pertinence en contexte et le taux de répétition sur vrais échanges vocaux.
+- [ ] Valider sur Samsung l'exactitude et la latence de classement Liquid et la stabilité de Piper. Ne pas annoncer un APK prêt sans CI Android complète.
+- [ ] Poursuivre BONZE-033 : vraies fiches mémoire apprenantes (SVC, liens synonymiques, renforcement/oubli et import/export de corpus).
+
+### BONZE-035/036 — continuité courte / Piper
+Arbitrage d'émotions avec liens renforcés/oubli contextuel borné, sans collecte de faits personnels ; relance de jeu sur « et après » ; repli de voix Android constant après un échec Piper avant audio, sans redémarrer une phrase déjà parlée. Audit CI de couverture du dictionnaire de 18 000 variantes. Tests Samsung et certificat de signature ouverts. Référence : todo.md.
+
+
+### BONZE-037 — finition lexicale sans risque de publication (31/10/2026)
+Mission exécutée : reformuler les termes français que le dictionnaire Piper embarqué ne couvre pas dans les 18 000 phrases composables, puis auditer aussi les 183 cartes et leurs synonymes. Générer un rapport CI et rendre l'audit bloquant, conserver l'intention de chaque phrase, l'anti-répétition et les cinq mémoires vivantes. Contrôler les tests automatisés. Interdiction de fusion `main` et de Release sans validation. Écart connu avec la préversion 0.7.0-dev publiée sur une branche concurrente : ne pas écraser cette ligne ni réutiliser son numéro de version. Suite et contrôles humains dans `todo.md`.

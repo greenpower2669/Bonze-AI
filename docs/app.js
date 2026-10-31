@@ -1,4 +1,6 @@
 import '../core/council.js';
+import '../core/repertoire-corpus.js';
+import '../core/repertoire.js';
 import {setupBackup} from './backup-ui.js';
 import {captionPair} from '../core/captions.mjs';
 import {answer,listening} from '../core/bonze.mjs';
@@ -30,8 +32,9 @@ if(saved&&typeof saved==='object'){
  contrast=saved.contrast===true;reduceMotion=saved.reduceMotion===true;
  browserVoiceEnabled=saved.browserVoiceEnabled===true;lastNativeHumanId=Number.isSafeInteger(saved.lastNativeHumanId)?saved.lastNativeHumanId:0;
 }
+let scriptedState=saved?.scriptedState||null;
 identity=restoreIdentity(saved?.identity);councilState=saved?.councilState||{version:1,forces:{...identity.acquired.forces},globalEndurance:identity.acquired.endurance};councilParams=saved?.councilParams||null;try{councilJournal=JSON.parse(localStorage.getItem("bonze-diagnostics")||"[]");}catch{}
-function webState(){return {profile,history:history.slice(-30),fontSize,resourceMode,neuralEnabled,contrast,reduceMotion,identity,browserVoiceEnabled,lastNativeHumanId,councilState,councilParams};}
+function webState(){return {profile,history:history.slice(-30),fontSize,resourceMode,neuralEnabled,contrast,reduceMotion,identity,browserVoiceEnabled,lastNativeHumanId,councilState,councilParams,scriptedState};}
 function saveNativeWeb(){if(isNative&&nativeConnected)window.BonzeAndroid.command('save-web',JSON.stringify({web:webState(),weights:trainedWeights}),'');}
 function save(){
  try{localStorage.setItem(STORAGE,JSON.stringify(webState()));if(!isNative)localStorage.setItem('bonze-diagnostics',JSON.stringify(councilJournal));}
@@ -132,8 +135,15 @@ function handleText(text,source='text'){
  identity={...identity,acquired:{...experience(identity,stimulus,'exchange',{familiar}),forces:{...r.state.forces},endurance:r.state.globalEndurance}};
  el('experts-state').textContent=summary;state('thinking');save();
  pendingInput={text:clean,token};
- el('brain-status').textContent='Réponse du mode textuel léger.';
- finishReply(answer(clean,profile||{}).text,token);
+ let spoken='';
+ try{
+  const selected=JSON.parse(globalThis.BonzeRepertoire.run(JSON.stringify({text:clean,state:scriptedState,forces:r.state.forces,endurances:r.state.endurances,synonyms:['humour','curiosite'].includes(r.trace?.action)})));
+  scriptedState=selected.state;spoken=selected.text;
+  councilJournal.push({at:Date.now(),stage:'repertoire',data:{card:selected.card,intent:selected.intent,source:'authored'}});councilJournal=councilJournal.slice(-120);
+  save();
+ }catch(error){spoken=answer(clean,profile||{}).text;}
+ el('brain-status').textContent='Répliques préécrites · choix émotionnel local.';
+ finishReply(spoken,token);
 }
 function configData(){return JSON.stringify({mode:resourceMode,neural:neuralEnabled,readText:browserVoiceEnabled,mood:describedMood||'curiosite',nickname:profile?.nickname||'',voice:nativeVoice,identity});}
 function configureNative(){if(isNative&&nativeConnected)window.BonzeAndroid.configureNative(configData());}
@@ -169,7 +179,9 @@ window.BonzeNativeEvent=e=>{
    const acknowledged=String(e.voice||'');
    if(pendingVoice===acknowledged||pendingVoice&&!e.voices.some(v=>v.name===pendingVoice))pendingVoice=null;
    nativeVoice=pendingVoice||acknowledged;select.value=nativeVoice;
+   if(e.piperFallback)el('voice-status').textContent='Piper a rencontré une difficulté ; relais vocal Android pour garder une voix régulière.';
    el('voice-status').textContent=nativeVoice?'Voix locale : '+nativeVoice+'. Lecture par phrases et pauses.':'Voix française locale en préparation ou absente.';
+   if(e.piperFallback)el('voice-status').textContent='Relais vocal Android actif : Piper indisponible pour cette conversation.';
   }
  }else if(e.type==='speech-level')speechMotion.level(e.id,e.level,performance.now());
  else if(e.type==='speech-start'){speechMotion.start(e.id,e.text,performance.now());state('speaking');}

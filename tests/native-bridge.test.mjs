@@ -15,9 +15,24 @@ test('microphone service is private, declares permissions and starts only after 
 });
 test('speech callbacks carry playback ranges and guard old utterance ownership',()=>{
  assert.ok(service.includes('onRangeStart'));assert.ok(service.includes('validSpeech(id)'));assert.ok(service.includes('speech-range'));
- assert.ok(service.includes('memory.prompt(text)'));assert.ok(service.includes('BonzeInference.reply'));
+ assert.ok(service.includes('memory.prompt(text)'));assert.ok(service.includes('BonzeInference.classify'));assert.ok(service.includes('scriptedReply'));
 });
 test('stop cannot discard inference completion bookkeeping from the main queue',()=>{
  assert.ok(!service.includes('main.removeCallbacksAndMessages(null)'));
  assert.ok(service.includes('finally{generating.set(false);}'));
+});
+
+test('BONZE-034 compressed repertoire is loaded by Android before selection',()=>{
+ const bridge=read('android/app/src/main/java/fr/bonzeai/companion/ScriptedDialogue.java');
+ assert.ok(bridge.includes('core/repertoire-corpus.js'));
+ assert.ok(bridge.indexOf('core/repertoire-corpus.js')<bridge.indexOf('core/repertoire.js'));
+ assert.ok(service.includes('scriptedReply(text,semantic,turn)'));
+});
+
+test('BONZE-036: Piper fallback stays on local voice until reset and never replays existing audio',()=>{
+ assert.ok(service.includes('piperFallbackForSession=true'));
+ assert.ok(service.includes('if(hadAudio)stop('));
+ assert.ok(service.includes('lastPiperFailure'));
+ assert.ok(service.includes('piperFallbackForSession=false'));
+ assert.ok(service.includes('actualVoiceEngine'));
 });

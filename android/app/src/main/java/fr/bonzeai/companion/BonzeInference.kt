@@ -40,6 +40,32 @@ object BonzeInference {
         }.take(1200)
     }
 
+    /** Label proposal only: a tiny, bounded Liquid inference, never user-visible prose.
+     * Output is untrusted and checked against an allowlist by the shared repertoire.
+     * Errors fall back to the deterministic lexical classifier.
+     */
+    @JvmStatic @Synchronized
+    fun classify(context: Context, text: String): String = runBlocking {
+        val model = loaded ?: run {
+            val path = ensureModel(context)
+            Llama.loadModel(
+                path.absolutePath,
+                LlamaConfig(contextSize = 2048, threads = 3, temperature = 0.1f,
+                    topP = 0.9f, topK = 50, gpuLayers = 0)
+            ).also { loaded = it }
+        }
+        val labels = "salut, merci, tristesse, inquietude, contrarié, jeu, humour, curiosite, " +
+            "question, correction, affection, depart, fatigue, surprise, demande, reussite, " +
+            "confusion, discussion, urgence"
+        Llama.complete(
+            model,
+            prompt = "Message à classer : " + text.take(600),
+            systemPrompt = "Classe le sens du message en français. Rends un seul mot EXACT " +
+                "parmi ces catégories, sans phrase, ponctuation ni explication : " + labels,
+            maxTokens = 18
+        ).text.trim().take(100)
+    }
+
     /** Initialise le modèle à partir des poids inclus dans l'APK, sans réseau. */
     private fun ensureModel(context: Context): File {
         val dir = File(context.filesDir, "gguf")

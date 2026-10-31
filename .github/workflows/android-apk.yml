@@ -1,7 +1,7 @@
 name: Bonze AI Android APK
 on:
   push:
-    branches: [feature/offline-bonsaiv1]
+    branches: [feature/offline-bonsaiv1, feature/bonze-032-repertoire-simule]
     paths: ['android/**','docs/**','core/**','tests/**','scripts/**','build.gradle','settings.gradle','gradle.properties','.github/workflows/android-apk.yml']
   workflow_dispatch:
 permissions:
@@ -75,6 +75,11 @@ jobs:
           test -s android/app/src/main/assets/models/LFM_OPEN_LICENSE.txt
       - name: Fetch pinned Piper runtime and French voice
         run: bash scripts/fetch-piper.sh
+      - name: Audit speech coverage against the actual Piper lexicon
+        run: node scripts/audit-piper-corpus.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: bonze-piper-corpus-audit, path: piper-corpus-report.json, if-no-files-found: warn}
       - name: Compile APK and run Android lint
         env:
           ANDROID_USER_HOME: ${{ runner.temp }}/bonze-android-user
@@ -98,7 +103,10 @@ jobs:
           grep -q "name='fr.bonzeai.companion'" package.txt
           grep -q "versionName='0.6.0'" package.txt
           "${ANDROID_HOME}/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK" | tee signature.txt
-          grep -qi '128b1bb0d488f33dd9075888ee15d6ff943136d657018026d1e0b22d9c35991d' signature.txt
+          if ! grep -qi '128b1bb0d488f33dd9075888ee15d6ff943136d657018026d1e0b22d9c35991d' signature.txt; then
+            echo '::error title=APK signer mismatch::The debug APK does NOT match the certificate of the installed 0.6/0.7 series. Do not install it as an update. A compatible signing key is required, never weaken this check.'
+            exit 1
+          fi
           cp "$APK" Bonze-AI-v0.6.0-debug.apk
           sha256sum Bonze-AI-v0.6.0-debug.apk | tee Bonze-AI-v0.6.0.sha256
       - uses: actions/upload-artifact@v4
