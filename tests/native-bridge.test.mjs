@@ -52,3 +52,20 @@ test('BONZE-043: Liquid classifies only, repertoire is the speaking source and P
  assert.ok(!failed.includes('androidSpeech(epoch,0)'), 'a failed Piper voice must not silently become Android TTS');
  assert.ok(service.includes('}else androidSpeech(epoch,0);'),'Android remains explicitly selectable');
 });
+
+
+test('BONZE-044: Liquid selects synonyms only, latest turn wins and Piper choice persists',()=>{
+ const inference=read('android/app/src/main/java/fr/bonzeai/companion/BonzeInference.kt');
+ const lexicon=read('android/app/src/main/java/fr/bonzeai/companion/SynonymChoice.java');
+ const audit=read('scripts/audit-piper-corpus.mjs');
+ assert.ok(inference.includes('fun chooseVariation('));
+ assert.ok(inference.includes('maxTokens = 4'));
+ assert.ok(!service.includes('BonzeInference.reply('),'no free-form neural answers in service');
+ assert.ok(service.includes('SynonymChoice.pick(authored,variants,index)'));
+ assert.ok(service.includes('if(!disposed&&epoch==workEpoch&&turn==diagnosticTurn)'));
+ assert.ok(service.includes('if(disposed||epoch!=workEpoch||turn!=diagnosticTurn)return;'));
+ assert.ok(service.includes('if("piper-mls".equals(preferred)){'));
+ assert.ok(service.includes('putString("voiceChoiceV2",voiceName)'));
+ assert.ok(lexicon.includes('candidates(original).contains(candidate)'));
+ assert.ok(audit.includes('synonymOOV'),'all synonym options need Piper lexicon checks');
+});
