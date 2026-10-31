@@ -142,6 +142,11 @@ function detect(text){
  var n=norm(text);
  if(!n)return 'discussion';
  if(contains(n,'comment tu t appelles|comment tu t appelles|quel est ton nom|qui es tu'))return 'identite';
+ // An explicit definition/question about a greeting or an emotion is a
+ // question, not the greeting or emotion itself.
+ var literalQuestion=/^(?:pourquoi|comment|que|qu est ce que|quel|quelle|quels|quelles|combien|quand|ou|d ou)\b/.test(n);
+ if(literalQuestion&&(/\b(?:signifie|signification|definition|mot|expression|veut dire|origine|utilise|dire)\b/.test(n)||
+    String(text).indexOf('?')>=0))return 'question';
  if(contains(n,'suicide|me tuer|me faire du mal|danger immediat|au secours|urgence vitale|je suis en danger'))return 'urgence';
  if(contains(n,'au revoir|a bientot|bonne nuit|je dois partir|bye|bisous'))return 'depart';
  if(contains(n,'pas compris|je comprends pas|je ne comprends pas|c est incomprehensible|confus|perdu dans'))return 'confusion';
@@ -151,8 +156,10 @@ function detect(text){
  if(contains(n,'colere|enerve|agace|furieux|injustice|frustre'))return 'contrarié';
  if(contains(n,'fatigue|epuise|repos|dormir|sommeil'))return 'fatigue';
  if(contains(n,'bravo|reussi|victoire|j ai gagne|bien joue'))return 'reussite';
- if(contains(n,'merci|gentil de ta part'))return 'merci';
- if(contains(n,'coucou|bonjour|salut|hello|bonsoir'))return 'salut';
+ if(/^merci(?: beaucoup| pour tout| a toi| bonze)?$/.test(n)||contains(n,'gentil de ta part'))return 'merci';
+ // Only a real salutation counts as greeting; quoted greetings inside
+ // longer questions should not hijack the user's actual intent.
+ if(/^(?:coucou|bonjour|salut|hello|bonsoir)(?: bonze| a toi| a vous| tout le monde| les amis)?$/.test(n))return 'salut';
  if(contains(n,'tu me manques|je t aime|calin|affection|je t adore'))return 'affection';
  if(contains(n,'blague|drole|rire|humour|rigolo|plaisanterie|fou rire')&&!contains(n,'pas drole'))return 'humour';
  if(contains(n,'jouons|on joue|imagine|dragon|histoire imaginaire|faire semblant|role'))return 'jeu';

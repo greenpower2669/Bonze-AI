@@ -170,3 +170,22 @@ test('BONZE-041: user feedback on repetitive or inept responses is treated as co
   assert.ok(!selected.text.toLowerCase().includes(text.toLowerCase()));
  }
 });
+
+test('BONZE-045: quoted emotional/greeting words inside precise questions do not hijack intent',()=>{
+ const questions=[
+  'Que signifie le mot bonjour ?',
+  'Que veut dire au revoir ?',
+  'Pourquoi utilise-t-on le mot nul ?',
+  'Quelle est la définition du mot humour ?',
+  'Comment écrire une blague ?'
+ ];
+ for(const q of questions){
+  const response=say(q,{seed:123,version:1,recent:[],families:[]},{semantic:'salut'});
+  assert.equal(response.intent,'question',q);
+ }
+ assert.equal(say('Bonjour').intent,'salut');
+ assert.equal(say('Merci beaucoup').intent,'merci');
+ assert.equal(say('Au revoir').intent,'depart');
+ assert.equal(say('Je suis triste').intent,'tristesse');
+ assert.equal(say('Tu es vraiment naze').intent,'correction');
+});
