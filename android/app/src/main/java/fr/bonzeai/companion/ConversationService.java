@@ -312,7 +312,14 @@ public final class ConversationService extends Service {
    piper.speak(speechChunks,prefix,Math.max(.80f,Math.min(1.25f,("calme".equals(mood)?.94f:"joie".equals(mood)?1.02f:.98f)*personalizedVoiceRate)),new PiperVoice.Events(){
     public void start(String id,String content){main.post(()->{if(epoch!=workEpoch||!validSpeech(id))return;speechId=id;speechText=content;speechBegan=SystemClock.elapsedRealtime();journal.add("speech",diagnosticTurn,DiagnosticJournal.fields("engine","piper-mls","text",content,"id",id,"firstAudioLatencyMs",partIndex(id)==0?SystemClock.elapsedRealtime()-voiceBegan:JSONObject.NULL));setState("speaking","Je te réponds.");speechEvent("speech-start",id,0,0);});}
     public void level(String id,double value,int frame){main.post(()->{if(epoch!=workEpoch||!validSpeech(id)||listener==null)return;JSONObject e=base("speech-level");try{e.put("id",id).put("level",value).put("frame",frame);listener.onEvent(e.toString());}catch(JSONException ignored){}});}
-    public void done(){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;finishSpeech();});}
+    public void metrics(String id,long generationMs,long playbackMs,int underruns,int samples){
+      main.post(()->{if(epoch!=workEpoch||!validSpeech(id))return;
+       journal.add("piper-audio",diagnosticTurn,DiagnosticJournal.fields(
+        "engine","piper-mls","part",partIndex(id),"generationMs",generationMs,
+        "playbackMs",playbackMs,"underruns",underruns,"samples",samples));
+      });
+     }
+     public void done(){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;finishSpeech();});}
     public void failed(String reason,boolean hadAudio){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;journal.add("speech-fallback",diagnosticTurn,DiagnosticJournal.fields("reason",reason,"hadAudio",hadAudio));if(hadAudio)stop(request,"Lecture interrompue. Tu peux réessayer.");else androidSpeech(epoch,0);});}
    });
   }else androidSpeech(epoch,0);
