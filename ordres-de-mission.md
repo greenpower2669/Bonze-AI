@@ -6,7 +6,10 @@
 - Branche de travail : `feature/offline-bonsaiv1`, PR #1 ; aucun merge main sans accord explicite de Fab.
 - Android sans permission INTERNET ; modèle embarqué et aucun fallback cloud vocal.
 - Clé de stockage existante `bonze-proto-01` : migrer sans effacer l'historique.
-- APKs nommés Bonze-AI-vVERSION-debug.apk et directement accessibles en Release. Signature debug de test ; aucune identité Play/clé de production enregistrée dans le dépôt audité.
+- **RÈGLE IMMUABLE DE LIVRAISON — exigence permanente de Fab :** pour chaque version Android destinée à Fab, livrer **un fichier `.apk` autonome, directement téléchargeable sur GitHub** comme asset natif d'une **Release ou prérelease du dépôt** (`https://github.com/greenpower2669/Bonze-AI/releases/download/<tag>/<nom>.apk`). Donner systématiquement le **lien direct vers le fichier `.apk`**, vérifié après publication ; nom lisible `Bonze-AI-vVERSION[-dev|-debug].apk` (ou `Bonze-AI-vVERSION-parallel.apk` pour un essai isolé), version et signature contrôlées.
+- **INTERDICTION DE ZIP EN LIVRAISON UTILISATEUR :** ne jamais imposer ni recommander à Fab un ZIP à ouvrir, un artefact GitHub Actions compressé, une archive de sources, un AAB, un simple lien de branche/PR, ni un lien de téléchargement hors GitHub à la place du `.apk` direct demandé. Les archives éventuellement produites **en interne par GitHub Actions** restent des intermédiaires techniques : extraire le fichier puis le joindre **seul en `.apk`** à la Release GitHub (un `.sha256` facultatif peut accompagner l'APK, mais jamais le remplacer).
+- **CONTRÔLE OBLIGATOIRE AVANT D'ANNONCER « APK LIVRÉ » :** confirmer présence effective de l'asset `.apk` dans la Release, URL directe accessible, identifiant Android et `versionCode`, SHA-256 et signature ; protéger les données et la compatibilité de mise à jour. Si GitHub refuse l'upload (403, autorisations, signature, etc.), consigner le blocage dans `todo.md`, expliquer ce qui manque et **ne jamais prétendre qu'un ZIP Actions ou un lien théorique est une livraison**. Cette préférence de format n'autorise ni publication non validée ni merge `main`.
+- APKs historiques nommés `Bonze-AI-vVERSION-debug.apk` ; signature debug de test, aucune clé Play/de production conservée dans le dépôt audité.
 
 ## Missions
 
