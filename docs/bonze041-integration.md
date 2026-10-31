@@ -14,3 +14,6 @@ Piper prépare les segments sur un thread de fond, applique un volume commun et 
 Sauvegarde `.bonze` chiffrée : états Web et natif du répertoire, préférences, historique et coffre existant restent compatibles ; les anciennes sauvegardes sans champs de répertoire sont acceptées. Le code reste en PR de brouillon ; aucune fusion dans `main`. La version cible `0.8.0-dev` code 8 est destinée à un identifiant parallèle `fr.bonzeai.companion.dev`, qui ne remplace pas l'application 0.7 du téléphone. Le certificat est temporaire pour les essais : **les builds parallèles suivants ne sont pas garantis compatibles entre eux**. Ne pas désinstaller l'application principale ni supprimer les données avant export sécurisé.
 
 Validation visée : node/JVM, Playwright, compilation Android, lexique Piper réel et construction/inspection d'un APK parallèle. Les essais de perception audio et le retour utilisateur restent indispensables.
+
+## Construction de la candidate
+Déclenchement CI du package expérimental parallèle ; vérifier aapt, apksigner, SHA-256 et absence INTERNET avant tout essai. Ceci n'est pas une publication et n'altère aucune Release existante.
