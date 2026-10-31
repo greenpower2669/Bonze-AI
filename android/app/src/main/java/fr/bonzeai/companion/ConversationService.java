@@ -191,8 +191,15 @@ public final class ConversationService extends Service {
    try{BonzeInference.setEconomy(eco);result=BonzeInference.reply(getApplicationContext(),prompt,contextData,hint);}
    catch(Exception|LinkageError error){errorName=error.getClass().getSimpleName();result="Je cherche encore mes mots. Tu peux me le dire autrement ?";}
    finally{generating.set(false);}
-   final String answer=result,failure=errorName;final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
-   main.post(()->{lastLatency=elapsed;lastCpu=cpuTime;journal.add("generation",turn,DiagnosticJournal.fields("output",answer,"error",failure,"latencyMs",elapsed,"repeatPrevious",memory.repeats(answer),"discarded",disposed||epoch!=workEpoch));if(!disposed&&epoch==workEpoch)complete(epoch,answer,fromVoice);});
+   final String generated=result,failure=errorName;final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
+   main.post(()->{
+    lastLatency=elapsed;lastCpu=cpuTime;
+    ReplyQuality.Result quality=ReplyQuality.review(text,generated,memory.repeats(generated));
+    journal.add("generation",turn,DiagnosticJournal.fields("output",generated,"error",failure,
+     "latencyMs",elapsed,"cpuMs",cpuTime,"qualityReason",quality.reason,
+     "repairApplied",quality.repaired,"discarded",disposed||epoch!=workEpoch));
+    if(!disposed&&epoch==workEpoch)complete(epoch,quality.text,fromVoice);
+   });
   });
  }
  private String lightReply(String text){
