@@ -15,3 +15,7 @@ Prétest local Java JDK 21 : huit cas positifs et six entrées invalides réussi
 Contrôles à compléter : résultats GitHub Actions sur ce commit, lecture acoustique Samsung/Bluetooth/veille/Stop, pertinence des conversations, mémoire et ressources.
 
 L'APK nouveau n'est **pas** publié : API GitHub Releases 403 documentée indépendamment, aucune substitution ZIP. `main` et la version 0.7 installée restent intacts.
+
+## Vérification de paquet complet
+
+Un contrôle de compilation d'APK expérimental parallèle, lint, manifeste, absence de permission INTERNET et signature est demandé dans GitHub Actions via le marqueur `[bonze-build]`. Il s'agit d'une validation interne, sans livraison publique ni remplacement de Bonze 0.7. L'APK final demeure non publié tant que les tests Samsung et le canal GitHub Releases ne sont pas validés.
