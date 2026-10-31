@@ -76,6 +76,9 @@ export function reviseFact(state,access,id,change){
  const status=change.status??card.status;if(!STATES.includes(status))fail('Statut invalide');
  Object.assign(card,parts,{status,strength:.35,seen:next.turn});
  if(next.cards.some(x=>x.id!==id&&key(x)===key(card)))fail('Fait dupliqué');
+ const collision=next.cards.some(x=>x.id!==id&&relation(x)===relation(card)&&
+  x.status!=='fiction'&&card.status!=='fiction'&&key(x)!==key(card));
+ if(collision&&card.status!=='conteste')fail('Révision contradictoire : résoudre ou marquer contesté');
  return next;
 }
 export function forgetFact(state,access,id){

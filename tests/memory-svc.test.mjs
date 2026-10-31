@@ -69,3 +69,14 @@ test('BONZE-038: prepared bridge remains user-approved and compatible with encry
  assert.deepEqual(card.tags,['dragon']);assert.equal(card.confirmed,true);
  assert.equal(JSON.stringify(card).includes('password'),false);
 });
+
+test('BONZE-038: a revision must not silently replace a conflicting asserted value',()=>{
+ let m=createFactMemory(scope);
+ m=addFact(m,access,fact('memory001','Pipo','habite','sur la lune'));
+ m=addFact(m,access,fact('memory002','Pipo','habite','dans une forêt',
+ {status:'conteste',confirmConflict:true}));
+ assert.throws(()=>reviseFact(m,access,'memory002',{status:'verifie',confirmed:true}),/contradictoire/);
+ assert.equal(m.cards[1].status,'conteste');
+ const accepted=reviseFact(m,access,'memory002',{status:'fiction',confirmed:true});
+ assert.equal(accepted.cards[1].status,'fiction');
+});
