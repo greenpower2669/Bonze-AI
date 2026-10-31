@@ -2,7 +2,7 @@ name: Bonze 031 — experimental validation (no release)
 on:
   push:
     branches: [feature/bonze031-dialogue-natural-v1, feature/bonze039-svc-personalisation-v1, feature/bonze040-dialogue-voice-diagnostics, feature/bonze041-conversation-audio-integration, feature/bonze042-field-fixes]
-    paths: ['core/**', 'docs/**', 'tests/**', 'android/**', '.github/probes/bonze031.cpp', '.github/workflows/bonze031-ci.yml']
+    paths: ['core/**', 'docs/**', 'tests/**', 'android/**', 'scripts/**', '.github/probes/bonze031.cpp', '.github/workflows/bonze031-ci.yml']
   workflow_dispatch:
 permissions:
   contents: read

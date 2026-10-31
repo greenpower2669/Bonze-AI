@@ -38,7 +38,7 @@ for(const role of corpus.roles){
 // BONZE-044: a synonym chosen by Liquid must be pronounceable by the same
 // packaged Piper lexicon as our 18,000 authored cards.
 const synonymJava=readFileSync(new URL('../android/app/src/main/java/fr/bonzeai/companion/SynonymChoice.java',import.meta.url),'utf8');
-const approvedPairs=[...synonymJava.matchAll(/\\{"([^"]+)","([^"]+)"\\}/g)];
+const approvedPairs=[...synonymJava.matchAll(/\{"([^"]+)","([^"]+)"\}/g)];
 if(approvedPairs.length<4)throw Error('BONZE-044 reviewed synonyms are missing');
 const synonymOOV=new Set();
 for(const pair of approvedPairs)for(const word of [pair[1],pair[2]])
