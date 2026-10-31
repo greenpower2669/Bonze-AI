@@ -140,3 +140,7 @@ Implémenter sur une branche d'intégration basée sur la 0.7 existante : fiches
 
 ### BONZE-040 — correction des répétitions et débogage voix (31/10/2026)
 À partir de BONZE-039, corriger le cas utilisateur prouvé d'une réponse qui répète une insulte reçue, surveiller les autres réponses circulaires, préremplir la sortie Piper pour éviter les sous-alimentations à l'initialisation, relever timings et `underrunCount`, exposer un journal technique anonymisé dans Options (stockage volontaire par SAF, pas d'Internet). Valider JS/JVM/UI/compilation puis vérifier au casque sur téléphone ; ne pas fusionner main ni publier d'APK avant validation et signature sûre.
+
+
+### BONZE-041 — Correction cohérente et APK de test isolé
+Mission : répondre aux tests négatifs de la 0.7 (« perroquet » + coupures), intégrer le répertoire BONZE-037 dans la ligne 0.7/039/040 sans perdre mémoires SVC, personnalisation et journal exportable. Les réponses LLM valides restent prioritaires, un secours local préécrit varie selon le contenu ; lecture Piper continue et normalisée, audit du lexique embarqué, sauvegardes validées. Préparer `0.8.0-dev` en **identifiant Android Dev distinct**, CI et inspection du package pour pouvoir mesurer sur téléphone. Ne pas fusionner main, publier une Release ni modifier la 0.7 installée sans ordre explicite. Conserver les limitations acoustiques dans le todo.

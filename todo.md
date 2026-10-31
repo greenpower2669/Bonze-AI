@@ -226,3 +226,16 @@ Source exacte publiée : `fdd4ba9477fbb87f72b7f69a2a0ec225bd471fbb`, code versio
 - [ ] Essai réel Samsung : voix continue, écran éteint, débit Piper, écoute/lecture, casque et mesure des sous-alimentations et bascules vocales.
 - [ ] Si pauses entre blocs, prototyper une préparation audio en avance ou une file tamponnée ; éviter de prétendre corriger le gap sans mesure.
 - [ ] Réconcilier les PR #3 (répertoire 18k) et #4 (mémoire/personnalisation) ; résorber signature incompatible avant livraison sûre de mise à jour, sans écraser 0.7.0-dev.
+
+
+### BONZE-041 — chantier de correction générale 31/10
+- [x] Réunir BONZE-039/040 et les 18 000 répliques de BONZE-037 sur une branche non destructive, sans prétendre à 18 000 sujets distincts ; ajout test de critique « naze/perroquet ».
+- [x] Remplacer la réponse de secours unique par une sélection locale d'intention/émotion avec journalisation explicite, dès écho Liquid, erreur du modèle et en mode léger ; intégration Web et native.
+- [x] Piper : produire et lire le flux PCM complet dans un AudioTrack, appliquer un gain commun, préremplir avant jeu, tracer les durées/underruns et le passage éventuel à Android TTS.
+- [x] Sauvegarde chiffrée : préserver répertoire natif et Web, validation stricte, migration ancienne version, test JS.
+- [x] Renommer la candidate installable séparément en 0.8.0-dev/code 8, package `fr.bonzeai.companion.dev`, conserver 0.7 en place.
+- [ ] Vérifier la CI **finale** complète et l'audit des 18 000 phrases contre le lexique Piper embarqué. Corriger toute anomalie.
+- [ ] Construire le package d'essai parallèle sur GitHub Actions (artefact) puis vérifier manifest, absence INTERNET, SHA-256 et certificat ; ne pas publier de Release sans validation de Fab.
+- [ ] Vérifier sur Samsung réel : double installation sans suppression, mémoire chiffrée, critique « naze », dialogue continu, coupures, latence première syllabe, Bluetooth/casque, niveau sonore, arrêt immédiat, journal anonymisé.
+- [ ] Après tests appareils, décider du mécanisme de signature de mise à jour et du passage de BONZE-037/039/040/041 dans la branche de référence ; aucun merge main sans autorisation.
+- [ ] Optimiser latence voix : envisager moteur et buffers anticipés, sans réintroduire de blancs ou de traitements simultanés non sûrs.
