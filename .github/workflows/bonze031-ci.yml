@@ -104,8 +104,8 @@ jobs:
           test -n "$APK" && test -s "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | head -n 1 | tee package.txt
           grep -q "name='fr.bonzeai.companion'" package.txt
-          grep -q "versionCode='7'" package.txt
-          grep -q "versionName='0.7.0-dev'" package.txt
+          grep -q "versionCode='8'" package.txt
+          grep -q "versionName='0.8.0-dev'" package.txt
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | tee permissions.txt
           ! grep -q android.permission.INTERNET permissions.txt
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK" | tee signature-ci.txt
@@ -116,22 +116,22 @@ jobs:
           gradle --no-daemon -PbonzeParallelInstall=true :androidApp:assembleDebug
           APK="$(find android/app/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' -print -quit)"
           test -n "$APK" && test -s "$APK"
-          cp "$APK" Bonze-AI-v0.7.0-dev-parallel.apk
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging Bonze-AI-v0.7.0-dev-parallel.apk | head -n 1 | tee package-parallel.txt
+          cp "$APK" Bonze-AI-v0.8.0-dev-parallel.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging Bonze-AI-v0.8.0-dev-parallel.apk | head -n 1 | tee package-parallel.txt
           grep -q "name='fr.bonzeai.companion.dev'" package-parallel.txt
-          grep -q "versionCode='7'" package-parallel.txt
-          grep -q "versionName='0.7.0-dev'" package-parallel.txt
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions Bonze-AI-v0.7.0-dev-parallel.apk | tee permissions-parallel.txt
+          grep -q "versionCode='8'" package-parallel.txt
+          grep -q "versionName='0.8.0-dev'" package-parallel.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions Bonze-AI-v0.8.0-dev-parallel.apk | tee permissions-parallel.txt
           ! grep -q android.permission.INTERNET permissions-parallel.txt
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs Bonze-AI-v0.7.0-dev-parallel.apk | tee signature-parallel.txt
-          sha256sum Bonze-AI-v0.7.0-dev-parallel.apk | tee Bonze-AI-v0.7.0-dev-parallel.sha256
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs Bonze-AI-v0.8.0-dev-parallel.apk | tee signature-parallel.txt
+          sha256sum Bonze-AI-v0.8.0-dev-parallel.apk | tee Bonze-AI-v0.8.0-dev-parallel.sha256
       - name: Keep experimental APK accessible without GitHub Release
         uses: actions/upload-artifact@v4
         with:
-          name: bonze-ai-0.7.0-dev-parallel-apk
+          name: bonze-ai-0.8.0-dev-parallel-apk
           path: |
-            Bonze-AI-v0.7.0-dev-parallel.apk
-            Bonze-AI-v0.7.0-dev-parallel.sha256
+            Bonze-AI-v0.8.0-dev-parallel.apk
+            Bonze-AI-v0.8.0-dev-parallel.sha256
             package-parallel.txt
             permissions-parallel.txt
             signature-parallel.txt
@@ -196,4 +196,4 @@ jobs:
 
 # BONZE-032: explicit one-time package validation after knowledge/memory fixes (no APK published).
 
-# One-time Bonze AI Dev 0.7.0 package build requested; side-by-side install; no Release.
+# BONZE-041: separate test package built only with [bonze-build]; no Release, no in-place upgrade.
