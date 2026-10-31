@@ -185,37 +185,55 @@ public final class ConversationService extends Service {
    journal.add("knowledge-guard",turn,DiagnosticJournal.fields("mechanism","authored-offline-rule","output",guarded));
    complete(epoch,guarded,fromVoice);return;
   }
-  if(!neural||!Arrays.asList("precise","eco").contains(mode)){complete(epoch,scriptedReply(text,turn),fromVoice);return;}
-  if(!generating.compareAndSet(false,true)){complete(epoch,"Ma précédente pensée se termine encore. Redis-moi ta phrase dans un instant ?",fromVoice);return;}
-  final boolean eco=economy;
+  if(!neural||!Arrays.asList("precise","eco").contains(mode)){
+   complete(epoch,scriptedReply(text,"",turn),fromVoice);return;
+  }
+  // A busy classifier must never inject a canned response or hold the UI indefinitely.
+  if(!generating.compareAndSet(false,true)){
+   complete(epoch,scriptedReply(text,"",turn),fromVoice);return;
+  }
   inference.execute(()->{
-   String result,errorName="";long began=SystemClock.elapsedRealtime(),cpuBegan=SystemClock.currentThreadTimeMillis();
-   try{BonzeInference.setEconomy(eco);result=BonzeInference.reply(getApplicationContext(),prompt,contextData,hint);}
-   catch(Exception|LinkageError error){errorName=error.getClass().getSimpleName();result="Je cherche encore mes mots. Tu peux me le dire autrement ?";}
+   String label="",errorName="";long began=SystemClock.elapsedRealtime(),cpuBegan=SystemClock.currentThreadTimeMillis();
+   try{label=BonzeInference.classify(getApplicationContext(),prompt,contextData,hint);}
+   catch(Exception|LinkageError error){errorName=error.getClass().getSimpleName();}
    finally{generating.set(false);}
-   final String generated=result,failure=errorName;final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
+   final String chosenLabel=label,failure=errorName;
+   final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
    main.post(()->{
     lastLatency=elapsed;lastCpu=cpuTime;
-    ReplyQuality.Result quality=ReplyQuality.review(text,generated,memory.repeats(generated));
-    journal.add("generation",turn,DiagnosticJournal.fields("output",generated,"error",failure,
-     "latencyMs",elapsed,"cpuMs",cpuTime,"qualityReason",quality.reason,
-     "repairApplied",quality.repaired,"discarded",disposed||epoch!=workEpoch));
-    if(!disposed&&epoch==workEpoch)complete(epoch,(quality.repaired||!failure.isEmpty())?scriptedReply(text,turn):quality.text,fromVoice);
+    journal.add("classification",turn,DiagnosticJournal.fields(
+     "label",chosenLabel,"error",failure,"latencyMs",elapsed,"cpuMs",cpuTime,
+     "mechanism",chosenLabel.isEmpty()?"lexical-fallback":"liquid-intent",
+     "discarded",disposed||epoch!=workEpoch));
+    if(!disposed&&epoch==workEpoch)complete(epoch,scriptedReply(text,chosenLabel,turn),fromVoice);
    });
   });
  }
- private String scriptedReply(String text,long turn){
+ private String scriptedReply(String text,String label,long turn){
   if(scripted!=null)try{
-   JSONObject selected=scripted.choose(text,"",council==null?null:council.snapshot(),true);
-   journal.add("repertoire",turn,DiagnosticJournal.fields("intent",selected.optString("intent"),
-     "card",selected.optString("card"),"mechanism","authored-fallback"));
-   return selected.getString("text");
+   List<String> recentBot=new ArrayList<>();
+   List<DialogueMemory.Entry> entries=memory.entries();
+   for(int i=entries.size()-1;i>=0&&recentBot.size()<8;i--)
+    if("bot".equals(entries.get(i).role))recentBot.add(entries.get(i).text);
+   for(int attempt=0;attempt<8;attempt++){
+    JSONObject selected=scripted.choose(text,label,council==null?null:council.snapshot(),true);
+    String candidate=selected.getString("text");
+    ReplyQuality.Result checked=ReplyQuality.review(text,candidate,memory.repeats(candidate),recentBot);
+    if(!checked.repaired){
+     journal.add("repertoire",turn,DiagnosticJournal.fields("intent",selected.optString("intent"),
+      "card",selected.optString("card"),"mechanism",label.isEmpty()?"lexical-repertoire":"liquid-classified-repertoire",
+      "selectionAttempts",attempt+1));
+     return checked.text;
+    }
+    journal.add("repertoire-reroll",turn,DiagnosticJournal.fields("reason",checked.reason,"attempt",attempt+1));
+   }
   }catch(Exception error){journal.add("repertoire-error",turn,DiagnosticJournal.fields("type",error.getClass().getSimpleName()));}
-  return lightReply(text);
- }
- private String lightReply(String text){
-  if(text.toLowerCase(Locale.FRANCE).matches(".*comment tu t.appelles.*"))return "Je m'appelle Bonze AI ! Et toi ?";
-  return "Je suis en mode léger. Raconte-moi la suite, je t'écoute.";
+  for(String clarification:new String[]{
+   "Je n'ai pas trouvé de réponse adaptée. Peux-tu préciser ce que tu attends de moi ?",
+   "J'ai perdu le fil de ta question. Quel point souhaites-tu éclaircir ?",
+   "Je préfère te demander une précision plutôt que répondre à côté. Quel est le sujet exact ?"
+  })if(!memory.repeats(clarification))return clarification;
+  return "Je préfère vérifier ce que tu demandes avant de continuer.";
  }
  private void complete(long epoch,String answer,boolean fromVoice){
   if(epoch!=workEpoch||disposed)return;
@@ -331,7 +349,8 @@ public final class ConversationService extends Service {
       });
      }
      public void done(){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;finishSpeech();});}
-    public void failed(String reason,boolean hadAudio){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;journal.add("speech-fallback",diagnosticTurn,DiagnosticJournal.fields("reason",reason,"reasonCode",safeAudioFailure(reason),"hadAudio",hadAudio,"nextEngine",hadAudio?"stopped":"android"));if(hadAudio)stop(request,"Lecture interrompue. Tu peux réessayer.");else androidSpeech(epoch,0);});}
+    public void failed(String reason,boolean hadAudio){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;journal.add("speech-fallback",diagnosticTurn,DiagnosticJournal.fields("reason",reason,"reasonCode",safeAudioFailure(reason),"hadAudio",hadAudio,"nextEngine","none"));stop(request,
+      "Piper n'a pas pu lire cette phrase ("+safeAudioFailure(reason)+"). Le texte reste affiché ; tu peux choisir une voix Android dans Options si tu le souhaites.");});}
    });
   }else androidSpeech(epoch,0);
  }
