@@ -271,3 +271,13 @@ Traçabilité : `docs/bonze043-dialogue-voix-integration.md`. Aucun merge `main`
 - [ ] Étendre le lexique des substitutions avec une validation stricte des accords, négations, sens et compatibilité phonétique ; mesurer la latence cumulée classement + variation sur Samsung. Une série de quatre paires équivalentes est une preuve de fonctionnement, pas un transformateur linguistique abouti.
 - [ ] Tests physiques Samsung : réponses pertinentes sur des échanges concrets, dix à vingt tours sans répétitions, journal de classification/variation, préférences Piper après redémarrage, phrases courtes/chiffres/OOV et casque. Revoir les réponses factuelles si les cartes sont trop génériques.
 - [ ] Publication `.apk` GitHub direct bloquée séparément par erreur API Releases 403 ; aucune Release, ZIP ou fusion dans `main` sans accord explicite.
+
+### BONZE-045 — travaux de continuité après BONZE-044 (31/10)
+- [x] Porter à **21 paires** la liste des synonymes français prévalidés ; Liquid continue à renvoyer seulement un indice et jamais du texte libre.
+- [x] Conversion audio bornée des entiers français isolés 0–9 999 ; refuser explicitement les décimaux/formats mal analysés au lieu de basculer vers Android TTS.
+- [x] Ajouter des codes techniques lisibles pour les erreurs Piper de lexique/nombre/phrase courte et un audit du dictionnaire de l'APK pour les tokens de cardinal.
+- [x] Corriger les questions sur un mot cité (bonjour, merci, au revoir, nul, blague) qui pouvaient être reclassées à tort par le classificateur ; préserver la priorité des alertes d'urgence.
+- [ ] Confirmer **toutes les CI du dernier commit de code** (GitHub Actions run `41239447994` pour `03ea116e`) : JS/JVM, navigateur, audit dictionnaire Piper, Kotlin/Java. Conserver les preuves exactes et corriger tout échec découvert.
+- [ ] Faire essayer à Fab sur Samsung des dialogues de 20 tours avec questions non sociales, nombres ordinaires et identité, transcription FR, Piper/Bluetooth/veille, latence et logs anonymisés.
+- [ ] Étudier séparément les heures (`15h30`), décimaux et groupes de milliers : choisir une verbalisation exacte avant d'étendre la prise en charge. Ajouter les synonymes seulement avec preuves d'accord, de sens et de prononciation.
+- [ ] APK seul directement téléchargeable en GitHub Release toujours non publié pour BONZE-044/045 ; ne jamais annoncer une livraison sans asset réel ni contourner l'absence d'autorisation de publication. Pas de fusion `main`.
