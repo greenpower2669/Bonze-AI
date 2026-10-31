@@ -35,6 +35,16 @@ for(const role of corpus.roles){
  }
 }
 
+// BONZE-044: a synonym chosen by Liquid must be pronounceable by the same
+// packaged Piper lexicon as our 18,000 authored cards.
+const synonymJava=readFileSync(new URL('../android/app/src/main/java/fr/bonzeai/companion/SynonymChoice.java',import.meta.url),'utf8');
+const approvedPairs=[...synonymJava.matchAll(/\\{"([^"]+)","([^"]+)"\\}/g)];
+if(approvedPairs.length<4)throw Error('BONZE-044 reviewed synonyms are missing');
+const synonymOOV=new Set();
+for(const pair of approvedPairs)for(const word of [pair[1],pair[2]])
+ for(const token of word.toLocaleLowerCase('fr-FR').match(WORD)||[])
+  if(!dictionary.has(token))synonymOOV.add(token);
+
 const authoredOOV=new Map(),authoredSentences=new Set();
 let authoredTested=0,authoredCovered=0;
 for(const card of authored){
@@ -67,6 +77,8 @@ const report={
  authoredCards:authored.length,
  authoredVariantsTested:authoredTested,
  authoredLexicallyCovered:authoredCovered,
+ approvedSynonymPairs:approvedPairs.length,
+ synonymOOV:[...synonymOOV],
  authoredOOV:[...authoredOOV.entries()].sort((a,b)=>b[1]-a[1]).map(([word,variants])=>({word,variants})),
  notes:'No acoustic claim. Short IPA and audio/permission failures remain possible even for covered texts.'
 };
@@ -75,4 +87,4 @@ console.log('PIPER_CORPUS_AUDIT variants='+checked+' unique='+uniqueTexts.size+'
 console.log('PIPER_MOST_COMMON_OOV '+report.topOOV.slice(0,20).map(x=>x.word+':'+x.variants).join(' '));
 console.log('PIPER_AUTHORED_OOV '+report.authoredOOV.map(x=>x.word+':'+x.variants).join(' '));
 if(checked!==18000||uniqueTexts.size!==18000)throw Error('Corpus count or uniqueness changed');
-if(missing.size>0||authoredOOV.size>0)throw Error('Piper dictionary has '+missing.size+' corpus OOV and '+authoredOOV.size+' authored-card OOV; inspect archived audit');
+if(missing.size>0||authoredOOV.size>0||synonymOOV.size>0)throw Error('Piper dictionary has '+missing.size+' corpus OOV, '+authoredOOV.size+' authored OOV and '+synonymOOV.size+' synonym OOV: '+[...synonymOOV].join(', '));
