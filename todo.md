@@ -207,3 +207,13 @@ Rapport complet : \`docs/history/bonze031-evolution-2026-10-30.md\`. Aucun APK n
 APK GitHub Release préversion : https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.7.0-dev/Bonze-AI-v0.7.0-dev.apk
 Run de compilation et publication : https://github.com/greenpower2669/Bonze-AI/actions/runs/41116988575 (succès).
 Source exacte publiée : `fdd4ba9477fbb87f72b7f69a2a0ec225bd471fbb`, code version 7 / 0.7.0-dev ; signature identique à 0.6.0 vérifiée par SHA-256 de certificat `128b1bb0d488f33dd9075888ee15d6ff943136d657018026d1e0b22d9c35991d`. Identifiant Android `fr.bonzeai.companion` identique : mise à jour en place, et non APK parallèle. Taille publiée : 271 211 531 octets, SHA-256 du fichier `a3f9903f3ff132a393e04a7740746fdebeffed106df8817e46d757191d2ccd90`. Pas de ZIP, pas de fusion `main`. Signature d'origine récupérée **uniquement dans le cache du workflow GitHub** sur `feature/offline-bonsaiv1`; ajout d'un workflow ponctuel `.github/workflows/bonze070-direct-apk.yml` à cette branche, sans modification des sources de la 0.6.0. L'APK de test parallèle antérieur reste un artefact Actions distinct et ne doit plus être recommandé pour un téléphone à faible stockage. Recommandation : sauvegarde privée `.bonze` avant installation, espace temporaire suffisant ; tests physiques Samsung toujours attendus.
+
+### BONZE-039 — à valider
+- [x] Créer branche sur 0.7 et importer SVC sans recopier le coffre de BONZE-031.
+- [x] Ajouter formulaire SVC sous coffre déverrouillé, correction et oubli, validation chiffrée, refus des contradictions.
+- [x] Ajouter cinq personnalités, tutoiement/vouvoiement, longueur, humour, curiosité, douceur et débit ; choix sauvés et inclus dans sauvegarde `.bonze`.
+- [x] Relier les paramètres aux consignes bornées du modèle Android et à Piper/Android TTS ; validations JS + tests navigateur.
+- [ ] Examiner les résultats de CI JS/Playwright/compilation Android et corriger toute régression.
+- [ ] Effectuer essai Samsung avec veille, casque, voix et mémoire SVC ; assurer une authentification par personne réelle avant tout rappel privé automatique.
+- [ ] Réconcilier le répertoire 18 000 formulations de la PR #3 avec la branche 0.7 / 039 sans perte des acquis ; ne pas fusionner sans validation.
+- [ ] Signature et chaîne de mise à jour APK versionCode >7, publication seulement sur ordre explicite.
