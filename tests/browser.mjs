@@ -64,7 +64,10 @@ try{
  check(await page.locator('#face').isVisible(),'PWA offline reload');await context.setOffline(false);
  await page.locator('#settings-open').click();
  // BONZE-030: password-protected drawer stays private until explicit unlock.
- await page.locator('#memory-panel summary').click();
+ await page.locator('#diagnostics-panel summary').click();
+  await page.locator('#diagnostics-export').click();
+  check((await page.locator('#diagnostics-status').textContent()).includes('application Android'),'web export explains audio limitation');
+  await page.locator('#memory-panel summary').click();
  await page.locator('#memory-password').fill('ma phrase secrète privée bonze');
  await page.locator('#memory-unlock').click();
  await page.waitForSelector('#memory-editor',{state:'visible'});
