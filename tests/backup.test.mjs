@@ -61,3 +61,17 @@ test('BONZE-039: personalized dialogue controls survive encrypted backup',async(
  assert.equal(out.web.personalization.address,'tu');
  assert.equal(out.web.personalization.pace,1.15);
 });
+
+test('BONZE-041: authored-repertoire state survives encrypted backup without raw phrases',async()=>{
+ const state={version:1,seed:1234,turns:5,recent:['question/calme/1'],families:['question/calme'],recentForms:[],lastIntent:'question',lastRole:'calme',
+   associations:[{key:'question/calme',strength:.7,seen:5}]};
+ const old=data();old.web.scriptedState=state;old.repertoire=state;
+ const cipher=await sealBackup(old,'une phrase secrète assez longue');
+ assert.ok(!cipher.includes('question/calme'));
+ const restored=await openBackup(cipher,'une phrase secrète assez longue');
+ assert.deepEqual(restored.repertoire,state);
+ assert.deepEqual(restored.web.scriptedState,state);
+ const legacy=validateBackup(data());assert.equal(legacy.repertoire,null);assert.equal(legacy.web.scriptedState,null);
+ const malicious=data();malicious.repertoire={...state,recent:Array(200).fill('x')};
+ assert.throws(()=>validateBackup(malicious));
+});

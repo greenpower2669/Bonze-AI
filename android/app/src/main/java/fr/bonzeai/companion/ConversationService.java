@@ -414,7 +414,9 @@ public final class ConversationService extends Service {
   // Validate everything before stopping/writing. One preferences transaction is canonical;
   // restoredWeb stays pending until the WebView acknowledges its own durable write.
   JSONObject restoredRepertoire=root.optJSONObject("repertoire");
-  if(restoredRepertoire!=null){
+  if(restoredRepertoire==null)restoredRepertoire=web.optJSONObject("scriptedState");
+  if(restoredRepertoire==null)restoredRepertoire=new JSONObject();
+  {
    restoredRepertoire=ScriptedDialogue.canonical(restoredRepertoire);
    if(restoredRepertoire.toString().length()>4096||restoredRepertoire.optJSONArray("recent").length()>16||
       restoredRepertoire.optJSONArray("families").length()>8||
@@ -430,7 +432,7 @@ public final class ConversationService extends Service {
    .putString("modelChoice",nextModel).putBoolean("imported",true).putLong("importedThrough",0).putString("journal",trace.toString()).putString("lastWeb",web.toString()).putString("lastWeights",nextWeights==null?"{}":nextWeights.toString()).putString("council-state",nextCouncil==null?"{}":nextCouncil.getJSONObject("state").toString()).putString("council-params",nextCouncil==null?"{}":nextCouncil.getJSONObject("params").toString()).putString("voiceChoiceV2",n.optString("voice","piper-mls")).putString("bonze-repertoire-v1",restoredRepertoire==null?"{}":restoredRepertoire.toString()).commit();
   if(!committed)throw new java.io.IOException("Storage");
   mode=nextMode;economy="eco".equals(mode);neural=n.optBoolean("neural",false);readText=n.optBoolean("readText",false);mood=n.optString("mood","curiosite");
-  memory.clear();loadMemory();journal.reload();if(scripted!=null&&restoredRepertoire!=null)scripted.adopt(restoredRepertoire);if(council!=null&&nextCouncil!=null)council.adopt(nextCouncil,nextWeights);selectVoice(n.optString("voice",""));publish();
+  memory.clear();loadMemory();journal.reload();if(scripted!=null)scripted.adopt(restoredRepertoire);if(council!=null&&nextCouncil!=null)council.adopt(nextCouncil,nextWeights);selectVoice(n.optString("voice",""));publish();
  }
  public void rollbackBackup() throws Exception {String saved=prefs.getString("rollback","");if(saved.isEmpty())throw new IllegalArgumentException("Aucun retour arrière");restoreBackup(saved);}
  public void saveWebState(String state){if(state.length()<2*1024*1024)try{JSONObject o=new JSONObject(state),w=o.getJSONObject("web");if(w.has("identity"))prefs.edit().putString("lastWeb",w.toString()).putString("lastWeights",o.optJSONObject("weights")==null?"{}":o.optJSONObject("weights").toString()).apply();}catch(JSONException ignored){}}

@@ -8,6 +8,27 @@ const encoder=new TextEncoder(),decoder=new TextDecoder('utf-8',{fatal:true});
 const modes=['precise','eco','light','text','off'];
 function fail(){throw new Error('Sauvegarde invalide ou version non prise en charge.');}
 const plain=x=>x&&typeof x==='object'&&!Array.isArray(x);
+function repertoireState(value){
+ if(value==null)return null;
+ if(!plain(value)||JSON.stringify(value).length>4096||value.version!==1||
+  !Number.isSafeInteger(value.seed)||Math.abs(value.seed)>2147483648||
+  !Number.isSafeInteger(value.turns)||value.turns<0||value.turns>10000000)fail();
+ const list=(input,max)=>{
+  if(!Array.isArray(input)||input.length>max||
+    input.some(x=>typeof x!=='string'||x.length>80))fail();
+  return input.slice();
+ };
+ const recent=list(value.recent,16),families=list(value.families,8),recentForms=list(value.recentForms??[],8);
+ const associations=value.associations??[];
+ if(!Array.isArray(associations)||associations.length>24||
+  associations.some(x=>!plain(x)||typeof x.key!=='string'||x.key.length>60||
+    !Number.isFinite(x.strength)||x.strength<0||x.strength>1||
+    !Number.isSafeInteger(x.seen)||x.seen<0||x.seen>10000000))fail();
+ return {version:1,seed:value.seed,turns:value.turns,recent,families,recentForms,
+  associations:associations.map(x=>({key:x.key,strength:x.strength,seen:x.seen})),
+  lastIntent:typeof value.lastIntent==='string'?value.lastIntent.slice(0,30):'',
+  lastRole:typeof value.lastRole==='string'?value.lastRole.slice(0,30):''};
+}
 function rows(items){
  if(!Array.isArray(items)||items.length>30)fail();
  return items.map(r=>{if(!plain(r)||!['human','bot'].includes(r.role)||typeof r.text!=='string'||r.text.length>1200)fail();return{...(Number.isSafeInteger(r.id)&&r.id>0?{id:r.id}:{}),role:r.role,text:r.text};});
@@ -17,7 +38,7 @@ export function validateBackup(input){
  const w=input.web,i=w.identity;
  if(!plain(i)||i.version!==1||typeof i.seed!=='string'||i.seed.length<1||i.seed.length>128||!plain(i.acquired)||!plain(i.acquired.forces))fail();
  for(const n of Object.values(i.acquired.forces))if(!Number.isFinite(n)||n<0||n>1)fail();
- const web={identity:restoreIdentity(i),history:rows(w.history||[]),profile:typeof w.profile?.nickname==='string'?{nickname:w.profile.nickname.slice(0,40)}:null,fontSize:[1,2,3].includes(w.fontSize)?w.fontSize:2,resourceMode:modes.includes(w.resourceMode)?w.resourceMode:'text',neuralEnabled:w.neuralEnabled===true,contrast:w.contrast===true,reduceMotion:w.reduceMotion===true,browserVoiceEnabled:w.browserVoiceEnabled===true,lastNativeHumanId:Number.isSafeInteger(w.lastNativeHumanId)?w.lastNativeHumanId:0,modelChoice:['230m','12b'].includes(w.modelChoice)?w.modelChoice:'230m',memoryVault:validateVaultEnvelope(w.memoryVault??null,i.seed),personalization:normalizeStyle(w.personalization)};
+ const web={identity:restoreIdentity(i),history:rows(w.history||[]),profile:typeof w.profile?.nickname==='string'?{nickname:w.profile.nickname.slice(0,40)}:null,fontSize:[1,2,3].includes(w.fontSize)?w.fontSize:2,resourceMode:modes.includes(w.resourceMode)?w.resourceMode:'text',neuralEnabled:w.neuralEnabled===true,contrast:w.contrast===true,reduceMotion:w.reduceMotion===true,browserVoiceEnabled:w.browserVoiceEnabled===true,lastNativeHumanId:Number.isSafeInteger(w.lastNativeHumanId)?w.lastNativeHumanId:0,modelChoice:['230m','12b'].includes(w.modelChoice)?w.modelChoice:'230m',memoryVault:validateVaultEnvelope(w.memoryVault??null,i.seed),personalization:normalizeStyle(w.personalization),scriptedState:repertoireState(w.scriptedState)};
  let native=null;
  if(input.native!=null){const n=input.native;if(!plain(n)||n.schema!==1||!modes.includes(n.mode))fail();native={schema:1,history:rows(n.history),scene:String(n.scene||'').slice(0,360),mode:n.mode,neural:n.neural===true,readText:n.readText===true,voice:String(n.voice||'').slice(0,200),mood:String(n.mood||'curiosite').slice(0,30),model:['230m','12b'].includes(n.model)?n.model:'230m'};}
  let weights=null;if(input.weights!=null){inferExperts('',input.weights);weights=JSON.parse(JSON.stringify(input.weights));}
@@ -25,7 +46,7 @@ export function validateBackup(input){
  let council=null;if(!input.council?.state){const migrated=JSON.parse(globalThis.BonzeCouncil.run(JSON.stringify({state:{version:1,forces:web.identity.acquired.forces,globalEndurance:web.identity.acquired.endurance},seconds:0})));input={...input,council:{state:migrated.state,params:migrated.params}};}
  if(input.council?.state){const c=input.council;if(c.state.version!==1)fail();for(const group of ['forces','endurances'])for(const key of globalThis.BonzeCouncil.names)if(!Number.isFinite(c.state[group]?.[key])||c.state[group][key]<0||c.state[group][key]>1)fail();if(!Number.isFinite(c.state.globalEndurance)||c.state.globalEndurance<0||c.state.globalEndurance>1)fail();
  const result=JSON.parse(globalThis.BonzeCouncil.run(JSON.stringify({state:c.state,params:c.params,weights,seconds:0})));council={state:result.state,params:result.params};web.councilState=result.state;web.councilParams=result.params;}
- return {council,schema:1,createdAt:Number.isFinite(input.createdAt)?input.createdAt:0,web,native,weights,journal};
+ return {council,schema:1,createdAt:Number.isFinite(input.createdAt)?input.createdAt:0,web,native,weights,journal,repertoire:repertoireState(input.repertoire)};
 }
 function b64(bytes){let s='';for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s);}
 function un64(s,max){if(typeof s!=='string'||s.length>max*2||!/^[A-Za-z0-9+/]*={0,2}$/.test(s))fail();const b=Uint8Array.from(atob(s),c=>c.charCodeAt(0));if(b.length>max)fail();return b;}
