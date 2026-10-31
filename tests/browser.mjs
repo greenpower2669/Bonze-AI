@@ -90,6 +90,7 @@ try{
   check((await page.locator('#memory-results').textContent()).includes('Pipo habite dans une forêt'),'SVC manual recall');
   await page.locator('#memory-results button').filter({hasText:'Modifier cette fiche SVC'}).first().click();
   await page.locator('#memory-complement').fill('dans un jardin');
+  await page.locator('#memory-trust').selectOption('declare');
   await page.locator('#memory-confirm').check();
   await page.locator('#memory-svc-save').click();
   await page.waitForFunction(()=>document.getElementById('memory-status').textContent.includes('Fiche SVC corrigée'));
