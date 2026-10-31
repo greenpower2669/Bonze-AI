@@ -35,6 +35,7 @@ public final class ConversationService extends Service {
  private final AtomicBoolean generating=new AtomicBoolean();
  private long focusSerial;
  private boolean neural=true,readText=false,economy;
+ private float personalizedVoiceRate=1f;
  private String mode="precise",mood="curiosite",request="",state="off",status="Micro arrêté.",voiceName="";
  private long workEpoch,sequence,speechSerial,speechBegan,lastHeardAt;
  private volatile long lastLatency=-1,lastCpu=-1;
@@ -46,7 +47,7 @@ public final class ConversationService extends Service {
 
  @Override public void onCreate(){
   super.onCreate();prefs=getSharedPreferences("bonze-conversation-v1",MODE_PRIVATE);
-  mode=prefs.getString("mode","precise");neural=prefs.getBoolean("neural",true);readText=prefs.getBoolean("readText",false);economy="eco".equals(mode);
+  mode=prefs.getString("mode","precise");personalizedVoiceRate=prefs.getFloat("personalizedVoiceRate",1f);neural=prefs.getBoolean("neural",true);readText=prefs.getBoolean("readText",false);economy="eco".equals(mode);
   journal=new DiagnosticJournal(prefs);try{council=new EmotionalCouncil(this,prefs);}catch(Exception e){journal.add("council-error",0,DiagnosticJournal.fields("error",e.getClass().getSimpleName()));}councilAt=SystemClock.elapsedRealtime();main.postDelayed(this::councilTick,10000);piper=new PiperVoice(getApplicationContext());voiceName=prefs.getString("voiceChoiceV2","piper-mls");loadMemory();audio=(AudioManager)getSystemService(AUDIO_SERVICE);
   cpu=((PowerManager)getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"BonzeAI:Conversation");cpu.setReferenceCounted(false);
   ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).createNotificationChannel(new NotificationChannel("bonze-dialogue","Conversation Bonze",NotificationManager.IMPORTANCE_LOW));
@@ -113,6 +114,24 @@ public final class ConversationService extends Service {
    neural=c.optBoolean("neural",neural);readText=c.optBoolean("readText",readText);economy="eco".equals(mode);
    if(council==null)mood=DialogueMemory.clean(c.optString("mood",mood),30);if(council!=null&&c.optJSONObject("identity")!=null)council.seed(c.getJSONObject("identity"));memory.setName(c.optString("nickname",""));
    String chosen=c.optString("voice","");if(!chosen.isEmpty()&&!chosen.equals(voiceName))selectVoice(chosen);
+   JSONObject style=c.optJSONObject("personalization");
+   if(style!=null){
+    JSONObject validated=new JSONObject();
+    for(String key:new String[]{"preset","address","length"}){
+     String raw=style.optString(key,""),chosenStyle="";
+     String[] legal="preset".equals(key)?new String[]{"naturel","doux","joueur","enqueteur","calme"}:
+       "address".equals(key)?new String[]{"tu","vous"}:new String[]{"court","normal","detail"};
+     chosenStyle=Arrays.asList(legal).contains(raw)?raw:legal[0];
+     validated.put(key,chosenStyle);
+    }
+    for(String key:new String[]{"humour","curiosite","douceur"})
+      validated.put(key,Math.max(0,Math.min(3,style.optInt(key,2))));
+    personalizedVoiceRate=(float)Math.max(.85,Math.min(1.15,style.optDouble("pace",1)));
+    if(!Float.isFinite(personalizedVoiceRate))personalizedVoiceRate=1f;
+    validated.put("pace",personalizedVoiceRate);
+    prefs.edit().putString("personalizationStyleV1",validated.toString())
+       .putFloat("personalizedVoiceRate",personalizedVoiceRate).apply();
+   }
    String chosenModel=c.optString("model",LocalModelStore.SMALL);
    String activeModel=LocalModelStore.choice(this);
    if((LocalModelStore.SMALL.equals(chosenModel)||LocalModelStore.LARGE.equals(chosenModel))
@@ -283,7 +302,7 @@ public final class ConversationService extends Service {
   speechPrefix="BONZE_"+(++speechSerial)+"_";final String prefix=speechPrefix;final long voiceBegan=SystemClock.elapsedRealtime();
   if("piper-mls".equals(voiceName)){
    speechEngine="piper-mls";setState("waiting","Je prépare ma voix locale.");
-   piper.speak(speechChunks,prefix,"calme".equals(mood)?.94f:"joie".equals(mood)?1.02f:.98f,new PiperVoice.Events(){
+   piper.speak(speechChunks,prefix,Math.max(.80f,Math.min(1.25f,("calme".equals(mood)?.94f:"joie".equals(mood)?1.02f:.98f)*personalizedVoiceRate)),new PiperVoice.Events(){
     public void start(String id,String content){main.post(()->{if(epoch!=workEpoch||!validSpeech(id))return;speechId=id;speechText=content;speechBegan=SystemClock.elapsedRealtime();journal.add("speech",diagnosticTurn,DiagnosticJournal.fields("engine","piper-mls","text",content,"id",id,"firstAudioLatencyMs",partIndex(id)==0?SystemClock.elapsedRealtime()-voiceBegan:JSONObject.NULL));setState("speaking","Je te réponds.");speechEvent("speech-start",id,0,0);});}
     public void level(String id,double value,int frame){main.post(()->{if(epoch!=workEpoch||!validSpeech(id)||listener==null)return;JSONObject e=base("speech-level");try{e.put("id",id).put("level",value).put("frame",frame);listener.onEvent(e.toString());}catch(JSONException ignored){}});}
     public void done(){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;finishSpeech();});}
@@ -295,7 +314,7 @@ public final class ConversationService extends Service {
   if(disposed||epoch!=workEpoch||speechPrefix.isEmpty())return;
   if(!voiceInitFinished&&attempt<10){main.postDelayed(()->androidSpeech(epoch,attempt+1),300);return;}
   if(!localVoiceReady||tts==null){stop(request,"Voix française locale indisponible. Tu peux continuer par écrit.");return;}
-  speechEngine="android";tts.setSpeechRate("calme".equals(mood)?.94f:"joie".equals(mood)||"humour".equals(mood)?1.02f:.98f);tts.setPitch("joie".equals(mood)?1.03f:1f);
+  speechEngine="android";tts.setSpeechRate(Math.max(.80f,Math.min(1.25f,("calme".equals(mood)?.94f:"joie".equals(mood)||"humour".equals(mood)?1.02f:.98f)*personalizedVoiceRate)));tts.setPitch("joie".equals(mood)?1.03f:1f);
   for(int i=0;i<speechChunks.size();i++){String id=speechPrefix+i;if(tts.speak(speechChunks.get(i),i==0?TextToSpeech.QUEUE_FLUSH:TextToSpeech.QUEUE_ADD,null,id)!=TextToSpeech.SUCCESS){stop(request,"Synthèse locale impossible.");return;}if(i<speechChunks.size()-1)tts.playSilentUtterance(170,TextToSpeech.QUEUE_ADD,"pause_"+id);}
  }
  private void finishSpeech(){if(!speechId.isEmpty())speechEvent("speech-end",speechId,0,0);speechId="";speechText="";speechPrefix="";abandonFocus();if(speechConversation&&session.active()){session.finished();retryListen(session.epoch());}else{releaseCpu();setState("off","Lecture terminée.");}}
