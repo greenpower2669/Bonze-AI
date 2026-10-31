@@ -1,7 +1,7 @@
 name: Bonze 031 — experimental validation (no release)
 on:
   push:
-    branches: [feature/bonze031-dialogue-natural-v1, feature/bonze039-svc-personalisation-v1, feature/bonze040-dialogue-voice-diagnostics]
+    branches: [feature/bonze031-dialogue-natural-v1, feature/bonze039-svc-personalisation-v1, feature/bonze040-dialogue-voice-diagnostics, feature/bonze041-conversation-audio-integration]
     paths: ['core/**', 'docs/**', 'tests/**', 'android/**', '.github/probes/bonze031.cpp', '.github/workflows/bonze031-ci.yml']
   workflow_dispatch:
 permissions:
@@ -59,6 +59,11 @@ jobs:
         with: {gradle-version: '8.9'}
       - name: Fetch pinned Piper AAR and voice for dependency resolution
         run: bash scripts/fetch-piper.sh
+      - name: Verify all scripted French phrases against packaged Piper lexicon
+        run: node scripts/audit-piper-corpus.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: bonze041-piper-audit, path: piper-corpus-report.json, if-no-files-found: ignore}
       - name: Compile Kotlin and Java (no release, no signing)
         run: gradle --no-daemon :androidApp:compileDebugKotlin :androidApp:compileDebugJavaWithJavac
       - name: Verify no Internet permission in source
