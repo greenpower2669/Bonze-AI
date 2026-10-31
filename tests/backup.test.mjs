@@ -49,3 +49,15 @@ test('model choice survives .bonze backup and old archives default to 230M',asyn
  const old=data();const legacy=validateBackup(old);
  assert.equal(legacy.web.modelChoice,'230m');
 });
+
+test('BONZE-039: personalized dialogue controls survive encrypted backup',async()=>{
+ const d=data();d.web.personalization={preset:'enqueteur',address:'vous',length:'court',
+  humour:0,curiosite:3,douceur:2,pace:.9};
+ const restored=await openBackup(await sealBackup(d,'une phrase secrète longue'),'une phrase secrète longue');
+ assert.deepEqual(restored.web.personalization,d.web.personalization);
+ const invalid=data();invalid.web.personalization={preset:'injected',address:'admin',pace:100};
+ const out=validateBackup(invalid);
+ assert.equal(out.web.personalization.preset,'naturel');
+ assert.equal(out.web.personalization.address,'tu');
+ assert.equal(out.web.personalization.pace,1.15);
+});
