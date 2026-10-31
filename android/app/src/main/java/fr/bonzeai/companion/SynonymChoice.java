@@ -4,9 +4,20 @@ import java.util.regex.*;
 /** Authored synonyms. A model may pick an index, never author the spoken sentence. */
 public final class SynonymChoice {
  private SynonymChoice(){}
+ // Every pair is bidirectional, invariant in number/gender and reviewed for meaning.
+ // A generated alternative is always checked against the Piper lexicon by CI.
  private static final String[][] PAIRS={
   {"doucement","tranquillement"},{"regarder","observer"},
-  {"continuer","poursuivre"},{"réellement","vraiment"}
+  {"continuer","poursuivre"},{"réellement","vraiment"},
+  {"regardons","observons"},{"proposer","suggérer"},
+  {"chercher","rechercher"},{"préciser","clarifier"},
+  {"calmement","sereinement"},{"parfois","de temps en temps"},
+  {"étonnant","surprenant"},{"inattendu","imprévu"},
+  {"essayer","tenter"},{"essayons","tentons"},
+  {"précisément","exactement"},{"terminer","finir"},
+  {"garder","conserver"},{"maintenant","à présent"},
+  {"vérifier","contrôler"},{"rapidement","vite"},
+  {"cependant","toutefois"}
  };
  public static List<String> candidates(String source){
   if(source==null||source.isEmpty())return Collections.emptyList();

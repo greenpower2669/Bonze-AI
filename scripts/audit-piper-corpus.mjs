@@ -39,7 +39,7 @@ for(const role of corpus.roles){
 // packaged Piper lexicon as our 18,000 authored cards.
 const synonymJava=readFileSync(new URL('../android/app/src/main/java/fr/bonzeai/companion/SynonymChoice.java',import.meta.url),'utf8');
 const approvedPairs=[...synonymJava.matchAll(/\{"([^"]+)","([^"]+)"\}/g)];
-if(approvedPairs.length<4)throw Error('BONZE-044 reviewed synonyms are missing');
+if(approvedPairs.length<21)throw Error('BONZE-045 approved synonyms were lost');
 const synonymOOV=new Set();
 for(const pair of approvedPairs)for(const word of [pair[1],pair[2]])
  for(const token of word.toLocaleLowerCase('fr-FR').match(WORD)||[])
