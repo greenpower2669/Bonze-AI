@@ -190,6 +190,9 @@ function choose(input){
  var denied=contains(norm(txt),'pas triste|ne suis pas triste|pas peur|ne suis pas inquiet|pas drole|ce n est pas drole');
  var intent=uncertain&&!denied&&barred.indexOf(semantic)<0&&INTENTS.indexOf(semantic)>=0?semantic:local;
  if(local==='urgence'||local==='correction'||local==='tristesse'||local==='inquietude')intent=local;
+ // An explicit definition question wins over a neural hint such as 'salut'
+ // when the word bonjour/merci/au revoir is only mentioned as subject matter.
+ if(local==='question'&&/^(?:pourquoi|comment|que|qu est ce que|quel|quelle|quels|quelles|combien|quand|ou|d ou)\b/.test(norm(txt)))intent='question';
  if((local==='discussion'||local==='question')&&contains(norm(txt),'continue|la suite|et apres|et ensuite|et puis|poursuis')&&
    ['jeu','humour','curiosite','discussion'].indexOf(s.lastIntent)>=0)intent=s.lastIntent;
  var force=input.forces&&typeof input.forces==='object'?input.forces:{};
