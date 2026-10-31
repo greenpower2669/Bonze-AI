@@ -175,3 +175,14 @@ Constats fondés sur la capture d'essai et la lecture de `BonzeInference.kt`, `D
 - [ ] Tester sur Samsung la réelle continuité des histoires, le débit, les silences et le micro en arrière-plan ; mesurer RAM/PSS et latences.
 - [ ] Diagnostiquer pourquoi la signature debug générée dans la nouvelle branche ne correspond pas au certificat de la Release 0.5/0.6. Ne **jamais** désactiver le contrôle ni suggérer une désinstallation sans migration validée : cache CI de signature non transportable d'une branche à l'autre. Aucun APK proposé comme mise à jour sûre tant que ce point n'est pas résolu.
 - [ ] Fiches SVC personnelles, correction/suppression des faits, import/export de corpus et contrôle d'identité : non réalisés ; BONZE-033 reste ouvert.
+
+
+### BONZE-037 — audit exhaustif de dictionnaire, 31/10/2026
+- [x] Réécrire 22 expressions à OOV du grand catalogue tout en vérifiant 18 000 formulations différentes de 220 caractères maximum.
+- [x] Auditer aussi toutes les 183 cartes historiques et les substitutions `[[...]]` ; rapport de mots absents comme artefact GitHub Actions ; échec CI explicite en présence d'un OOV.
+- [x] Réécrire 12 anciens mots inconnus (deux passages CI) sans altérer les règles, sauvegardes et réponses sensibles.
+- [ ] Vérifier le dernier audit de dictionnaire Piper sur le nouveau commit ; viser zéro OOV pour le catalogue complet (sans présumer de qualité audio ou lexique des entrées libres utilisateur).
+- [ ] Retrouver une chaîne de signature APK réellement compatible avec v0.6/v0.7, *sans publier de clé privée* et sans contourner le contrôle du certificat. Le cache GitHub Actions de la branche de PR ne retrouve pas le certificat attendu ; une fusion autorisée dans la branche de développement disposant du cache, ou une signature sécurisée, est nécessaire.
+- [ ] Réconcilier avec `bonze-ai-v0.7.0-dev` actuellement publiée depuis une branche parallèle avant changement versionCode (>7), livraison APK ou fusion ; conserver toutes les fonctionnalités de cette branche.
+- [ ] Test réel Piper sur Samsung : silence de lancement, volume, OOV des propos utilisateurs, PCM continu, accès micro et gestion d'arrière-plan.
+- [ ] BONZE-033 : associations mémorielles structurées S–V–C, apprentissage explicite, import/export et oubli/suppression encore à coder.

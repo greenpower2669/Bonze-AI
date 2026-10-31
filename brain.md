@@ -81,3 +81,9 @@ La grammaire locale `core/repertoire-corpus.js` compose 2 000 textes distincts p
 
 ### BONZE-035/036 — petites associations et voix stable
 La mémoire de sélection n'enregistre que des relations catégorie/rôle, poids bornés et ancienneté, avec historique des structures. Ce n'est pas une mémoire autobiographique. En cas d'échec Piper sans PCM, TTS local Android prend le relais pour la session et expose sa cause ; après PCM déjà audible, pas de relecture. Rapport CI du corpus vs lexique produit. Signature de debug d'une branche différente de la version installée : **mises à jour Android non certifiées**. Fiches personnelles SVC encore ouvertes.
+
+
+### BONZE-037 — couverture réelle des répliques Piper (31/10/2026)
+Révision manuelle de 22 formulations du répertoire de 18 000 variantes, puis des 12 mots inconnus dans les 183 anciennes cartes. Audit de la totalité des combinaisons et de chaque synonyme rédigé, comparés au dictionnaire Piper *effectivement préparé* dans la CI. Contrôle désormais bloquant sur un seul mot absent, rapport `piper-corpus-report.json` disponible comme artefact de test. Couverture complète confirmée sur les 18 000 nouvelles formules au commit 0abf7e8 ; contrôle des anciennes cartes à revalider sur le dernier commit. Ceci ne garantit ni qualité de prononciation, ni zéro coupure PCM, ni fonctionnement sur Samsung.
+
+Une prérelease `bonze-ai-v0.7.0-dev` est publiée **depuis une autre branche** (`feature/bonze031-dialogue-natural-v1`) avec `versionCode=7` ; notre PR #3 est toujours issue du développement 0.6.0 (code 6). Ne pas remplacer la prérelease ou downgrader ; arbitrage de fusion/rebase sur base avancée nécessaire avant toute publication.

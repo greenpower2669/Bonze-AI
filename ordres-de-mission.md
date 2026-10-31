@@ -116,3 +116,7 @@ Voir `docs/repertoire-simule-bonze-032.md`.
 
 ### BONZE-035/036 — continuité courte / Piper
 Arbitrage d'émotions avec liens renforcés/oubli contextuel borné, sans collecte de faits personnels ; relance de jeu sur « et après » ; repli de voix Android constant après un échec Piper avant audio, sans redémarrer une phrase déjà parlée. Audit CI de couverture du dictionnaire de 18 000 variantes. Tests Samsung et certificat de signature ouverts. Référence : todo.md.
+
+
+### BONZE-037 — finition lexicale sans risque de publication (31/10/2026)
+Mission exécutée : reformuler les termes français que le dictionnaire Piper embarqué ne couvre pas dans les 18 000 phrases composables, puis auditer aussi les 183 cartes et leurs synonymes. Générer un rapport CI et rendre l'audit bloquant, conserver l'intention de chaque phrase, l'anti-répétition et les cinq mémoires vivantes. Contrôler les tests automatisés. Interdiction de fusion `main` et de Release sans validation. Écart connu avec la préversion 0.7.0-dev publiée sur une branche concurrente : ne pas écraser cette ligne ni réutiliser son numéro de version. Suite et contrôles humains dans `todo.md`.

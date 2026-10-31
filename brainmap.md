@@ -105,3 +105,5 @@ Préflight qualité : PiperPhonetics.speechPhonemes applique le plancher expéri
 
 - BONZE-035 : `core/repertoire.js` associe des catégories/rôles sans texte personnel, conserve les structures récemment jouées et reprend le fil d'une scène ; `core/backup.mjs` valide les états bornés.
 - BONZE-036 : voix de secours par session dans `ConversationService.java`, audit du vocabulaire dans `scripts/audit-piper-corpus.mjs` ; signature de livraison et essais Samsung ouverts. Voir `todo.md`.
+
+- **BONZE-037 — couverture voix** : `scripts/audit-piper-corpus.mjs` vérifie les 18 000 compositions + les 183 cartes historiques et tous les synonymes, en s'appuyant sur le lexique réellement embarqué. Corrections des mots OOV dans `core/repertoire-corpus.js` et `core/repertoire.js`. Préversion 0.7.0-dev sur autre branche, signature non transférée sur la branche de PR ; voir `todo.md` et `debughistorical.md`.
