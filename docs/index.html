@@ -76,6 +76,22 @@
    <button type="submit" class="secondary-button">Enregistrer mon surnom</button>
  </form>
  <p id="profile-status" class="hint">Surnom conservé dans l'appareil, sans authentification.</p>
+ <details id="conversation-style"><summary>🎭 Personnaliser le caractère et la voix</summary>
+  <p class="hint">Préférences hors ligne : elles guident le modèle local sur Android, sans garantir sa réponse et sans ouvrir les souvenirs privés.</p>
+  <label for="style-preset">Caractère</label>
+  <select id="style-preset"><option value="naturel">Naturel</option><option value="doux">Doux</option>
+   <option value="joueur">Joueur et imaginatif</option><option value="enqueteur">Enquêteur curieux</option><option value="calme">Calme et posé</option></select>
+  <label for="style-address">Façon de parler</label>
+  <select id="style-address"><option value="tu">Tutoiement</option><option value="vous">Vouvoiement</option></select>
+  <label for="style-length">Réponses</label>
+  <select id="style-length"><option value="court">Courtes</option><option value="normal">Équilibrées</option><option value="detail">Plus détaillées</option></select>
+  <label for="style-humour">Humour (0 à 3)</label><input id="style-humour" type="range" min="0" max="3" value="2">
+  <label for="style-curiosite">Curiosité (0 à 3)</label><input id="style-curiosite" type="range" min="0" max="3" value="2">
+  <label for="style-douceur">Douceur (0 à 3)</label><input id="style-douceur" type="range" min="0" max="3" value="2">
+  <label for="style-pace">Débit vocal (85 à 115 %)</label><input id="style-pace" type="range" min="0.85" max="1.15" step="0.05" value="1">
+  <p id="style-status" class="hint" role="status"></p>
+  <button type="button" id="style-reset" class="secondary-button">Rétablir le caractère par défaut</button>
+ </details>
  <details id="avatar-editor"><summary>🌱 Personnaliser mon Bonze</summary>
   <p id="avatar-description" class="hint" role="status"></p>
   <button id="avatar-read" type="button" class="secondary-button">Lire la description</button>

@@ -1,6 +1,7 @@
 import '../core/council.js';
 import {setupBackup} from './backup-ui.js';
 import {setupMemoryUI} from './memory-ui.js';
+import {normalizeStyle,describeStyle} from '../core/personality-style.mjs';
 import {captionPair} from '../core/captions.mjs';
 import {answer,listening} from '../core/bonze.mjs';
 import {inferExperts} from '../core/experts.mjs';
@@ -22,6 +23,7 @@ let fontSize=2,resourceMode='precise',neuralEnabled=true,contrast=false,reduceMo
 let browserVoiceEnabled=false,identity,saved=null,voiceRun=0,councilState=null,councilParams=null,councilJournal=[];
 let nativeActive=false,nativeBusy=false,nativeConnected=false,nativeVoice='',lastNativeHumanId=0,pendingVoice=null;
 let memoryVault=null,memoryLock=()=>{},modelChoice='230m',model12Ready=false;
+let personalization=normalizeStyle();
 try{saved=JSON.parse(localStorage.getItem(STORAGE)||'null');}catch{}
 if(saved&&typeof saved==='object'){
  profile=typeof saved.profile?.nickname==='string'?{nickname:saved.profile.nickname.slice(0,40)}:null;
@@ -32,8 +34,9 @@ if(saved&&typeof saved==='object'){
  contrast=saved.contrast===true;reduceMotion=saved.reduceMotion===true;
  browserVoiceEnabled=saved.browserVoiceEnabled===true;lastNativeHumanId=Number.isSafeInteger(saved.lastNativeHumanId)?saved.lastNativeHumanId:0;
 }
+personalization=normalizeStyle(saved?.personalization);
 identity=restoreIdentity(saved?.identity);memoryVault=saved?.memoryVault??null;modelChoice=saved?.modelChoice==='12b'?'12b':'230m';councilState=saved?.councilState||{version:1,forces:{...identity.acquired.forces},globalEndurance:identity.acquired.endurance};councilParams=saved?.councilParams||null;try{councilJournal=JSON.parse(localStorage.getItem("bonze-diagnostics")||"[]");}catch{}
-function webState(){return {profile,history:history.slice(-30),fontSize,resourceMode,neuralEnabled,contrast,reduceMotion,identity,browserVoiceEnabled,lastNativeHumanId,councilState,councilParams,memoryVault,modelChoice};}
+function webState(){return {profile,history:history.slice(-30),fontSize,resourceMode,neuralEnabled,contrast,reduceMotion,identity,browserVoiceEnabled,lastNativeHumanId,councilState,councilParams,memoryVault,modelChoice,personalization};}
 function saveNativeWeb(){if(isNative&&nativeConnected)window.BonzeAndroid.command('save-web',JSON.stringify({web:webState(),weights:trainedWeights}),'');}
 function save(){
  try{localStorage.setItem(STORAGE,JSON.stringify(webState()));if(!isNative)localStorage.setItem('bonze-diagnostics',JSON.stringify(councilJournal));}
@@ -87,7 +90,7 @@ function browserSpeak(text,deliberate=false){
  if(isNative||(!browserVoiceEnabled&&!deliberate)||document.hidden||['off','text'].includes(resourceMode))return;
  const voice=browserLocalVoice();
  if(!voice){el('voice-status').textContent='Aucune voix française locale disponible.';return;}
- const u=new SpeechSynthesisUtterance(text);u.voice=voice;u.lang=voice.lang;u.rate=.98;
+ const u=new SpeechSynthesisUtterance(text);u.voice=voice;u.lang=voice.lang;u.rate=personalization.pace;
  const id='web-'+Date.now();
  u.onstart=()=>{speechMotion.start(id,text,performance.now());state('speaking');};
  u.onboundary=e=>speechMotion.range(id,e.charIndex,e.charIndex+(e.charLength||4),performance.now());
@@ -137,7 +140,7 @@ function handleText(text,source='text'){
  el('brain-status').textContent='Réponse du mode textuel léger.';
  finishReply(answer(clean,profile||{}).text,token);
 }
-function configData(){return JSON.stringify({mode:resourceMode,neural:neuralEnabled,readText:browserVoiceEnabled,mood:describedMood||'curiosite',nickname:profile?.nickname||'',voice:nativeVoice,identity,model:modelChoice});}
+function configData(){return JSON.stringify({mode:resourceMode,neural:neuralEnabled,readText:browserVoiceEnabled,mood:describedMood||'curiosite',nickname:profile?.nickname||'',voice:nativeVoice,identity,model:modelChoice,personalization});}
 function configureNative(){if(isNative&&nativeConnected)window.BonzeAndroid.configureNative(configData());}
 function applyNativeHistory(rows){
  if(!Array.isArray(rows))return;
@@ -199,6 +202,20 @@ el('intro').addEventListener('submit',e=>{
  profile={nickname};el('profile-status').textContent='Enchanté, '+nickname+' ! Surnom local, sans authentification.';save();configureNative();
 });
 if(profile){el('nickname').value=profile.nickname;el('profile-status').textContent='Enchanté, '+profile.nickname+' ! Surnom enregistré localement.';}
+const styleFields={preset:'style-preset',address:'style-address',length:'style-length',
+ humour:'style-humour',curiosite:'style-curiosite',douceur:'style-douceur',pace:'style-pace'};
+function showStyle(){
+ for(const [key,id] of Object.entries(styleFields))el(id).value=String(personalization[key]);
+ el('style-status').textContent=describeStyle(personalization)+' Ces réglages ne donnent aucun accès à la mémoire privée.';
+}
+function updateStyle(){
+ const proposed={};for(const [key,id] of Object.entries(styleFields))
+  proposed[key]=['humour','curiosite','douceur','pace'].includes(key)?Number(el(id).value):el(id).value;
+ personalization=normalizeStyle(proposed);showStyle();save();configureNative();
+}
+for(const id of Object.values(styleFields))el(id).addEventListener('change',updateStyle);
+el('style-reset').addEventListener('click',()=>{personalization=normalizeStyle();showStyle();save();configureNative();});
+showStyle();
 function applyMode(){
  el('resource-mode').value=resourceMode;
  const enabled=neuralEnabled&&['precise','eco'].includes(resourceMode);
