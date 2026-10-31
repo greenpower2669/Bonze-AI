@@ -49,7 +49,8 @@ class PiperVoice(private val app: Context) {
                 loadDictionary()
                 val phonemes=chunks.map { PiperPhonetics.speechPhonemes(it,dictionary!!) }
                 val tts=prepare()
-                val fragments=ArrayList<ShortArray>(chunks.size)
+                val fragments=ArrayList<FloatArray>(chunks.size)
+                var maxAmplitude=0f
                 var total=0
                 var sampleRate=0
                 val generationAt=SystemClock.elapsedRealtime()
@@ -64,19 +65,22 @@ class PiperVoice(private val app: Context) {
                     if(sampleRate==0)sampleRate=output.sampleRate
                     check(sampleRate==output.sampleRate) { "sample-rate-change" }
                     check(total.toLong()+output.samples.size<=sampleRate.toLong()*100) { "audio-duration-limit" }
-                    PiperAudio.normalize(output.samples)
-                    fragments.add(ShortArray(output.samples.size) { index ->
-                        (output.samples[index].coerceIn(-1f,1f)*32767).toInt().toShort()
-                    })
+                    for(sample in output.samples){
+                        check(sample.isFinite()) { "non-finite-pcm" }
+                        maxAmplitude=max(maxAmplitude,abs(sample))
+                    }
+                    fragments.add(output.samples)
                     total+=output.samples.size
                 }
                 if(serial.get()!=token)return@execute
                 check(total>100&&sampleRate>0) { "empty-audio" }
+                check(maxAmplitude>=0.001f) { "silent-pcm" }
+                // One gain for the WHOLE answer, preventing loudness jumps between pieces.
+                val gain=min(20f,0.6f/maxAmplitude)
                 val pcm=ShortArray(total)
                 var offset=0
-                for(fragment in fragments) {
-                    fragment.copyInto(pcm,offset)
-                    offset+=fragment.size
+                for(fragment in fragments)for(sample in fragment){
+                    pcm[offset++]=(sample*gain).coerceIn(-1f,1f).times(32767f).toInt().toShort()
                 }
                 fragments.clear()
                 val synthesisMs=SystemClock.elapsedRealtime()-generationAt
