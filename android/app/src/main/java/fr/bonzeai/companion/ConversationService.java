@@ -363,6 +363,14 @@ public final class ConversationService extends Service {
  private void updateCouncil(String text){if(council==null)return;long now=SystemClock.elapsedRealtime();try{JSONObject r=council.run(text,DiagnosticJournal.fields("familiar",memory.size()>0,"scene",!memory.scene().isEmpty()),Math.min(30,(now-councilAt)/1000.0),state);councilAt=now;policyHint=r.optString("hint");JSONObject forces=r.getJSONObject("state").getJSONObject("forces");double max=-1;for(Iterator<String> it=forces.keys();it.hasNext();){String k=it.next();if(forces.optDouble(k)>max){max=forces.optDouble(k);mood=k;}}journal.add("council",diagnosticTurn,r);}catch(Exception e){journal.add("council-error",diagnosticTurn,DiagnosticJournal.fields("error",e.getClass().getSimpleName()));}}
  private void councilTick(){if(disposed)return;if(session.active()||listener!=null){updateCouncil("");if(listener!=null&&council!=null){JSONObject e=base("emotion-state");try{e.put("council",council.snapshot());listener.onEvent(e.toString());}catch(JSONException ignored){}}}main.postDelayed(this::councilTick,10000);}
  public void configureCouncil(String json)throws JSONException{if(council==null)throw new IllegalStateException();council.configure(new JSONObject(json));journal.add("admin-council",diagnosticTurn,council.snapshot());publish();}
+ public String safeDebugReport(){
+  // Strictly technical, no transcripts or unfiltered diagnostic payloads.
+  return DiagnosticJournal.fields("format","bonze-debug-v1","createdAt",System.currentTimeMillis(),
+   "privacy","no-user-speech-no-generated-text-no-memory",
+   "model",LocalModelStore.choice(this),"speechEngine",speechEngine,
+   "eventCount",journal.safeCopy().length(),"events",journal.safeCopy(),
+   "lastInferenceMs",lastLatency,"lastCpuMs",lastCpu).toString();
+ }
  public JSONObject diagnostics(){return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"journal",journal.copy(),"resources",resourceObject(),"engine",speechEngine,"preferredVoice",voiceName,"model",LocalModelStore.choice(this),"model12Ready",LocalModelStore.available(this));}
  private JSONObject resourceObject(){try{return new JSONObject(resources());}catch(JSONException e){return new JSONObject();}}
  public JSONObject backupData(){
