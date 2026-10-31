@@ -205,16 +205,46 @@ public final class ConversationService extends Service {
      "label",chosenLabel,"error",failure,"latencyMs",elapsed,"cpuMs",cpuTime,
      "mechanism",chosenLabel.isEmpty()?"lexical-fallback":"liquid-intent",
      "discarded",disposed||epoch!=workEpoch));
-    if(!disposed&&epoch==workEpoch)complete(epoch,scriptedReply(text,chosenLabel,turn),fromVoice);
+    if(!disposed&&epoch==workEpoch){
+     final String authored=scriptedReply(text,chosenLabel,turn);
+     final List<String> variants=SynonymChoice.candidates(authored);
+     if(!"precise".equals(mode)||variants.isEmpty()||!failure.isEmpty()){
+      journal.add("variation",turn,DiagnosticJournal.fields("mechanism","authored-only","candidates",variants.size()));
+      complete(epoch,authored,fromVoice);
+     }else{
+      inference.execute(()->{
+       String selected="0",variationError="";
+       long start=SystemClock.elapsedRealtime();
+       try{selected=BonzeInference.chooseVariation(getApplicationContext(),authored,variants.toArray(new String[0]));}
+       catch(Exception|LinkageError error){variationError=error.getClass().getSimpleName();}
+       final String index=selected,error=variationError;
+       final long elapsedVariation=SystemClock.elapsedRealtime()-start;
+       main.post(()->{
+        if(disposed||epoch!=workEpoch)return;
+        String candidate=SynonymChoice.pick(authored,variants,index);
+        ReplyQuality.Result verdict=ReplyQuality.review(text,candidate,memory.repeats(candidate),recentBonzeReplies(8));
+        String answer=verdict.repaired?authored:candidate;
+        journal.add("variation",turn,DiagnosticJournal.fields("mechanism","liquid-synonym-index",
+         "variants",variants.size(),"index",index,"accepted",!verdict.repaired,
+         "quality",verdict.reason,"latencyMs",elapsedVariation,"error",error));
+        complete(epoch,answer,fromVoice);
+       });
+      });
+     }
+    }
    });
   });
  }
+ private List<String> recentBonzeReplies(int limit){
+  List<String> recent=new ArrayList<>();
+  List<DialogueMemory.Entry> entries=memory.entries();
+  for(int i=entries.size()-1;i>=0&&recent.size()<limit;i--)
+   if("bot".equals(entries.get(i).role))recent.add(entries.get(i).text);
+  return recent;
+ }
  private String scriptedReply(String text,String label,long turn){
   if(scripted!=null)try{
-   List<String> recentBot=new ArrayList<>();
-   List<DialogueMemory.Entry> entries=memory.entries();
-   for(int i=entries.size()-1;i>=0&&recentBot.size()<8;i--)
-    if("bot".equals(entries.get(i).role))recentBot.add(entries.get(i).text);
+   List<String> recentBot=recentBonzeReplies(8);
    for(int attempt=0;attempt<8;attempt++){
     JSONObject selected=scripted.choose(text,label,council==null?null:council.snapshot(),true);
     String candidate=selected.getString("text");
@@ -329,11 +359,19 @@ public final class ConversationService extends Service {
   voices.sort(Comparator.comparingInt((Voice v)->Locale.FRANCE.equals(v.getLocale())?0:1).thenComparing(Comparator.comparingInt(Voice::getQuality).reversed()).thenComparing(Voice::getName));return voices;
  }
  private void selectVoice(String preferred){
-  if(tts==null||!voiceInitFinished)return;List<Voice> all=localVoices();Voice choice=null;
+  // Saving Piper never depends on Android TextToSpeech initialization.
+  if("piper-mls".equals(preferred)){
+   voiceName="piper-mls";
+   prefs.edit().putString("voiceChoiceV2",voiceName).putString("voice",voiceName).apply();
+   return;
+  }
+  if(tts==null||!voiceInitFinished)return;
+  List<Voice> all=localVoices();Voice choice=null;
   for(Voice v:all)if(v.getName().equals(preferred)){choice=v;break;}
   if(choice==null&&!all.isEmpty())choice=all.get(0);
   localVoiceReady=choice!=null&&tts.setVoice(choice)==TextToSpeech.SUCCESS;
-  if("piper-mls".equals(preferred))voiceName=preferred;else if(localVoiceReady)voiceName=choice.getName();prefs.edit().putString("voiceChoiceV2",voiceName).putString("voice",voiceName).apply();
+  if(localVoiceReady)voiceName=choice.getName();
+  prefs.edit().putString("voiceChoiceV2",voiceName).putString("voice",voiceName).apply();
  }
  public void describe(String text,String id){stop(id,"Lecture demandée.");if(!"off".equals(mode)&&!"text".equals(mode))speak(text,false,workEpoch,0);}
  private void speak(String text,boolean conversation,long epoch,int attempt){

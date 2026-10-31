@@ -26,6 +26,8 @@ jobs:
           java -cp /tmp/bonze-jvm KnowledgeGuardTest
           javac -d /tmp/bonze-jvm android/app/src/main/java/fr/bonzeai/companion/ReplyQuality.java tests/ReplyQualityTest.java
           java -cp /tmp/bonze-jvm ReplyQualityTest
+          javac -d /tmp/bonze-jvm android/app/src/main/java/fr/bonzeai/companion/SynonymChoice.java tests/SynonymChoiceTest.java
+          java -cp /tmp/bonze-jvm SynonymChoiceTest
           javac -d /tmp/bonze-jvm android/app/src/main/java/fr/bonzeai/companion/IntentClassify.java tests/IntentClassifyTest.java
           java -cp /tmp/bonze-jvm IntentClassifyTest
           javac -d /tmp/bonze-jvm android/app/src/main/java/fr/bonzeai/companion/VoiceSession.java tests/VoiceSessionTest.java

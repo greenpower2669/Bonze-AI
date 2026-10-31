@@ -85,6 +85,35 @@ object BonzeInference {
         IntentClassify.label(rawLabel)
     }
 
+    /**
+     * Only choose an index of a prevalidated synonym written by Bonze authors.
+     * Reuse the GGUF already loaded for classification on the single worker.
+     */
+    @JvmStatic @Synchronized
+    fun chooseVariation(context: Context, original: String, alternatives: Array<String>): String = runBlocking {
+        if (alternatives.isEmpty() || loaded == null || original.length > 240) return@runBlocking "0"
+        val count = alternatives.size.coerceAtMost(4)
+        val options = buildString {
+            append("0 : texte original\n")
+            for (i in 0 until count)
+                append((i + 1).toString() + " : " + alternatives[i].take(240) + "\n")
+        }
+        val system = "Tu choisis uniquement un synonyme français. " +
+            "Réponds par UN chiffre de 0 à " + count + ". " +
+            "0 si tu hésites. Ne rédige jamais de phrase."
+        val prompt = "Texte original : " + original.take(240) + "\n" +
+            "Variantes validées :\n" + options + "\nChiffre :"
+        try {
+            val raw = Llama.complete(loaded!!, prompt = prompt,
+                systemPrompt = system, maxTokens = 4).text.trim()
+            if (raw.matches(Regex("[0-" + count + "]"))) raw else "0"
+        } catch (_: Exception) {
+            "0"
+        } catch (_: LinkageError) {
+            "0"
+        }
+    }
+
     /** Initialise le modèle à partir des poids inclus dans l'APK, sans réseau. */
     private fun ensureModel(context: Context): File {
         val dir = File(context.filesDir, "gguf")
