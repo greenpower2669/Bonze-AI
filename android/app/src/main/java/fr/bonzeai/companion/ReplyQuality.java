@@ -63,7 +63,9 @@ public final class ReplyQuality {
   String answer=output==null?"":output.trim(),u=norm(input),a=norm(answer);
   if(a.isEmpty())return new Result("","empty",true);
   boolean requested=quotingRequested(input);
-  if(!requested&&similar(input,answer))return new Result("","user-echo",true);
+  // A short reciprocal greeting is idiomatic, not a long-form parrot response.
+  boolean courtesy=u.equals(a)&&Arrays.asList("salut","bonjour","bonsoir","coucou","merci","au revoir").contains(u);
+  if(!requested&&!courtesy&&similar(input,answer))return new Result("","user-echo",true);
   if(lastBotRepeat)return new Result("","bot-repeat",true);
   if(recentBot!=null)for(String previous:recentBot)
    if(similar(answer,previous))return new Result("","history-repeat",true);
