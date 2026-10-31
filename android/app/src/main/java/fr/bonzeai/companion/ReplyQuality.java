@@ -26,7 +26,8 @@ public final class ReplyQuality {
     Set<String> su=new HashSet<>(Arrays.asList(u.split(" "))),sa=new HashSet<>(Arrays.asList(a.split(" ")));
     su.removeIf(t->t.length()<3);sa.removeIf(t->t.length()<3);
     if(su.size()>=4&&sa.size()>=4){int common=0;for(String x:su)if(sa.contains(x))common++;
-     echo=(double)common/su.size()>=.85&&(double)common/sa.size()>=.72;}
+     echo=((double)common/su.size()>=.85&&(double)common/sa.size()>=.72)||
+      (a.length()<=u.length()&&(double)common/sa.size()>=.95&&(double)common/su.size()>=.60);}
    }
   }
   if(echo)return new Result(
