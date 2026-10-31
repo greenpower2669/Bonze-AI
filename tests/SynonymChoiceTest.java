@@ -20,7 +20,7 @@ public final class SynonymChoiceTest {
   ok(SynonymChoice.candidates("Nous pouvons maintenant vérifier cela.").contains("Nous pouvons maintenant contrôler cela."),"verb substitution");
   ok(SynonymChoice.candidates("Parfois les choses paraissent difficiles.").contains("De temps en temps les choses paraissent difficiles."),"multiword replacement and case");
   ok(SynonymChoice.candidates("Et pourtant, nous devons continuer.").size()>=1,"known replacements are bounded");
-  ok(SynonymChoice.candidates("Je termine et je continue, réellement.").size()>=2,"multiple safe variants");
+  ok(SynonymChoice.candidates("Nous pouvons continuer et chercher, réellement.").size()>=2,"multiple safe variants");
   System.out.println("SynonymChoiceTest OK");
  }
 }
