@@ -320,15 +320,21 @@ public final class ConversationService extends Service {
       });
      }
      public void done(){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;finishSpeech();});}
-    public void failed(String reason,boolean hadAudio){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;journal.add("speech-fallback",diagnosticTurn,DiagnosticJournal.fields("reason",reason,"hadAudio",hadAudio));if(hadAudio)stop(request,"Lecture interrompue. Tu peux réessayer.");else androidSpeech(epoch,0);});}
+    public void failed(String reason,boolean hadAudio){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;journal.add("speech-fallback",diagnosticTurn,DiagnosticJournal.fields("reason",reason,"reasonCode",safeAudioFailure(reason),"hadAudio",hadAudio,"nextEngine",hadAudio?"stopped":"android"));if(hadAudio)stop(request,"Lecture interrompue. Tu peux réessayer.");else androidSpeech(epoch,0);});}
    });
   }else androidSpeech(epoch,0);
+ }
+ private static String safeAudioFailure(String reason){
+  if(reason==null)return "unknown";
+  for(String code:new String[]{"invalid-pcm","audio-write","audio-prefill-write","playback-timeout","silent-pcm","non-finite-pcm"})
+   if(reason.contains(code))return code;
+  return "piper-runtime";
  }
  private void androidSpeech(long epoch,int attempt){
   if(disposed||epoch!=workEpoch||speechPrefix.isEmpty())return;
   if(!voiceInitFinished&&attempt<10){main.postDelayed(()->androidSpeech(epoch,attempt+1),300);return;}
   if(!localVoiceReady||tts==null){stop(request,"Voix française locale indisponible. Tu peux continuer par écrit.");return;}
-  speechEngine="android";tts.setSpeechRate(Math.max(.80f,Math.min(1.25f,("calme".equals(mood)?.94f:"joie".equals(mood)||"humour".equals(mood)?1.02f:.98f)*personalizedVoiceRate)));tts.setPitch("joie".equals(mood)?1.03f:1f);
+  speechEngine="android";journal.add("tts-start",diagnosticTurn,DiagnosticJournal.fields("engine","android","parts",speechChunks.size()));tts.setSpeechRate(Math.max(.80f,Math.min(1.25f,("calme".equals(mood)?.94f:"joie".equals(mood)||"humour".equals(mood)?1.02f:.98f)*personalizedVoiceRate)));tts.setPitch("joie".equals(mood)?1.03f:1f);
   for(int i=0;i<speechChunks.size();i++){String id=speechPrefix+i;if(tts.speak(speechChunks.get(i),i==0?TextToSpeech.QUEUE_FLUSH:TextToSpeech.QUEUE_ADD,null,id)!=TextToSpeech.SUCCESS){stop(request,"Synthèse locale impossible.");return;}if(i<speechChunks.size()-1)tts.playSilentUtterance(170,TextToSpeech.QUEUE_ADD,"pause_"+id);}
  }
  private void finishSpeech(){if(!speechId.isEmpty())speechEvent("speech-end",speechId,0,0);speechId="";speechText="";speechPrefix="";abandonFocus();if(speechConversation&&session.active()){session.finished();retryListen(session.epoch());}else{releaseCpu();setState("off","Lecture terminée.");}}

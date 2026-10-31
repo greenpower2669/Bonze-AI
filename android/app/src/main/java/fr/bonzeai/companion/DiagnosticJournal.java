@@ -16,7 +16,7 @@ final class DiagnosticJournal {
  JSONArray safeCopy(){
   JSONArray result=new JSONArray();
   java.util.Set<String> keys=new java.util.HashSet<>(java.util.Arrays.asList(
-   "latencyMs","cpuMs","qualityReason","repairApplied","discarded","repeatPrevious",
+   "latencyMs","cpuMs","qualityReason","repairApplied","discarded","repeatPrevious","reasonCode","nextEngine","parts",
    "firstAudioLatencyMs","generationMs","playbackMs","underruns","samples","part",
    "engine","source","hadAudio","ready","selected","error","epoch"));
   for(int i=0;i<rows.length();i++){
@@ -26,7 +26,7 @@ final class DiagnosticJournal {
    if(data!=null)for(String k:keys){
     Object v=data.opt(k);
     if(v instanceof Number||v instanceof Boolean)try{limited.put(k,v);}catch(JSONException ignored){}
-    else if(v instanceof String&&("qualityReason".equals(k)||"engine".equals(k)||"source".equals(k)||"selected".equals(k)))
+    else if(v instanceof String&&("qualityReason".equals(k)||"engine".equals(k)||"source".equals(k)||"selected".equals(k)||"reasonCode".equals(k)||"nextEngine".equals(k)||"error".equals(k)))
       try{limited.put(k,((String)v).replaceAll("[^a-zA-Z0-9_-]","").substring(0,Math.min(48,((String)v).replaceAll("[^a-zA-Z0-9_-]","").length())));}catch(RuntimeException ignored){}
    }
    result.put(fields("at",old.optLong("at"),"turn",old.optLong("turn"),
