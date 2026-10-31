@@ -51,7 +51,7 @@ const cardinalWords=[
  'zéro','un','deux','trois','quatre','cinq','six','sept','huit','neuf',
  'dix','onze','douze','treize','quatorze','quinze','seize',
  'vingt','vingts','trente','quarante','cinquante','soixante',
- 'cent','cents','mille','et'
+ 'cent','cents','mille','et','heure','heures'
 ];
 const cardinalMissing=cardinalWords.filter(word=>!dictionary.has(word));
 if(cardinalMissing.length)throw Error('Piper French numeral tokens absent: '+cardinalMissing.join(', '));

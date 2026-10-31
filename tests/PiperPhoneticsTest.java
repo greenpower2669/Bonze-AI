@@ -8,8 +8,21 @@ public class PiperPhoneticsTest{
   String[][] examples={{"0","zéro"},{"3","trois"},{"20","vingt"},{"21","vingt et un"},{"71","soixante et onze"},{"80","quatre vingts"},{"91","quatre vingt onze"},{"2026","deux mille vingt six"},{"007","zéro zéro sept"},{"200","deux cents"},{"201","deux cent un"},{"1000","mille"},{"9999","neuf mille neuf cent quatre vingt dix neuf"}};
   for(String[] e:examples)if(!PiperFrenchNumbers.expand(e[0]).equals(e[1]))
    throw new AssertionError(e[0]+" -> "+PiperFrenchNumbers.expand(e[0]));
+  // BONZE-046: French clock hours are words, never discarded as digits.
+  String[][] clocks={{"15h30","quinze heures trente"},{"1h00","une heure"},
+    {"09H05","neuf heures cinq"},{"21 h 01","vingt et une heures une"},
+    {"0h00","zéro heure"},{"23h59","vingt trois heures cinquante neuf"}};
+  for(String[] clock:clocks)if(!PiperFrenchNumbers.expand(clock[0]).equals(clock[1]))
+   throw new AssertionError(clock[0]+" -> "+PiperFrenchNumbers.expand(clock[0]));
+  for(String invalid:new String[]{"24h00","12h60","15h3","25h59","12h99","12h30min"}){
+   try{PiperFrenchNumbers.expand(invalid);throw new AssertionError("accepted clock "+invalid);}
+   catch(IllegalArgumentException expected){}
+  }
   Map<String,String> nums=new HashMap<>(d);
   for(String[] example:examples)for(String word:example[1].split(" "))nums.put(word,word);
+  for(String token:new String[]{"heure","heures","quinze","trente"})nums.put(token,token);
+  if(!PiperPhonetics.phonemes("Bonjour 15h30 !",nums).equals("bɔ̃ʒˈuʁ quinze heures trente"))
+   throw new AssertionError("spoken clock phonemes");
   if(!PiperPhonetics.phonemes("Bonjour 2026 !",nums).equals("bɔ̃ʒˈuʁ deux mille vingt six"))
    throw new AssertionError("integer to pronounceable words");
   for(String unsupported:new String[]{"3,14","2.5","٣","a2026","12345","12 345"})

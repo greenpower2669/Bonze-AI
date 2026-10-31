@@ -133,3 +133,6 @@ Source exacte publiée : `fdd4ba9477fbb87f72b7f69a2a0ec225bd471fbb`, code versio
 - **BONZE-044 (31/10)** : `docs/bonze044-liquid-synonymes.md` ; `SynonymChoice.java` (substitutions fermées), `BonzeInference.kt` (classifieur et choix d'indice Liquid), `ConversationService.java` (répertoire principal + validation anti-répétition + Piper choisi), `tests/SynonymChoiceTest.java`. Branche de travail canonique `feature/bonze042-field-fixes` ; autres branches conservées.
 
 - **BONZE-045** : `docs/bonze045-synonymes-piper-questions.md` ; `SynonymChoice.java` (21 paires contrôlées), `PiperFrenchNumbers.java`, `PiperPhonetics.java`/`PiperVoice.kt` (entiers oralisés), `core/repertoire.js` (questions citées), `tests/PiperPhoneticsTest.java` et `tests/repertoire.test.mjs`. Branche unique `feature/bonze042-field-fixes`, aucune Release de ce code.
+
+## BONZE-046 — lecture Piper des heures
+`PiperFrenchNumbers.expand` traite une première passe des horaires français `HhMM` / `HH h MM` entre 00h00 et 23h59, puis les cardinaux habituels. `PiperPhonetics.phonemes` dépend toujours du lexique Piper empaqueté ; audit CI étendu aux mots « heure » et « heures ». `tests/PiperPhoneticsTest.java` inclut féminins, entrées invalides, phonèmes. Texte affiché et sauvegardes inchangés ; test sonore Samsung, distribution `.apk` et permissions Release restent des chantiers indépendants.

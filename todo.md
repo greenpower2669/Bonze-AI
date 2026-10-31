@@ -281,3 +281,12 @@ Traçabilité : `docs/bonze043-dialogue-voix-integration.md`. Aucun merge `main`
 - [ ] Faire essayer à Fab sur Samsung des dialogues de 20 tours avec questions non sociales, nombres ordinaires et identité, transcription FR, Piper/Bluetooth/veille, latence et logs anonymisés.
 - [ ] Étudier séparément les heures (`15h30`), décimaux et groupes de milliers : choisir une verbalisation exacte avant d'étendre la prise en charge. Ajouter les synonymes seulement avec preuves d'accord, de sens et de prononciation.
 - [ ] APK seul directement téléchargeable en GitHub Release toujours non publié pour BONZE-044/045 ; ne jamais annoncer une livraison sans asset réel ni contourner l'absence d'autorisation de publication. Pas de fusion `main`.
+
+### BONZE-046 — Horaires français, Piper (31/10)
+- [x] Énoncer `15h30`, `1h00`, `21 h 01` avec accords français corrects (borne 00h00–23h59).
+- [x] Rejeter explicitement horaires invalides, minutes hors plage et notation incomplète.
+- [x] Tests Java ajoutés : phrases, féminins, 6 rejets, passage au phonémiseur ; prétest JDK 21 local réussi sur 8 exemples et 6 rejets.
+- [x] Audit lexique CI étendu aux tokens `heure` et `heures` dans les vrais poids Piper.
+- [ ] Vérifier CI au nouveau HEAD et build complet si possible. Contrôler audio Samsung/Piper/Stop/Bluetooth et latence réelle.
+- [ ] Étudier séparément `15:30`, dates, décimaux, milliers. Ne pas lire les formats ambigus comme des données sûres.
+- [ ] APK de la nouvelle base 0.8 non publié en GitHub Release (403 documenté) ; conserver 0.7, aucune fusion `main`, aucune livraison ZIP.

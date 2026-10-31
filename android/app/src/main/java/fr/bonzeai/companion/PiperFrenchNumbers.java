@@ -11,6 +11,7 @@ public final class PiperFrenchNumbers {
   "dix","onze","douze","treize","quatorze","quinze","seize"
  };
  private static final String[] TENS={"","","vingt","trente","quarante","cinquante","soixante"};
+ private static final Pattern TIME=Pattern.compile("(?<![\\p{L}\\p{N}])([0-9]{1,2})\\s*[hH]\\s*([0-9]{2})(?![\\p{L}\\p{N}])");
  private static final Pattern INT=Pattern.compile("(?<![\\p{L}\\p{N}])([0-9]{1,4})(?![\\p{L}\\p{N}])");
  private static final Pattern FRACTION=Pattern.compile("[0-9][.,][0-9]");
  public static String cardinal(int n){
@@ -35,10 +36,28 @@ public final class PiperFrenchNumbers {
   return (mille==1?"mille":UNITS[mille]+" mille")
     +(rest==0?"":" "+cardinal(rest));
  }
+ /** Agreement for 1 or 21 hours and 1/21/31/41/51 minutes. */
+ private static String feminine(int n){
+  String phrase=cardinal(n);
+  return n%10==1&&n!=11?phrase.substring(0,phrase.length()-2)+"une":phrase;
+ }
+ /** Bound 24-hour French h notation (e.g. 15h30) before phonemization. */
+ public static String time(int hours,int minutes){
+  if(hours<0||hours>23||minutes<0||minutes>59)throw new IllegalArgumentException("lexicon-time-range");
+  return feminine(hours)+(hours==0||hours==1?" heure":" heures")+
+   (minutes==0?"":" "+feminine(minutes));
+ }
  public static String expand(String input){
   if(input==null||input.length()>1200)throw new IllegalArgumentException("lexicon-number-range");
   if(FRACTION.matcher(input).find())throw new IllegalArgumentException("lexicon-number-format");
-  Matcher words=INT.matcher(input);
+  // Treat French clock notation as one expression; invalid values are rejected.
+  Matcher hours=TIME.matcher(input);StringBuffer normalized=new StringBuffer();
+  while(hours.find()){
+   String spoken=time(Integer.parseInt(hours.group(1)),Integer.parseInt(hours.group(2)));
+   hours.appendReplacement(normalized,Matcher.quoteReplacement(spoken));
+  }
+  hours.appendTail(normalized);
+  Matcher words=INT.matcher(normalized.toString());
   StringBuffer result=new StringBuffer();
   while(words.find()){
    String digits=words.group(1),replacement;
