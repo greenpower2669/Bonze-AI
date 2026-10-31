@@ -205,7 +205,7 @@ public final class ConversationService extends Service {
      "label",chosenLabel,"error",failure,"latencyMs",elapsed,"cpuMs",cpuTime,
      "mechanism",chosenLabel.isEmpty()?"lexical-fallback":"liquid-intent",
      "discarded",disposed||epoch!=workEpoch));
-    if(!disposed&&epoch==workEpoch){
+    if(!disposed&&epoch==workEpoch&&turn==diagnosticTurn){
      final String authored=scriptedReply(text,chosenLabel,turn);
      final List<String> variants=SynonymChoice.candidates(authored);
      if(!"precise".equals(mode)||variants.isEmpty()||!failure.isEmpty()){
@@ -220,7 +220,7 @@ public final class ConversationService extends Service {
        final String index=selected,error=variationError;
        final long elapsedVariation=SystemClock.elapsedRealtime()-start;
        main.post(()->{
-        if(disposed||epoch!=workEpoch)return;
+        if(disposed||epoch!=workEpoch||turn!=diagnosticTurn)return;
         String candidate=SynonymChoice.pick(authored,variants,index);
         ReplyQuality.Result verdict=ReplyQuality.review(text,candidate,memory.repeats(candidate),recentBonzeReplies(8));
         String answer=verdict.repaired?authored:candidate;
@@ -264,11 +264,12 @@ public final class ConversationService extends Service {
     journal.add("repertoire-reroll",turn,DiagnosticJournal.fields("reason",checked.reason,"attempt",attempt+1));
    }
   }catch(Exception error){journal.add("repertoire-error",turn,DiagnosticJournal.fields("type",error.getClass().getSimpleName()));}
+  List<String> previous=recentBonzeReplies(8);
   for(String clarification:new String[]{
    "Je n'ai pas trouvé de réponse adaptée. Peux-tu préciser ce que tu attends de moi ?",
    "J'ai perdu le fil de ta question. Quel point souhaites-tu éclaircir ?",
    "Je préfère te demander une précision plutôt que répondre à côté. Quel est le sujet exact ?"
-  })if(!memory.repeats(clarification))return clarification;
+  })if(!ReplyQuality.review(text,clarification,memory.repeats(clarification),previous).repaired)return clarification;
   return "Je préfère vérifier ce que tu demandes avant de continuer.";
  }
  private void complete(long epoch,String answer,boolean fromVoice){
