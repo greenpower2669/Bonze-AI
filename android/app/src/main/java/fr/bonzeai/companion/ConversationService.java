@@ -218,6 +218,12 @@ public final class ConversationService extends Service {
    for(int attempt=0;attempt<8;attempt++){
     JSONObject selected=scripted.choose(text,label,council==null?null:council.snapshot(),true);
     String candidate=selected.getString("text");
+    // Piper MLS is unreliable on very short phoneme sequences. Prefer a full
+    // authored sentence over a silent switch of the user's selected voice.
+    if("piper-mls".equals(voiceName)&&candidate.codePointCount(0,candidate.length())<65){
+     journal.add("repertoire-reroll",turn,DiagnosticJournal.fields("reason","piper-short-text","attempt",attempt+1));
+     continue;
+    }
     ReplyQuality.Result checked=ReplyQuality.review(text,candidate,memory.repeats(candidate),recentBot);
     if(!checked.repaired){
      journal.add("repertoire",turn,DiagnosticJournal.fields("intent",selected.optString("intent"),
