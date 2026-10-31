@@ -249,7 +249,7 @@ function choose(input){
  return {text:body,emotion:pick.role==='sage'?'calme':pick.role,card:pick.id,family:pick.family,intent:intent,detected:local,semanticUsed:intent===semantic,state:s,trace:{cardsConsidered:ranked.length,substitutions:substitutions,source:'authored-repertoire',composed:pick.composed===true,modelGenerated:false}};
 }
 function run(json){var input=JSON.parse(json);return JSON.stringify(choose(input));}
-root.BonzeRepertoire={run:run,choose:choose,detect:detect,stats:function(){var per={};for(var p in byIntent)per[p]=byIntent[p].length;var perRole={},virtualCards=0;for(var i=0;i<ROLES.length;i++){var n=ROLES[i],local=ITEMS.filter(function(c){return c.role===n;}).length,composed=corpus?corpus.countPerRole:0;perRole[n]=local+composed;virtualCards+=composed;}
+root.BonzeRepertoire={run:run,choose:choose,detect:detect,auditCards:function(){return ITEMS.map(function(c){return {id:c.id,body:c.body};});},auditSlots:function(){return SYNS;},stats:function(){var per={};for(var p in byIntent)per[p]=byIntent[p].length;var perRole={},virtualCards=0;for(var i=0;i<ROLES.length;i++){var n=ROLES[i],local=ITEMS.filter(function(c){return c.role===n;}).length,composed=corpus?corpus.countPerRole:0;perRole[n]=local+composed;virtualCards+=composed;}
   if(corpus)for(var j=0;j<corpus.intents.length;j++){var intent=corpus.intents[j];per[intent]=(per[intent]||0)+ROLES.length*corpus.sizeFor(intent);}
   return {cards:ITEMS.length+virtualCards,materializedCards:ITEMS.length,virtualCards:virtualCards,perRole:perRole,roles:ROLES.slice(),byIntent:per};},roles:ROLES.slice(),intents:INTENTS.slice()};
 })(typeof globalThis!=='undefined'?globalThis:this);

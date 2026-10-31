@@ -103,7 +103,10 @@ jobs:
           grep -q "name='fr.bonzeai.companion'" package.txt
           grep -q "versionName='0.6.0'" package.txt
           "${ANDROID_HOME}/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK" | tee signature.txt
-          grep -qi '128b1bb0d488f33dd9075888ee15d6ff943136d657018026d1e0b22d9c35991d' signature.txt
+          if ! grep -qi '128b1bb0d488f33dd9075888ee15d6ff943136d657018026d1e0b22d9c35991d' signature.txt; then
+            echo '::error title=APK signer mismatch::The debug APK does NOT match the certificate of the installed 0.6/0.7 series. Do not install it as an update. A compatible signing key is required, never weaken this check.'
+            exit 1
+          fi
           cp "$APK" Bonze-AI-v0.6.0-debug.apk
           sha256sum Bonze-AI-v0.6.0-debug.apk | tee Bonze-AI-v0.6.0.sha256
       - uses: actions/upload-artifact@v4
