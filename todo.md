@@ -239,3 +239,9 @@ Source exacte publiée : `fdd4ba9477fbb87f72b7f69a2a0ec225bd471fbb`, code versio
 - [ ] Vérifier sur Samsung réel : double installation sans suppression, mémoire chiffrée, critique « naze », dialogue continu, coupures, latence première syllabe, Bluetooth/casque, niveau sonore, arrêt immédiat, journal anonymisé.
 - [ ] Après tests appareils, décider du mécanisme de signature de mise à jour et du passage de BONZE-037/039/040/041 dans la branche de référence ; aucun merge main sans autorisation.
 - [ ] Optimiser latence voix : envisager moteur et buffers anticipés, sans réintroduire de blancs ou de traitements simultanés non sûrs.
+
+### BONZE-041 — publication directe GitHub sans ZIP (31/10/2026)
+- [x] APK parallèle 0.8.0-dev vérifié, SHA-256 `dac8a4401e7a223d0982a7209d99a905dd6145fabbbf65da16db027394d20954`, artefact 13043251678.
+- [x] Pipeline de prérelease directe ajouté à `.github/workflows/bonze031-ci.yml` : téléchargement de l'artefact déjà validé, checksum, package et signature, `gh release create` en préversion avec `.apk` et `.sha256` uniquement.
+- [ ] **BLOCAGE GitHub 403** sur la création Release par `GITHUB_TOKEN` (run `41229649266`, job `124621558159`) : `HTTP 403 Resource not accessible by integration` malgré `permissions: contents: write`. Les tests JS/JVM, Playwright et compilation sont verts ; le contrôle des bytes et manifest de l'APK est vert ; seule l'API GitHub Releases refuse l'écriture.
+- [ ] Faire autoriser à GitHub Actions l'écriture des contenus/releases pour ce dépôt (Settings → Actions → General → Workflow permissions → Read and write permissions, ou règle d'organisation si verrouillé). Rejouer ensuite le job de publication et vérifier la présence réelle de l'asset `.apk` dans `bonze-ai-v0.8.0-dev-parallel`. **Ne pas inventer de lien direct ni publier via ZIP par défaut.**
