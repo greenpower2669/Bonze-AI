@@ -137,3 +137,6 @@ Source exacte publiée : `fdd4ba9477fbb87f72b7f69a2a0ec225bd471fbb`, code versio
 
 ### BONZE-039 — personnalisation et mémoire SVC
 Implémenter sur une branche d'intégration basée sur la 0.7 existante : fiches structurées dans le coffre chiffré avec consentement, écran édition/recherche/oubli ; style conversation configurable (5 modes, forme d'adresse, longueur, humour, curiosité, douceur, débit de voix) réellement transmis au moteur Android ; contrôles automatisés et mémoire vivante. Conserver la PR #3 et la 0.7, aucun merge `main` et aucune Release prématurée. Tests matériels et réconciliation des deux lignes restent ouverts.
+
+### BONZE-040 — correction des répétitions et débogage voix (31/10/2026)
+À partir de BONZE-039, corriger le cas utilisateur prouvé d'une réponse qui répète une insulte reçue, surveiller les autres réponses circulaires, préremplir la sortie Piper pour éviter les sous-alimentations à l'initialisation, relever timings et `underrunCount`, exposer un journal technique anonymisé dans Options (stockage volontaire par SAF, pas d'Internet). Valider JS/JVM/UI/compilation puis vérifier au casque sur téléphone ; ne pas fusionner main ni publier d'APK avant validation et signature sûre.

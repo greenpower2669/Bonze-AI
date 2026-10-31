@@ -217,3 +217,12 @@ Source exacte publiée : `fdd4ba9477fbb87f72b7f69a2a0ec225bd471fbb`, code versio
 - [ ] Effectuer essai Samsung avec veille, casque, voix et mémoire SVC ; assurer une authentification par personne réelle avant tout rappel privé automatique.
 - [ ] Réconcilier le répertoire 18 000 formulations de la PR #3 avec la branche 0.7 / 039 sans perte des acquis ; ne pas fusionner sans validation.
 - [ ] Signature et chaîne de mise à jour APK versionCode >7, publication seulement sur ordre explicite.
+
+### BONZE-040 — débogage de la 0.7.0-dev, 31/10
+- [x] Anti-écho entrée utilisateur et anti-répétition dernier Bonze, avec respect des demandes de répétition explicite et tests Java.
+- [x] Prébuffer audio Piper et `WRITE_BLOCKING` sur le thread de lecture, journaliser `generationMs`, `playbackMs`, `underruns`, échec Piper et éventuelle bascule Android.
+- [x] Ajouter Options > Journal de diagnostic : export JSON par `ACTION_CREATE_DOCUMENT`, sécurisé sans phrases utilisateur, sortie modèle, surnoms ni contenus mémoire ; contrôle navigateur.
+- [x] CI `41200356136` sur le correctif `8d3c224a` : régressions JVM/JS, interface Playwright hors ligne, compilation Kotlin/Java Android **toutes réussies**. N'inclut ni APK signé ni essai audio matériel.
+- [ ] Essai réel Samsung : voix continue, écran éteint, débit Piper, écoute/lecture, casque et mesure des sous-alimentations et bascules vocales.
+- [ ] Si pauses entre blocs, prototyper une préparation audio en avance ou une file tamponnée ; éviter de prétendre corriger le gap sans mesure.
+- [ ] Réconcilier les PR #3 (répertoire 18k) et #4 (mémoire/personnalisation) ; résorber signature incompatible avant livraison sûre de mise à jour, sans écraser 0.7.0-dev.

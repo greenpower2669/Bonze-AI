@@ -191,8 +191,15 @@ public final class ConversationService extends Service {
    try{BonzeInference.setEconomy(eco);result=BonzeInference.reply(getApplicationContext(),prompt,contextData,hint);}
    catch(Exception|LinkageError error){errorName=error.getClass().getSimpleName();result="Je cherche encore mes mots. Tu peux me le dire autrement ?";}
    finally{generating.set(false);}
-   final String answer=result,failure=errorName;final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
-   main.post(()->{lastLatency=elapsed;lastCpu=cpuTime;journal.add("generation",turn,DiagnosticJournal.fields("output",answer,"error",failure,"latencyMs",elapsed,"repeatPrevious",memory.repeats(answer),"discarded",disposed||epoch!=workEpoch));if(!disposed&&epoch==workEpoch)complete(epoch,answer,fromVoice);});
+   final String generated=result,failure=errorName;final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
+   main.post(()->{
+    lastLatency=elapsed;lastCpu=cpuTime;
+    ReplyQuality.Result quality=ReplyQuality.review(text,generated,memory.repeats(generated));
+    journal.add("generation",turn,DiagnosticJournal.fields("output",generated,"error",failure,
+     "latencyMs",elapsed,"cpuMs",cpuTime,"qualityReason",quality.reason,
+     "repairApplied",quality.repaired,"discarded",disposed||epoch!=workEpoch));
+    if(!disposed&&epoch==workEpoch)complete(epoch,quality.text,fromVoice);
+   });
   });
  }
  private String lightReply(String text){
@@ -305,16 +312,29 @@ public final class ConversationService extends Service {
    piper.speak(speechChunks,prefix,Math.max(.80f,Math.min(1.25f,("calme".equals(mood)?.94f:"joie".equals(mood)?1.02f:.98f)*personalizedVoiceRate)),new PiperVoice.Events(){
     public void start(String id,String content){main.post(()->{if(epoch!=workEpoch||!validSpeech(id))return;speechId=id;speechText=content;speechBegan=SystemClock.elapsedRealtime();journal.add("speech",diagnosticTurn,DiagnosticJournal.fields("engine","piper-mls","text",content,"id",id,"firstAudioLatencyMs",partIndex(id)==0?SystemClock.elapsedRealtime()-voiceBegan:JSONObject.NULL));setState("speaking","Je te réponds.");speechEvent("speech-start",id,0,0);});}
     public void level(String id,double value,int frame){main.post(()->{if(epoch!=workEpoch||!validSpeech(id)||listener==null)return;JSONObject e=base("speech-level");try{e.put("id",id).put("level",value).put("frame",frame);listener.onEvent(e.toString());}catch(JSONException ignored){}});}
-    public void done(){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;finishSpeech();});}
-    public void failed(String reason,boolean hadAudio){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;journal.add("speech-fallback",diagnosticTurn,DiagnosticJournal.fields("reason",reason,"hadAudio",hadAudio));if(hadAudio)stop(request,"Lecture interrompue. Tu peux réessayer.");else androidSpeech(epoch,0);});}
+    public void metrics(String id,long generationMs,long playbackMs,int underruns,int samples){
+      main.post(()->{if(epoch!=workEpoch||!validSpeech(id))return;
+       journal.add("piper-audio",diagnosticTurn,DiagnosticJournal.fields(
+        "engine","piper-mls","part",partIndex(id),"generationMs",generationMs,
+        "playbackMs",playbackMs,"underruns",underruns,"samples",samples));
+      });
+     }
+     public void done(){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;finishSpeech();});}
+    public void failed(String reason,boolean hadAudio){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;journal.add("speech-fallback",diagnosticTurn,DiagnosticJournal.fields("reason",reason,"reasonCode",safeAudioFailure(reason),"hadAudio",hadAudio,"nextEngine",hadAudio?"stopped":"android"));if(hadAudio)stop(request,"Lecture interrompue. Tu peux réessayer.");else androidSpeech(epoch,0);});}
    });
   }else androidSpeech(epoch,0);
+ }
+ private static String safeAudioFailure(String reason){
+  if(reason==null)return "unknown";
+  for(String code:new String[]{"invalid-pcm","audio-write","audio-prefill-write","playback-timeout","silent-pcm","non-finite-pcm"})
+   if(reason.contains(code))return code;
+  return "piper-runtime";
  }
  private void androidSpeech(long epoch,int attempt){
   if(disposed||epoch!=workEpoch||speechPrefix.isEmpty())return;
   if(!voiceInitFinished&&attempt<10){main.postDelayed(()->androidSpeech(epoch,attempt+1),300);return;}
   if(!localVoiceReady||tts==null){stop(request,"Voix française locale indisponible. Tu peux continuer par écrit.");return;}
-  speechEngine="android";tts.setSpeechRate(Math.max(.80f,Math.min(1.25f,("calme".equals(mood)?.94f:"joie".equals(mood)||"humour".equals(mood)?1.02f:.98f)*personalizedVoiceRate)));tts.setPitch("joie".equals(mood)?1.03f:1f);
+  speechEngine="android";journal.add("tts-start",diagnosticTurn,DiagnosticJournal.fields("engine","android","parts",speechChunks.size()));tts.setSpeechRate(Math.max(.80f,Math.min(1.25f,("calme".equals(mood)?.94f:"joie".equals(mood)||"humour".equals(mood)?1.02f:.98f)*personalizedVoiceRate)));tts.setPitch("joie".equals(mood)?1.03f:1f);
   for(int i=0;i<speechChunks.size();i++){String id=speechPrefix+i;if(tts.speak(speechChunks.get(i),i==0?TextToSpeech.QUEUE_FLUSH:TextToSpeech.QUEUE_ADD,null,id)!=TextToSpeech.SUCCESS){stop(request,"Synthèse locale impossible.");return;}if(i<speechChunks.size()-1)tts.playSilentUtterance(170,TextToSpeech.QUEUE_ADD,"pause_"+id);}
  }
  private void finishSpeech(){if(!speechId.isEmpty())speechEvent("speech-end",speechId,0,0);speechId="";speechText="";speechPrefix="";abandonFocus();if(speechConversation&&session.active()){session.finished();retryListen(session.epoch());}else{releaseCpu();setState("off","Lecture terminée.");}}
@@ -349,6 +369,14 @@ public final class ConversationService extends Service {
  private void updateCouncil(String text){if(council==null)return;long now=SystemClock.elapsedRealtime();try{JSONObject r=council.run(text,DiagnosticJournal.fields("familiar",memory.size()>0,"scene",!memory.scene().isEmpty()),Math.min(30,(now-councilAt)/1000.0),state);councilAt=now;policyHint=r.optString("hint");JSONObject forces=r.getJSONObject("state").getJSONObject("forces");double max=-1;for(Iterator<String> it=forces.keys();it.hasNext();){String k=it.next();if(forces.optDouble(k)>max){max=forces.optDouble(k);mood=k;}}journal.add("council",diagnosticTurn,r);}catch(Exception e){journal.add("council-error",diagnosticTurn,DiagnosticJournal.fields("error",e.getClass().getSimpleName()));}}
  private void councilTick(){if(disposed)return;if(session.active()||listener!=null){updateCouncil("");if(listener!=null&&council!=null){JSONObject e=base("emotion-state");try{e.put("council",council.snapshot());listener.onEvent(e.toString());}catch(JSONException ignored){}}}main.postDelayed(this::councilTick,10000);}
  public void configureCouncil(String json)throws JSONException{if(council==null)throw new IllegalStateException();council.configure(new JSONObject(json));journal.add("admin-council",diagnosticTurn,council.snapshot());publish();}
+ public String safeDebugReport(){
+  // Strictly technical, no transcripts or unfiltered diagnostic payloads.
+  return DiagnosticJournal.fields("format","bonze-debug-v1","createdAt",System.currentTimeMillis(),
+   "privacy","no-user-speech-no-generated-text-no-memory",
+   "model",LocalModelStore.choice(this),"speechEngine",speechEngine,
+   "eventCount",journal.safeCopy().length(),"events",journal.safeCopy(),
+   "lastInferenceMs",lastLatency,"lastCpuMs",lastCpu).toString();
+ }
  public JSONObject diagnostics(){return DiagnosticJournal.fields("council",council==null?JSONObject.NULL:council.snapshot(),"journal",journal.copy(),"resources",resourceObject(),"engine",speechEngine,"preferredVoice",voiceName,"model",LocalModelStore.choice(this),"model12Ready",LocalModelStore.available(this));}
  private JSONObject resourceObject(){try{return new JSONObject(resources());}catch(JSONException e){return new JSONObject();}}
  public JSONObject backupData(){

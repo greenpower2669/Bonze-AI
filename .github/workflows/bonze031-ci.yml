@@ -1,7 +1,7 @@
 name: Bonze 031 — experimental validation (no release)
 on:
   push:
-    branches: [feature/bonze031-dialogue-natural-v1, feature/bonze039-svc-personalisation-v1]
+    branches: [feature/bonze031-dialogue-natural-v1, feature/bonze039-svc-personalisation-v1, feature/bonze040-dialogue-voice-diagnostics]
     paths: ['core/**', 'docs/**', 'tests/**', 'android/**', '.github/probes/bonze031.cpp', '.github/workflows/bonze031-ci.yml']
   workflow_dispatch:
 permissions:
@@ -24,6 +24,8 @@ jobs:
           java -cp /tmp/bonze-jvm DialogueMemoryTest
           javac -d /tmp/bonze-jvm android/app/src/main/java/fr/bonzeai/companion/KnowledgeGuard.java tests/KnowledgeGuardTest.java
           java -cp /tmp/bonze-jvm KnowledgeGuardTest
+          javac -d /tmp/bonze-jvm android/app/src/main/java/fr/bonzeai/companion/ReplyQuality.java tests/ReplyQualityTest.java
+          java -cp /tmp/bonze-jvm ReplyQualityTest
           javac -d /tmp/bonze-jvm android/app/src/main/java/fr/bonzeai/companion/VoiceSession.java tests/VoiceSessionTest.java
           java -cp /tmp/bonze-jvm VoiceSessionTest
       - run: python tests/test_piper_lexicon.py

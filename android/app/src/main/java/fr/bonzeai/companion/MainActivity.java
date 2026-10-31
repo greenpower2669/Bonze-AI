@@ -10,17 +10,20 @@ import android.webkit.*;
 import androidx.webkit.WebViewAssetLoader;
 import java.util.*;
 import java.util.concurrent.*;
+import java.nio.charset.StandardCharsets;
+import java.io.OutputStream;
 import org.json.JSONObject;
 
 /** Offline UI bridge. An authorized conversation belongs to ConversationService. */
 public final class MainActivity extends Activity {
- private static final int MIC_PERMISSION=411,MODEL_PICKER=512;
+ private static final int MIC_PERMISSION=411,MODEL_PICKER=512,DIAGNOSTIC_PICKER=513;
  private WebView web;private volatile ConversationService engine;
  private boolean visible,uiReady,bound,destroyed;
  private BackupBridge backups;
  private final ExecutorService modelImporter=Executors.newSingleThreadExecutor();
  private final PendingStart pendingStart=new PendingStart();
  private String bootstrap="{}",configuration="{}";
+ private String pendingDiagnostic=null;
  private final List<Runnable> pending=new ArrayList<>();
  private final ConversationService.Listener observer=json->{
   if(web!=null&&uiReady&&visible&&!destroyed)web.evaluateJavascript("window.BonzeNativeEvent&&window.BonzeNativeEvent("+json+")",null);
@@ -67,9 +70,40 @@ public final class MainActivity extends Activity {
    else if("restore-ack".equals(action)){withService(()->engine.acknowledgeRestore());}
    else if("save-web".equals(action)){withService(()->engine.saveWebState(text));}
    else if("sync".equals(action)){if(visible)withService(()->engine.attach(observer));}
-   else if("model-import".equals(action)&&visible&&!destroyed){pendingStart.cancel();withService(()->engine.prepareModelImport());pickLocalModel();}
+   else if("export-diagnostics".equals(action)&&visible&&!destroyed){
+     withService(()->prepareDiagnosticExport());
+    }
+    else if("model-import".equals(action)&&visible&&!destroyed){pendingStart.cancel();withService(()->engine.prepareModelImport());pickLocalModel();}
   });}
   @JavascriptInterface public String resourceSnapshot(){ConversationService current=engine;return current==null?"{}":current.resources();}
+ }
+ private void diagnosticEvent(String message){
+  if(web==null||destroyed)return;
+  web.evaluateJavascript("window.BonzeDiagnosticsEvent&&window.BonzeDiagnosticsEvent("+
+    new JSONObject(java.util.Collections.singletonMap("message",message)).toString()+")",null);
+ }
+ private void prepareDiagnosticExport(){
+  if(engine==null||pendingDiagnostic!=null){diagnosticEvent("Export déjà en cours ou service indisponible.");return;}
+  pendingDiagnostic=engine.safeDebugReport();
+  Intent save=new Intent(Intent.ACTION_CREATE_DOCUMENT);
+  save.addCategory(Intent.CATEGORY_OPENABLE);
+  save.setType("application/json");
+  save.putExtra(Intent.EXTRA_TITLE,"Bonze-AI-debug-"+System.currentTimeMillis()+".json");
+  try{startActivityForResult(save,DIAGNOSTIC_PICKER);}
+  catch(RuntimeException error){pendingDiagnostic=null;diagnosticEvent("Enregistrement du journal indisponible.");}
+ }
+ private void finishDiagnosticExport(int result,Intent data){
+  String report=pendingDiagnostic;pendingDiagnostic=null;
+  if(result!=RESULT_OK||data==null||data.getData()==null){
+   diagnosticEvent("Export annulé, aucune donnée partagée.");return;
+  }
+  if(report==null){diagnosticEvent("Journal technique indisponible.");return;}
+  try(OutputStream stream=getContentResolver().openOutputStream(data.getData())){
+   if(stream==null)throw new java.io.IOException();
+   stream.write(report.getBytes(StandardCharsets.UTF_8));
+   stream.flush();
+   diagnosticEvent("Journal technique anonymisé enregistré. Tu peux partager ce fichier pour le diagnostic.");
+  }catch(Exception error){diagnosticEvent("Écriture du journal impossible. Aucun souvenir privé exporté.");}
  }
  private void pickLocalModel(){
   Intent select=new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -107,6 +141,7 @@ public final class MainActivity extends Activity {
  }
  @Override protected void onActivityResult(int request,int result,Intent data){
   super.onActivityResult(request,result,data);
+  if(request==DIAGNOSTIC_PICKER){finishDiagnosticExport(result,data);return;}
   if(request!=MODEL_PICKER){backups.result(request,result,data);return;}
   if(result!=RESULT_OK||data==null||data.getData()==null){modelEvent("Import annulé.",false);return;}
   final android.net.Uri source=data.getData();
