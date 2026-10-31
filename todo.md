@@ -234,8 +234,8 @@ Source exacte publiée : `fdd4ba9477fbb87f72b7f69a2a0ec225bd471fbb`, code versio
 - [x] Piper : produire et lire le flux PCM complet dans un AudioTrack, appliquer un gain commun, préremplir avant jeu, tracer les durées/underruns et le passage éventuel à Android TTS.
 - [x] Sauvegarde chiffrée : préserver répertoire natif et Web, validation stricte, migration ancienne version, test JS.
 - [x] Renommer la candidate installable séparément en 0.8.0-dev/code 8, package `fr.bonzeai.companion.dev`, conserver 0.7 en place.
-- [ ] Vérifier la CI **finale** complète et l'audit des 18 000 phrases contre le lexique Piper embarqué. Corriger toute anomalie.
-- [ ] Construire le package d'essai parallèle sur GitHub Actions (artefact) puis vérifier manifest, absence INTERNET, SHA-256 et certificat ; ne pas publier de Release sans validation de Fab.
+- [x] CI `41201859372` : tests JVM/JS, interface Playwright, compilation Kotlin/Java, lexique Piper complet et construction/inspection Android **réussis**.
+- [x] APK expérimental 0.8.0-dev code 8 construit en parallèle (`fr.bonzeai.companion.dev`, 271 244 969 octets), contrôlé par `aapt` et `apksigner`, zéro permission INTERNET, somme SHA-256 GitHub vérifiée ; artefact Actions `13043251678`. Aucune Release publiée.
 - [ ] Vérifier sur Samsung réel : double installation sans suppression, mémoire chiffrée, critique « naze », dialogue continu, coupures, latence première syllabe, Bluetooth/casque, niveau sonore, arrêt immédiat, journal anonymisé.
 - [ ] Après tests appareils, décider du mécanisme de signature de mise à jour et du passage de BONZE-037/039/040/041 dans la branche de référence ; aucun merge main sans autorisation.
 - [ ] Optimiser latence voix : envisager moteur et buffers anticipés, sans réintroduire de blancs ou de traitements simultanés non sûrs.
