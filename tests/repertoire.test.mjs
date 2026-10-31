@@ -150,3 +150,14 @@ test('BONZE-035: accented emotional intentions retain categorical associations a
  const restarted=say('Je suis en colère',JSON.parse(JSON.stringify(state)));
  assert.ok(restarted.state.associations.some(x=>x.key.startsWith('contrarié/')));
 });
+
+test('BONZE-037: all 18k cards remain within single 220-character Piper turn budget',()=>{
+ const cat=sandbox.BonzeCorpus,seen=new Set();
+ for(const role of cat.roles)for(const intent of cat.intents)for(let i=0;i<cat.sizeFor(intent);i++){
+  const item=cat.render(role,intent,i);
+  assert.ok(item.body.length<=220,item.id+' exceeds Piper speech chunk');
+  assert.ok(!seen.has(item.body),item.id+' duplicated');
+  seen.add(item.body);
+ }
+ assert.equal(seen.size,18000);
+});

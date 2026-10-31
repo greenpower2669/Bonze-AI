@@ -50,3 +50,4 @@ writeFileSync('piper-corpus-report.json',JSON.stringify(report,null,2)+'\n');
 console.log('PIPER_CORPUS_AUDIT variants='+checked+' unique='+uniqueTexts.size+' fullLexicalCoveragePct='+report.lexicalCoveragePct+' OOV='+missing.size);
 console.log('PIPER_MOST_COMMON_OOV '+report.topOOV.slice(0,20).map(x=>x.word+':'+x.variants).join(' '));
 if(checked!==18000||uniqueTexts.size!==18000)throw Error('Corpus count or uniqueness changed');
+if(missing.size>0)throw Error('Piper lexicon is missing '+missing.size+' distinct words; inspect the archived report and correct authored sentences');
