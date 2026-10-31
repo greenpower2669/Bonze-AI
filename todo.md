@@ -279,7 +279,7 @@ Traçabilité : `docs/bonze043-dialogue-voix-integration.md`. Aucun merge `main`
 - [x] Corriger les questions sur un mot cité (bonjour, merci, au revoir, nul, blague) qui pouvaient être reclassées à tort par le classificateur ; préserver la priorité des alertes d'urgence.
 - [x] **CI du dernier commit de code `03ea116e` entièrement verte** : GitHub Actions `41239447994`, tests JS/JVM, interface navigateur, audit du dictionnaire Piper (y compris synonymes et nombres), compilation Kotlin/Java et vérification de l'absence de permission INTERNET réussis. Aucune preuve acoustique Samsung ni APK final livré.
 - [ ] Faire essayer à Fab sur Samsung des dialogues de 20 tours avec questions non sociales, nombres ordinaires et identité, transcription FR, Piper/Bluetooth/veille, latence et logs anonymisés.
-- [ ] Étudier séparément les heures (`15h30`), décimaux et groupes de milliers : choisir une verbalisation exacte avant d'étendre la prise en charge. Ajouter les synonymes seulement avec preuves d'accord, de sens et de prononciation.
+- [ ] Étudier les notations d'heure à deux-points, les décimaux et groupes de milliers ; la notation française avec `h` a reçu une première implémentation BONZE-046 (test Samsung encore ouvert). Ajouter les synonymes seulement avec preuves d'accord, de sens et de prononciation.
 - [ ] APK seul directement téléchargeable en GitHub Release toujours non publié pour BONZE-044/045 ; ne jamais annoncer une livraison sans asset réel ni contourner l'absence d'autorisation de publication. Pas de fusion `main`.
 
 ### BONZE-046 — Horaires français, Piper (31/10)
@@ -290,3 +290,9 @@ Traçabilité : `docs/bonze043-dialogue-voix-integration.md`. Aucun merge `main`
 - [ ] Vérifier CI au nouveau HEAD et build complet si possible. Contrôler audio Samsung/Piper/Stop/Bluetooth et latence réelle.
 - [ ] Étudier séparément `15:30`, dates, décimaux, milliers. Ne pas lire les formats ambigus comme des données sûres.
 - [ ] APK de la nouvelle base 0.8 non publié en GitHub Release (403 documenté) ; conserver 0.7, aucune fusion `main`, aucune livraison ZIP.
+
+### BONZE-047 — publication directe, cause GitHub vérifiée (31/10)
+- [x] Vérifier la comparaison `main...cd17a6b` : **cinq** fichiers de workflows diffèrent de `main` sur le commit ciblé par la Release 0.8.
+- [x] Vérifier la documentation officielle GitHub REST Releases : créer une Release vers un commit modifiant `.github/workflows/` requiert `Workflows: write`, permission inaccessible au `GITHUB_TOKEN` natif ; le 403 peut être déclenché même avec `Contents: write`. https://docs.github.com/en/rest/releases/releases#create-a-release
+- [ ] Faire autoriser par le propriétaire un jeton restreint à ce seul dépôt (GitHub App ou fine-grained) avec `Contents: write` + `Workflows: write`, en secret GitHub Actions. Contrôler le périmètre ; ne jamais écrire le jeton dans le dépôt.
+- [ ] Publier uniquement après validation explicite et au SHA du vrai APK, avec vérification du package, des empreintes et de l'asset direct `.apk`. Éviter toute tentative identique avec le GITHUB_TOKEN seul et toute fusion pour contourner la règle.
