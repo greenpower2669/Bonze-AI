@@ -45,6 +45,17 @@ for(const pair of approvedPairs)for(const word of [pair[1],pair[2]])
  for(const token of word.toLocaleLowerCase('fr-FR').match(WORD)||[])
   if(!dictionary.has(token))synonymOOV.add(token);
 
+// Support for spoken integers is safe only when EVERY possible token is
+// present in the exact Piper dictionary shipped with this build.
+const cardinalWords=[
+ 'zéro','un','deux','trois','quatre','cinq','six','sept','huit','neuf',
+ 'dix','onze','douze','treize','quatorze','quinze','seize',
+ 'vingt','vingts','trente','quarante','cinquante','soixante',
+ 'cent','cents','mille','et'
+];
+const cardinalMissing=cardinalWords.filter(word=>!dictionary.has(word));
+if(cardinalMissing.length)throw Error('Piper French numeral tokens absent: '+cardinalMissing.join(', '));
+
 const authoredOOV=new Map(),authoredSentences=new Set();
 let authoredTested=0,authoredCovered=0;
 for(const card of authored){

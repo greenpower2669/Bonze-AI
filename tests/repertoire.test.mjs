@@ -188,4 +188,6 @@ test('BONZE-045: quoted emotional/greeting words inside precise questions do not
  assert.equal(say('Au revoir').intent,'depart');
  assert.equal(say('Je suis triste').intent,'tristesse');
  assert.equal(say('Tu es vraiment naze').intent,'correction');
+ assert.equal(say('Pourquoi suis-je en danger immédiat ?',null,{semantic:'question'}).intent,'urgence',
+  'explicit risk must override question grammar and neural hints');
 });

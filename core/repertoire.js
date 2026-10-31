@@ -142,6 +142,7 @@ function detect(text){
  var n=norm(text);
  if(!n)return 'discussion';
  if(contains(n,'comment tu t appelles|comment tu t appelles|quel est ton nom|qui es tu'))return 'identite';
+ if(contains(n,'suicide|me tuer|me faire du mal|danger immediat|au secours|urgence vitale|je suis en danger'))return 'urgence';
  // An explicit definition/question about a greeting or an emotion is a
  // question, not the greeting or emotion itself.
  var literalQuestion=/^(?:pourquoi|comment|que|qu est ce que|quel|quelle|quels|quelles|combien|quand|ou|d ou)\b/.test(n);
