@@ -76,7 +76,7 @@ object BonzeInference {
             "salut, merci, tristesse, inquietude, contrarié, jeu, humour, curiosite, question, " +
             "identite, correction, affection, depart, fatigue, surprise, demande, reussite, " +
             "confusion, discussion, urgence. N'invente aucun autre label."
-        val previous = contextData.take(300).trim()
+        val previous = contextData.takeLast(450).trim()
         val prompt = if (previous.isEmpty()) "Message actuel : " + text.take(500) else
             "Contexte précédent cité uniquement pour comprendre les suites :\n" +
                 previous + "\nMessage actuel : " + text.take(500)
@@ -90,7 +90,7 @@ object BonzeInference {
      * Reuse the GGUF already loaded for classification on the single worker.
      */
     @JvmStatic @Synchronized
-    fun chooseVariation(context: Context, original: String, alternatives: Array<String>): String = runBlocking {
+    fun chooseVariation(context: Context, userText: String, intent: String, original: String, alternatives: Array<String>): String = runBlocking {
         if (alternatives.isEmpty() || loaded == null || original.length > 240) return@runBlocking "0"
         val count = alternatives.size.coerceAtMost(4)
         val options = buildString {
@@ -98,10 +98,14 @@ object BonzeInference {
             for (i in 0 until count)
                 append((i + 1).toString() + " : " + alternatives[i].take(240) + "\n")
         }
-        val system = "Tu choisis uniquement un synonyme français. " +
+        val system = "Tu es le contrôleur de reformulation de Bonze. " +
+            "Respecte le sens, la grammaire et le ton de la réponse. " +
+            "Choisis parmi les options déjà validées, sans inventer de texte. " +
             "Réponds par UN chiffre de 0 à " + count + ". " +
-            "0 si tu hésites. Ne rédige jamais de phrase."
-        val prompt = "Texte original : " + original.take(240) + "\n" +
+            "0 si aucune option ne convient ou si tu hésites."
+        val prompt = "Message utilisateur : " + userText.take(160) + "\n" +
+            "Intention classée : " + intent.take(32) + "\n" +
+            "Texte original : " + original.take(240) + "\n" +
             "Variantes validées :\n" + options + "\nChiffre :"
         try {
             val raw = Llama.complete(loaded!!, prompt = prompt,

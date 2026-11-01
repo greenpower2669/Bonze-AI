@@ -36,7 +36,7 @@ for(const role of corpus.roles){
 }
 
 // BONZE-044: a synonym chosen by Liquid must be pronounceable by the same
-// packaged Piper lexicon as our 18,000 authored cards.
+// packaged Piper lexicon as our 90,000 authored cards.
 const synonymJava=readFileSync(new URL('../android/app/src/main/java/fr/bonzeai/companion/SynonymChoice.java',import.meta.url),'utf8');
 const approvedPairs=[...synonymJava.matchAll(/\{"([^"]+)","([^"]+)"\}/g)];
 if(approvedPairs.length<21)throw Error('BONZE-045 approved synonyms were lost');
@@ -97,5 +97,5 @@ writeFileSync('piper-corpus-report.json',JSON.stringify(report,null,2)+'\n');
 console.log('PIPER_CORPUS_AUDIT variants='+checked+' unique='+uniqueTexts.size+' fullLexicalCoveragePct='+report.lexicalCoveragePct+' OOV='+missing.size+' authoredOOV='+authoredOOV.size);
 console.log('PIPER_MOST_COMMON_OOV '+report.topOOV.slice(0,20).map(x=>x.word+':'+x.variants).join(' '));
 console.log('PIPER_AUTHORED_OOV '+report.authoredOOV.map(x=>x.word+':'+x.variants).join(' '));
-if(checked!==18000||uniqueTexts.size!==18000)throw Error('Corpus count or uniqueness changed');
+if(checked!==90000||uniqueTexts.size!==90000)throw Error('Corpus count or uniqueness changed');
 if(missing.size>0||authoredOOV.size>0||synonymOOV.size>0)throw Error('Piper dictionary has '+missing.size+' corpus OOV, '+authoredOOV.size+' authored OOV and '+synonymOOV.size+' synonym OOV: '+[...synonymOOV].join(', '));

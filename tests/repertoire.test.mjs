@@ -13,10 +13,10 @@ const say=(text,state=null,extra={})=>JSON.parse(engine.run(JSON.stringify({text
 
 test('authored repertoire is sizeable and includes nine policy voices',()=>{
   const stats=engine.stats();
-  assert.equal(stats.virtualCards,18000,'2000 constructed replies per each of 9 policy roles');
+  assert.equal(stats.virtualCards,90000,'10000 constructed replies per each of 9 policy roles');
   assert.equal(stats.materializedCards,183,'only small legacy table is eagerly materialized');
-  for(const n of stats.roles)assert.ok(stats.perRole[n]>=2000,n);
-  assert.ok(stats.cards>=18000);
+  for(const n of stats.roles)assert.ok(stats.perRole[n]>=10000,n);
+  assert.ok(stats.cards>=90000);
   assert.equal(stats.roles.length,9);
   for(const role of ['joie','peur','colere','calme','reflexion','empathie','curiosite','humour','sage'])
     assert.ok(stats.roles.includes(role),role);
@@ -87,9 +87,9 @@ test('malformed state is validated and kept bounded',()=>{
   assert.ok(o.text.length>0);
 });
 
-test('BONZE-034: exactly 2,000 composed variants per role with 18,000 unique rendered texts',()=>{
+test('BONZE-034: exactly 10,000 composed variants per role with 90,000 unique rendered texts',()=>{
  const cat=sandbox.BonzeCorpus,all=new Set();
- assert.equal(engine.stats().virtualCards,18000);
+ assert.equal(engine.stats().virtualCards,90000);
  for(const role of cat.roles){
   let count=0;
   for(const intent of cat.intents)for(let i=0;i<cat.sizeFor(intent);i++){
@@ -100,10 +100,10 @@ test('BONZE-034: exactly 2,000 composed variants per role with 18,000 unique ren
    assert.ok(!all.has(item.body),'literal duplicate '+item.id);
    all.add(item.body);count++;
   }
-  assert.equal(count,2000,role);
+  assert.equal(count,10000,role);
  }
- assert.equal(all.size,18000);
- assert.equal(engine.stats().materializedCards,183,'no eager allocation of 18k strings');
+ assert.equal(all.size,90000);
+ assert.equal(engine.stats().materializedCards,183,'no eager allocation of 90k strings');
 });
 test('BONZE-034: distinct emotional semantic lenses alter the same scenario',()=>{
  const cat=sandbox.BonzeCorpus;
@@ -151,7 +151,7 @@ test('BONZE-035: accented emotional intentions retain categorical associations a
  assert.ok(restarted.state.associations.some(x=>x.key.startsWith('contrarié/')));
 });
 
-test('BONZE-037: all 18k cards remain within single 220-character Piper turn budget',()=>{
+test('BONZE-037: all 90k cards remain within single 220-character Piper turn budget',()=>{
  const cat=sandbox.BonzeCorpus,seen=new Set();
  for(const role of cat.roles)for(const intent of cat.intents)for(let i=0;i<cat.sizeFor(intent);i++){
   const item=cat.render(role,intent,i);
@@ -159,7 +159,7 @@ test('BONZE-037: all 18k cards remain within single 220-character Piper turn bud
   assert.ok(!seen.has(item.body),item.id+' duplicated');
   seen.add(item.body);
  }
- assert.equal(seen.size,18000);
+ assert.equal(seen.size,90000);
 });
 
 test('BONZE-041: user feedback on repetitive or inept responses is treated as correction',()=>{
@@ -190,4 +190,21 @@ test('BONZE-045: quoted emotional/greeting words inside precise questions do not
  assert.equal(say('Tu es vraiment naze').intent,'correction');
  assert.equal(say('Pourquoi suis-je en danger immédiat ?',null,{semantic:'question'}).intent,'urgence',
   'explicit risk must override question grammar and neural hints');
+});
+
+test('BONZE-049: all 9 roles have precisely 10,000 virtual variants, including the judge',()=>{
+ const corpus=sandbox.BonzeCorpus;
+ assert.equal(corpus.countPerRole,10000);
+ assert.equal(corpus.roles.length,9);
+ for(const role of corpus.roles){
+  assert.ok(corpus.roles.includes(role));
+  const last=corpus.render(role,'discussion',corpus.sizeFor('discussion')-1);
+  assert.equal(last.role,role);
+  assert.ok(last.body.length<=220);
+  assert.equal(last.composed,true);
+ }
+ const judge=corpus.render('sage','question',corpus.sizeFor('question')-1);
+ assert.equal(judge.role,'sage');
+ assert.ok(judge.body.length<=220);
+ assert.equal(engine.stats().virtualCards,90000);
 });

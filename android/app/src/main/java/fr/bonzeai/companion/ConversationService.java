@@ -215,7 +215,7 @@ public final class ConversationService extends Service {
       inference.execute(()->{
        String selected="0",variationError="";
        long start=SystemClock.elapsedRealtime();
-       try{selected=BonzeInference.chooseVariation(getApplicationContext(),authored,variants.toArray(new String[0]));}
+       try{selected=BonzeInference.chooseVariation(getApplicationContext(),text,chosenLabel,authored,variants.toArray(new String[0]));}
        catch(Exception|LinkageError error){variationError=error.getClass().getSimpleName();}
        final String index=selected,error=variationError;
        final long elapsedVariation=SystemClock.elapsedRealtime()-start;

@@ -1,8 +1,8 @@
 /* BONZE-034. Compressed, locally authored dialogue grammar.
- * Exactly 200 semantic seeds x 5 turn-taking forms x 2 closings = 2,000
- * virtual phrase cards per role; 9 roles => 18,000, allocated on selection.
- * Nothing is eagerly expanded into 18,000 strings or stored in SQLite/JSON.
- * These are compositional phrasings, NOT 18,000 independently written situations.
+ * Exactly 200 semantic seeds x 10 turn-taking forms x 5 closings = 10,000
+ * virtual phrase cards per role; 9 roles => 90,000, allocated on selection.
+ * Nothing is eagerly expanded into 90,000 strings or stored in SQLite/JSON.
+ * These are compositional phrasings, NOT 90,000 independently written situations.
  */
 (function(root){
 'use strict';
@@ -116,20 +116,20 @@ sage:[
 };
 
 var OPENERS={
-soft:["Je vais te proposer ceci :","Tu peux entendre cette idée :","Voici une possibilité :","Je veux dire les choses simplement :","Il me vient cette réponse :"],
-play:["J'ai une idée un peu folle :","Imagine plutôt ceci :","Écoute cette invention :","Je plante le décor :","J'ajoute une fantaisie :"],
-acknowledge:["Je voudrais te dire ceci :","Une idée me vient :","Voilà ce que j'aimerais partager :","Écoute cette petite pensée :","J'ai envie de répondre ainsi :"],
-open:["Voici ce qui me vient :","Écoute cette piste :","J'ai une proposition :","On pourrait commencer ainsi :","Je te répondrais ceci :"],
-farewell:["Avant de partir, une pensée :","Je te laisse ceci :","Pour la route :","Un dernier mot :","Avant la prochaine fois :"],
-careful:["Je vais rester précis :","Voilà une piste prudente :","Je préfère dire ceci :","Il faut garder cette nuance :","Pour éviter les raccourcis :"]
+ soft:["Je vais te proposer ceci :","Tu peux entendre cette idée :","Voici une possibilité :","Je veux dire les choses simplement :","Il me vient cette réponse :","Je t'écoute :","On peut essayer ceci :","Une idée pour toi :","Pour commencer :","Je te réponds :"],
+ play:["J'ai une idée un peu folle :","Imagine plutôt ceci :","Écoute cette invention :","Je plante le décor :","J'ajoute une fantaisie :","Et si on jouait ainsi :","Voici une autre idée :","Je vois cette scène :","On peut imaginer ceci :","Une aventure commence :"],
+ acknowledge:["Je voudrais te dire ceci :","Une idée me vient :","Voilà ce que j'aimerais partager :","Écoute cette petite pensée :","J'ai envie de répondre ainsi :","Je reçois tes mots :","Voici ma pensée :","Tout simplement :","Je te réponds :","Je veux partager ceci :"],
+ open:["Voici ce qui me vient :","Écoute cette piste :","J'ai une proposition :","On pourrait commencer ainsi :","Je te répondrais ceci :","Je t'écoute :","Voilà mon idée :","Je me demande :","Une piste possible :","Pour commencer :"],
+ farewell:["Avant de partir, une pensée :","Je te laisse ceci :","Pour la route :","Un dernier mot :","Avant la prochaine fois :","Pour finir :","Pour la suite :","Encore une pensée :","Je te souhaite ceci :","Juste avant de partir :"],
+ careful:["Je vais rester précis :","Voilà une piste prudente :","Je préfère dire ceci :","Il faut garder cette nuance :","Pour éviter les raccourcis :","Je reste prudent :","Un point important :","Restons exacts :","Je veux comprendre :","Voilà ce que je sais :"]
 };
 var ENDINGS={
-soft:["On peut en parler à ton rythme.","Tu peux choisir ce que tu veux me raconter."],
-play:["À toi d'inventer le prochain rebondissement !","On essaie cette piste imaginaire ?"],
-acknowledge:["Je te laisse apprécier ce moment.","Qu'aimerais-tu faire ensuite ?"],
-open:["Qu'en penses-tu ?","Tu peux me raconter la suite."],
-farewell:["À bientôt !","Prends soin de toi."],
-careful:["Si tu as une source, nous pouvons la vérifier.","Je préfère confirmer les faits avant d'aller plus loin."]
+ soft:["On peut en parler à ton rythme.","Tu peux choisir ce que tu veux me raconter.","Je t'écoute.","Tu choisis la suite.","Nous pouvons avancer ensemble."],
+ play:["À toi d'inventer le prochain rebondissement !","On essaie cette piste imaginaire ?","Et maintenant ?","À toi de jouer !","La suite est à inventer."],
+ acknowledge:["Je te laisse apprécier ce moment.","Qu'aimerais-tu faire ensuite ?","Merci pour ce moment.","On continue ensemble ?","Je suis là pour la suite."],
+ open:["Qu'en penses-tu ?","Tu peux me raconter la suite.","Je t'écoute.","À toi de voir.","La suite dépend de toi."],
+ farewell:["À bientôt !","Prends soin de toi.","Bonne suite à toi.","Nous pourrons en reparler.","Je te souhaite une belle journée."],
+ careful:["Si tu as une source, nous pouvons la vérifier.","Je préfère confirmer les faits avant d'aller plus loin.","Gardons ce doute.","Je veux être exact.","Nous pouvons chercher ensemble."]
 };
 var SAFE_INTENTS=Object.keys(CORES);
 function validate(){
@@ -143,17 +143,17 @@ function validate(){
  if(count!==200)throw Error('expected exactly 200 semantic seeds, got '+count);
  for(var role in LENSES){if(LENSES[role].length!==VOICE_ORDER.length)throw Error('missing stance '+role);for(var z=0;z<LENSES[role].length;z++)if(typeof LENSES[role][z]!=='string'||LENSES[role][z].length<12)throw Error('invalid stance '+role+'/'+z);}
  for(var role in CUES)for(var mode in OPENERS)if(!CUES[role][mode])throw Error('missing cue '+role+'/'+mode);
- for(var mode in OPENERS)if(OPENERS[mode].length!==5||ENDINGS[mode].length!==2)throw Error('bad forms '+mode);
+ for(var mode in OPENERS)if(OPENERS[mode].length!==10||ENDINGS[mode].length!==5)throw Error('bad forms '+mode);
 }
 validate();
-function sizeFor(intent){return CORES[intent]?CORES[intent].length*10:0;}
+function sizeFor(intent){return CORES[intent]?CORES[intent].length*50:0;}
 function render(role,intent,index){
- var mode=MODE_OF[intent],cores=CORES[intent];if(!CUES[role]||!cores||index<0||index>=cores.length*10)throw Error('unknown catalogue entry');
- var kernel=Math.floor(index/10),open=Math.floor(index%10/2),close=index%2;
+ var mode=MODE_OF[intent],cores=CORES[intent];if(!CUES[role]||!cores||index<0||index>=cores.length*50)throw Error('unknown catalogue entry');
+ var kernel=Math.floor(index/50),open=Math.floor(index%50/5),close=index%5;
  return {id:intent+'/'+role+'/v'+index,role:role,intent:intent,family:intent+'/'+role+'/theme'+kernel,
   body:[LENSES[role][VOICE_ORDER.indexOf(intent)],OPENERS[mode][open],cores[kernel],ENDINGS[mode][close]].join(' '),
   theme:kernel,form:open,ending:close,composed:true};
 }
 root.BonzeCorpus={render:render,sizeFor:sizeFor,intents:SAFE_INTENTS,modes:MODE_OF,
- countPerRole:2000,roles:Object.keys(CUES),source:"composed; 200 curated semantic seeds x 10 forms per role"};
+ countPerRole:10000,roles:Object.keys(CUES),source:"composed; 200 curated semantic seeds x 50 forms per role"};
 })(typeof globalThis!=='undefined'?globalThis:this);

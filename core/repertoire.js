@@ -211,7 +211,7 @@ function choose(input){
   if(s.families.indexOf(c.family)!==-1)weight*=.28;
   ranked.push({card:c,weight:weight});
  }
- // Virtual families are indexed in compressed grammar; never allocate 18,000 strings.
+ // Virtual families are indexed in compressed grammar; never allocate 90,000 strings.
  if(corpus&&corpus.sizeFor(intent)>0){
   for(var p=0;p<corpus.roles.length;p++){
    var role=corpus.roles[p],strength=role==='sage'?.57:finite(force[role],.38,0,1);
@@ -234,7 +234,7 @@ function choose(input){
   for(var attempt=0;attempt<32;attempt++){
    var index=Math.floor(rand(s)*variants),item=corpus.render(pick.role,intent,index);
    var penalty=(s.recent.indexOf(item.id)<0?0:100)+(s.families.indexOf(item.family)<0?0:10)+
-    (s.recentForms.indexOf(intent+'/'+item.form)<0?0:4);
+    (s.recentForms.indexOf(intent+'/'+item.form+'/'+item.ending)<0?0:4);
    if(penalty<bestPenalty){best=item;bestPenalty=penalty;}
    if(!penalty)break;
   }
@@ -249,7 +249,7 @@ function choose(input){
   substitutions.push({slot:key,value:chosen});return chosen;
  });
  s.turns++;s.recent.push(pick.id);s.recent=s.recent.slice(-16);s.families.push(pick.family);s.families=s.families.slice(-8);
- if(typeof pick.form==='number'){s.recentForms.push(intent+'/'+pick.form);s.recentForms=s.recentForms.slice(-8);}
+ if(typeof pick.form==='number'){s.recentForms.push(intent+'/'+pick.form+'/'+pick.ending);s.recentForms=s.recentForms.slice(-8);}
  // Retain only categorical links, never the raw user's phrase or inferred personal facts.
  var key=intent+'/'+pick.role,found=-1;
  for(var a=0;a<s.associations.length;a++)if(s.associations[a].key===key)found=a;
