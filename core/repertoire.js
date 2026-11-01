@@ -180,7 +180,7 @@ function cleanState(old,seed){
  var associations=Array.isArray(old.associations)?old.associations.filter(function(a){return a&&typeof a.key==='string'&&a.key.length<60&&INTENTS.indexOf(a.key.split('/')[0])>=0&&ROLES.indexOf(a.key.split('/')[1])>=0&&isFinite(a.strength)&&a.strength>=0&&a.strength<=1&&isFinite(a.seen)&&a.seen>=0;}).slice(-24).map(function(a){return {key:a.key,strength:finite(a.strength,0,0,1),seen:finite(a.seen,0,0,1e7)|0};}):[];
  var forms=Array.isArray(old.recentForms)?old.recentForms.filter(function(f){return typeof f==='string'&&f.length<80;}).slice(-8):[];
  return {version:1,seed:finite(old.seed,finite(seed,0x7c25b,-2147483647,2147483647),-2147483647,2147483647)|0,turns:finite(old.turns,0,0,10000000)|0,recent:rec,families:fam,
-  lastIntent:INTENTS.indexOf(old.lastIntent)>=0?old.lastIntent:'',lastRole:ROLES.indexOf(old.lastRole)>=0?old.lastRole:'',recentForms:forms,associations:associations};
+  lastIntent:INTENTS.indexOf(old.lastIntent)>=0?old.lastIntent:'',lastRole:ROLES.indexOf(old.lastRole)>=0?old.lastRole:'',lastTheme:finite(old.lastTheme,-1,-1,12)|0,recentForms:forms,associations:associations};
 }
 function rand(s){s.seed=((Math.imul?Math.imul(s.seed,1664525):s.seed*1664525)+1013904223)|0;return (s.seed>>>0)/4294967296;}
 function choose(input){
@@ -258,7 +258,7 @@ function choose(input){
  if(found>=0){s.associations[found].strength=Math.min(1,s.associations[found].strength*.92+.12);s.associations[found].seen=s.turns;}
  else s.associations.push({key:key,strength:.35,seen:s.turns});
  if(s.associations.length>24)s.associations=s.associations.slice(-24);
- s.lastIntent=intent;s.lastRole=pick.role;
+ s.lastIntent=intent;s.lastRole=pick.role;s.lastTheme=typeof pick.theme==='number'?pick.theme:-1;
  return {text:body,role:pick.role,emotion:pick.role==='sage'?'calme':pick.role,card:pick.id,family:pick.family,intent:intent,detected:local,semanticUsed:intent===semantic,state:s,trace:{cardsConsidered:ranked.length,substitutions:substitutions,source:'authored-repertoire',composed:pick.composed===true,modelGenerated:false}};
 }
 
@@ -279,13 +279,17 @@ function propose(input){
   return w.length>=4&&['dans','avec','pour','nous','vous','elle','elles','quoi','comment','imagine','faire','veux','voudrais','bonjour'].indexOf(w)<0;
  });
  var recent=cleanState(input.state,input.seed),used={},usedFamily={};
+ var continuing=recent.lastIntent===intent&&
+   contains(norm(input.text),'continue|la suite|et apres|et ensuite|et puis|poursuis')&&
+   recent.lastTheme>=0;
+ var followTheme=continuing?recent.lastTheme:-1;
  var virtual=corpus.sizeFor(intent),byTheme={},seed={seed:first.state.seed};
  used[first.card]=true;usedFamily[first.family]=true;
  for(var t=0;t<Math.floor(virtual/50);t++){
   var representative=corpus.render(role,intent,t*50),words=norm(representative.body).split(' ');
   var overlap=0;for(var k=0;k<terms.length;k++)if(words.indexOf(terms[k])>=0)overlap++;
   // Alternate forms must not depend on spelling out the user's private words.
-  byTheme[t]={theme:t,overlap:overlap,tie:rand(seed)};
+  byTheme[t]={theme:t,overlap:overlap+(t===followTheme?100:0),tie:rand(seed)};
  }
  var sorted=Object.keys(byTheme).map(function(k){return byTheme[k];});
  sorted.sort(function(a,b){return b.overlap-a.overlap||a.tie-b.tie;});
@@ -305,9 +309,12 @@ function propose(input){
   // Replace that provisional card with the actual selected card.
   next.recent[next.recent.length-1]=selected.id;
   next.families[next.families.length-1]=selected.family;
-  if(next.recentForms.length)
-   next.recentForms[next.recentForms.length-1]=intent+'/'+selected.form+'/'+selected.ending;
-  next.seed=seed.seed;next.lastRole=role;next.lastIntent=intent;
+  // A materialized first card has not appended a form; never overwrite
+  // the previous turn's recorded form. Replace only the provisional new form.
+  if(first.trace.composed===true&&next.recentForms.length)next.recentForms.pop();
+  next.recentForms.push(intent+'/'+selected.form+'/'+selected.ending);
+  next.recentForms=next.recentForms.slice(-8);
+  next.seed=seed.seed;next.lastRole=role;next.lastIntent=intent;next.lastTheme=selected.theme;
   var item={text:selected.body,role:role,emotion:first.emotion,card:selected.id,
    family:selected.family,intent:intent,state:next,
    trace:{source:'authored-repertoire',composed:true,modelGenerated:false}};
@@ -318,6 +325,7 @@ function propose(input){
  function topicalMatch(option){
   var parts=norm(option.text).split(' '),score=0;
   for(var i=0;i<terms.length;i++)if(parts.indexOf(terms[i])>=0)score++;
+  if(continuing&&option.family===intent+'/'+role+'/theme'+followTheme)score+=100;
   return score;
  }
  choices.sort(function(a,b){return topicalMatch(b)-topicalMatch(a);});

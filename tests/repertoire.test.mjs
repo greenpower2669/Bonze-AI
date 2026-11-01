@@ -269,3 +269,46 @@ test('BONZE-050: multi-turn previews do not consume discarded options or replica
  assert.ok(used.size>=10,'anti-repeat offers useful card diversity');
  assert.ok(state.recent.length<=16&&state.families.length<=8);
 });
+
+test('BONZE-052: preview of a materialized first card retains older form history',()=>{
+ let observed=false;
+ for(let seed=0;seed<1000&&!observed;seed++){
+  const prior={version:1,seed,turns:3,recent:[],families:[],recentForms:['jeu/1/2','humour/2/3']};
+  const plan=engine.propose({text:'Imagine un dragon',state:prior});
+  if(plan.candidates[0].trace.composed&&plan.candidates.length<2)continue;
+  const first=engine.choose({text:'Imagine un dragon',state:prior});
+  if(first.trace.composed)continue;
+  assert.equal(plan.candidates.length>=2,true);
+  for(const candidate of plan.candidates.slice(1)){
+   assert.equal(candidate.state.recentForms[0],'jeu/1/2');
+   assert.equal(candidate.state.recentForms[1],'humour/2/3');
+   const index=Number(candidate.card.split('/v')[1]);
+   assert.ok(Number.isInteger(index));
+   assert.equal(candidate.state.recentForms.at(-1),candidate.intent+'/'+Math.floor(index%50/5)+'/'+index%5);
+  }
+  observed=true;
+ }
+ assert.ok(observed,'test must actually exercise a legacy first card');
+});
+
+test('BONZE-052: a follow-up remains anchored in the existing story scene',()=>{
+ const first=engine.propose({text:'Imagine un dragon',seed:74523});
+ const scene=first.candidates.find(c=>c.trace.composed&&/dragon/i.test(c.text));
+ assert.ok(scene,'a dragon story scene must exist in curated repertoire');
+ assert.ok(scene.state.lastTheme>=0);
+ const follow=engine.propose({text:'Et après ?',state:scene.state});
+ assert.equal(follow.intent,'jeu');
+ assert.equal(follow.candidates[0].family,
+   'jeu/'+follow.role+'/theme'+scene.state.lastTheme,
+   'continuity takes priority over unrelated randomized scenes');
+ assert.ok(follow.candidates[0].card!==scene.card,'continue should vary wording');
+ assert.equal(follow.candidates[0].state.turns,scene.state.turns+1);
+});
+test('BONZE-052: preview state only stores categorical theme indices',()=>{
+ const p=engine.propose({text:'Imagine un mot-de-passe-super-secret',seed:11});
+ for(const item of p.candidates){
+  assert.ok(Number.isInteger(item.state.lastTheme));
+  assert.ok(item.state.lastTheme>=-1&&item.state.lastTheme<=12);
+  assert.ok(!JSON.stringify(item.state).includes('mot-de-passe-super-secret'));
+ }
+});

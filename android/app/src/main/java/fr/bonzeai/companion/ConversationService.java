@@ -328,37 +328,44 @@ public final class ConversationService extends Service {
  }
  private String scriptedReply(String text,String label,long turn){
    lastAuthoredRole="sage";lastAuthoredIntent="discussion";
-  if(scripted!=null)try{
-   List<String> recentBot=recentBonzeReplies(8);
-   for(int attempt=0;attempt<8;attempt++){
-    JSONObject selected=scripted.choose(text,label,council==null?null:council.snapshot(),true);
-    String candidate=selected.getString("text");
-    // Piper MLS is unreliable on very short phoneme sequences. Prefer a full
-    // authored sentence over a silent switch of the user's selected voice.
-    if("piper-mls".equals(voiceName)&&candidate.codePointCount(0,candidate.length())<65){
-     journal.add("repertoire-reroll",turn,DiagnosticJournal.fields("reason","piper-short-text","attempt",attempt+1));
-     continue;
+   if(scripted!=null)try{
+    JSONObject plan=scripted.preview(text,label,council==null?null:council.snapshot(),true);
+    JSONArray candidates=plan.getJSONArray("candidates");
+    List<String> recentBot=recentBonzeReplies(8);
+    for(int attempt=0;attempt<candidates.length();attempt++){
+     JSONObject item=candidates.getJSONObject(attempt);
+     String candidate=item.getString("text");
+     if("piper-mls".equals(voiceName)&&candidate.codePointCount(0,candidate.length())<65){
+      journal.add("repertoire-reroll",turn,DiagnosticJournal.fields("reason","piper-short-text","attempt",attempt+1));
+      continue;
+     }
+     ReplyQuality.Result checked=ReplyQuality.review(text,candidate,memory.repeats(candidate),recentBot);
+     if(!checked.repaired){
+      // No provisional state is ever saved for an unspoken or rejected answer.
+      scripted.commit(item);
+      lastAuthoredRole=item.optString("role","sage");
+      lastAuthoredIntent=item.optString("intent","discussion");
+      journal.add("repertoire",turn,DiagnosticJournal.fields(
+       "intent",lastAuthoredIntent,"card",item.optString("card"),
+       "mechanism",label.isEmpty()?"lexical-repertoire":"liquid-classified-repertoire",
+       "selectionAttempts",attempt+1,"commit","accepted-only"));
+      return checked.text;
+     }
+     journal.add("repertoire-reroll",turn,DiagnosticJournal.fields("reason",checked.reason,"attempt",attempt+1));
     }
-    ReplyQuality.Result checked=ReplyQuality.review(text,candidate,memory.repeats(candidate),recentBot);
-    if(!checked.repaired){
-     lastAuthoredRole=selected.optString("role","sage");lastAuthoredIntent=selected.optString("intent","discussion");
-     journal.add("repertoire",turn,DiagnosticJournal.fields("intent",selected.optString("intent"),
-      "card",selected.optString("card"),"mechanism",label.isEmpty()?"lexical-repertoire":"liquid-classified-repertoire",
-      "selectionAttempts",attempt+1));
-     return checked.text;
-    }
-    journal.add("repertoire-reroll",turn,DiagnosticJournal.fields("reason",checked.reason,"attempt",attempt+1));
-   }
-  }catch(Exception error){journal.add("repertoire-error",turn,DiagnosticJournal.fields("type",error.getClass().getSimpleName()));}
-  List<String> previous=recentBonzeReplies(8);
-  for(String clarification:new String[]{
-   "Je n'ai pas trouvé de réponse adaptée. Peux-tu préciser ce que tu attends de moi ?",
-   "J'ai perdu le fil de ta question. Quel point souhaites-tu éclaircir ?",
-   "Je préfère te demander une précision plutôt que répondre à côté. Quel est le sujet exact ?"
-  })if(!ReplyQuality.review(text,clarification,memory.repeats(clarification),previous).repaired)return clarification;
-  return "Je préfère vérifier ce que tu demandes avant de continuer.";
- }
- private void complete(long epoch,String answer,boolean fromVoice){
+    // A repeated urgent call must never become an unrelated clarification.
+    if("urgence".equals(plan.optString("intent")))
+     return "Si tu es en danger immédiat, contacte les secours maintenant et demande de l'aide à une personne de confiance.";
+   }catch(Exception error){journal.add("repertoire-error",turn,DiagnosticJournal.fields("type",error.getClass().getSimpleName()));}
+   List<String> previous=recentBonzeReplies(8);
+   for(String clarification:new String[]{
+    "Je n'ai pas trouvé de réponse adaptée. Peux-tu préciser ce que tu attends de moi ?",
+    "J'ai perdu le fil de ta question. Quel point souhaites-tu éclaircir ?",
+    "Je préfère te demander une précision plutôt que répondre à côté. Quel est le sujet exact ?"
+   })if(!ReplyQuality.review(text,clarification,memory.repeats(clarification),previous).repaired)return clarification;
+   return "Je préfère vérifier ce que tu demandes avant de continuer.";
+  }
+  private void complete(long epoch,String answer,boolean fromVoice){
   if(epoch!=workEpoch||disposed)return;
   memory.add("bot",answer);journal.add("published",diagnosticTurn,DiagnosticJournal.fields("answer",answer));saveMemory();setState("waiting","J'ai une réponse pour toi.");
   if(fromVoice&&session.active()||readText&&!"text".equals(mode)&&!"off".equals(mode))speak(answer,fromVoice,epoch,0);
