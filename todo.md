@@ -83,3 +83,9 @@ _État de référence : `feature/bonze042-field-fixes`, mission BONZE-049 (01/11
 - [ ] **P0** Exécuter sur GitHub Actions les deux modèles Liquid Q4 un à un ; conserver les JSONL bruts, rapport, temps et erreurs ; ne conclure qu'après avoir vérifié l'exécution et les artefacts.
 - [ ] **P0** Revoir les 11 cas avec un humain, étendre à 50–100 demandes dont compositions ambiguës, négations, séquences de 20 tours, émotions et états réels, comparer pertinence avec et sans Liquid. Échantillon de 11 cas = exploratoire uniquement.
 - [ ] **P1** Étudier la suite optimale PC/Linux, PWA ou Android seulement après mesures réelles de qualité, latence, RAM, consommation et voix. Ne pas abandonner le code Android et ne pas modifier main sans autorisation.
+
+## BONZE-058 — diagnostic du biais de position et permutation équilibrée (01/11/2026)
+- [x] Réaliser le premier test **réel** Linux CPU des Liquid 230M et 1.2B ; conserver les JSONL et le rapport exact (run 41356604833). Résultats bruts : 230M 1/11, 1.2B 3/11 choix attendus, forte dépendance au numéro 3 ou 0.
+- [x] Implémenter C2 : 11 cas × quatre permutations, consigne neutre sans réponse de secours « 0 », décodage glouton ; scorer indices valides, bonnes décisions, histogramme de positions, latences. Tests Node du rapport verts (41357123296).
+- [ ] Exécuter réellement les 44 rotations sur chaque Liquid et examiner les JSONL ; comparer les performances au hasard équilibré de 25 % et ne pas déclarer une amélioration sur un seul petit échantillon.
+- [ ] Ne modifier la politique d'inférence Android que si l'expérience établit un gain vérifiable. Si Liquid reste biaisé, conserver les filtres sémantiques déterministes et tester un autre arbitre léger ou un score local qui évite la génération de numéros.

@@ -16,3 +16,11 @@ Les fichiers `bonze-230m.jsonl` et `bonze-12b.jsonl` contiennent les cas, attent
 
 ## Politique de livraison
 Le benchmark reste sur `feature/bonze042-field-fixes`, ne touche pas à `main`, ne déploie aucun APK et ne crée pas de GitHub Release. Un rapport et les données brutes sont les seules livraisons automatiques de ce test. Les prochaines décisions seront fondées sur résultats observés et vérification humaine, pas sur le seul nombre de paramètres.
+
+## Premier résultat réel, BONZE-057 (run 41356604833)
+Les deux poids Q4 ont été chargés **successivement** sur Linux CPU et évalués jusqu'au bout. **230M :** 4/11 indices valides, 1/11 réponses attendues, 270 ms en moyenne (temps complet). **1,2B :** 11/11 indices valides, 3/11 réponses attendues, 1 593 ms. Les réponses brutes montrent que le 230M reprend souvent le dernier élément de la liste ou la chaîne « Numéro : » ; le 1,2B donne « 0 » dans 10/11 cas. Une telle préférence d'index rend les résultats proches du hasard et ne soutient pas une sélection confiante de formulations.
+
+[Voir les résultats bruts sur GitHub Actions](https://github.com/greenpower2669/Bonze-AI/actions/runs/41356604833/artifacts/13103497751). **Ces constats concernent C1 et son instruction qui mentionnait « répondre 0 » en secours** : on doit tester l'effet de la position et du prompt avant une décision de modèle.
+
+## Contre-expérience BONZE-058
+Protocole détaillé dans [docs/bonze058-positions.md](bonze058-positions.md) : consigne plus courte, suppression du biais explicite vers 0, rotation des quatre réponses pour obtenir 44 décisions par modèle avec cibles réparties 11/11/11/11. Toutes les autres hypothèses sont conservées. Pas de mesure Android ni de publication APK.
