@@ -49,3 +49,11 @@ _État de référence : `feature/bonze042-field-fixes`, mission BONZE-049 (01/11
 - [x] Banc **déterministe** BONZE-051 : 82/82 énoncés, 20 intentions, négations, priorités, 20 tours, couverture de thèmes 9/10 sur test ciblé (run 41342420616).
 - [ ] P0 : mesurer **sur Samsung**, avec vrai Liquid, qualité des réponses complètes sur 50–100 situations, hors-sujet, continuité, répétition, latence et RAM. Les 82 tests ne mesurent pas encore la pertinence neuronale.
 - [ ] P0 : tests Samsung pour Piper, casque Bluetooth, Stop/interruption, écran verrouillé et préservation des données ; étendre ensuite les noyaux sémantiques réellement utiles plutôt que les seules formes.
+
+## BONZE-052/053 — continuité et mémoire des formulations (01/11/2026)
+- [x] Ne plus avancer l'historique de phrases pour des alternatives rejetées par `ReplyQuality` ou Piper, **y compris le chemin de secours hors mode précis** (23bef946, tests JS/Java corrigés 02b5fb5a).
+- [x] Conserver le thème narratif et l'étape avec des nombres bornés, sans conserver le texte privé, et compléter les 11 scènes avec trois suites écrites (897402c8).
+- [x] Tests Node des nouveaux scénarios, suites et mémoire anti-répétition verts sur [41343213525](https://github.com/greenpower2669/Bonze-AI/actions/runs/41343213525).
+- [ ] Vérifier l'audit lexical Piper, la compilation/lint Android et l'APK expérimental sur le dernier commit avec `bonze-build`, sans Release.
+- [ ] Tester la conversation réelle sur Samsung : 20 tours, pertinence des suites, phrases répétées, 33 suites vocales Piper, stop/veille, débit, latence Liquid et consommation mémoire.
+- [ ] Affiner la suite après le troisième événement : une histoire très longue demande de nouveaux événements utiles, pas de répétition du même noyau.

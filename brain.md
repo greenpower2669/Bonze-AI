@@ -48,3 +48,8 @@ Les décisions dépassées (par exemple génération libre Liquid prioritaire, o
 
 ### BONZE-051 — validation fonctionnelle du répertoire (01/11/2026)
 Banc automatique reproductible de 82 énoncés français couvrant 20 intentions : 82/82 reconnus par `BonzeRepertoire.detect` après correction. Priorité des alertes explicites, expressions de pleurs, négations émotionnelles et apostrophes françaises corrigées. Scénario simulé de 20 tours et 9/10 sujets de jeu détectés lexicalement dans les formulations proposées. **Ce score concerne le routeur déterministe et les thèmes, pas les prédictions réelles Liquid ni une compréhension sémantique mesurée sur appareil.** Voir `docs/bonze051-banc-dialogue.md` ; tests Android physiques et latence toujours ouverts.
+
+## BONZE-052/053 — continuité et mémoire des formulations (01/11/2026)
+- `ScriptedDialogue.preview` prépare les réponses sans avancer le compteur ; même le chemin de secours `scriptedReply` examine et filtre les propositions puis appelle `commit` uniquement pour la réplique retenue. Un refus anti-écho/Piper ne consomme pas l'historique.
+- `BonzeRepertoire` corrige la persistance des `recentForms` après tirage d'une carte héritée et préserve un **identifiant de thème et une étape de scène**, entiers bornés, sans enregistrer le texte privé. Le suivi narratif « Et après ? » privilégie la même histoire.
+- `core/repertoire-corpus.js` ajoute trois suites écrites pour chacun des onze scénarios `jeu`. Ces 33 noyaux de progression complètent les 90 000 variantes virtuelles, ne sont ni un nouveau modèle Liquid ni 33 connaissances factuelles. Piper est audité sur les rendus de ces suites. Il reste à écouter leur fluidité sur Samsung.
