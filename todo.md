@@ -87,5 +87,10 @@ _État de référence : `feature/bonze042-field-fixes`, mission BONZE-049 (01/11
 ## BONZE-058 — diagnostic du biais de position et permutation équilibrée (01/11/2026)
 - [x] Réaliser le premier test **réel** Linux CPU des Liquid 230M et 1.2B ; conserver les JSONL et le rapport exact (run 41356604833). Résultats bruts : 230M 1/11, 1.2B 3/11 choix attendus, forte dépendance au numéro 3 ou 0.
 - [x] Implémenter C2 : 11 cas × quatre permutations, consigne neutre sans réponse de secours « 0 », décodage glouton ; scorer indices valides, bonnes décisions, histogramme de positions, latences. Tests Node du rapport verts (41357123296).
-- [ ] Exécuter réellement les 44 rotations sur chaque Liquid et examiner les JSONL ; comparer les performances au hasard équilibré de 25 % et ne pas déclarer une amélioration sur un seul petit échantillon.
+- [x] Exécuter les 44 rotations C2 sur chaque Liquid et inspecter les JSONL ([41357231288](https://github.com/greenpower2669/Bonze-AI/actions/runs/41357231288)) : 230M 11/44, 1.2B 16/44, **indices fortement biaisés par leur position**. Pas de performance démontrée au-delà d'une référence aléatoire de 25 % dans ces onze contextes.
 - [ ] Ne modifier la politique d'inférence Android que si l'expérience établit un gain vérifiable. Si Liquid reste biaisé, conserver les filtres sémantiques déterministes et tester un autre arbitre léger ou un score local qui évite la génération de numéros.
+
+### Après BONZE-058 — priorité qualité avant plateforme
+- [ ] Tester une méthode **non générative** d'arbitrage : règles lexicales et sémantiques déterministes comme référence, puis classifieur compact ou représentations vectorielles si un vrai gain mesuré se manifeste. Ne pas remplacer la mémoire ou ouvrir le coffre automatiquement.
+- [ ] Construire 50–100 situations françaises annotées avec familles sémantiques, variations de sujets, contextes multi-tours et refus du hors-sujet ; évaluer précision, répétitions et latence hors Android.
+- [ ] Préserver Android en état de fonctionnement, ne promouvoir aucun modèle 1.2B dans l'APK sans démonstration de pertinence et coût RAM/temps compatibles ; aucun merge main ni Release sans accord.

@@ -6,7 +6,7 @@
 - Branche active : feature/bonze042-field-fixes ; mémoires condensées, sources archivées ; main préservée.
 - APK directement publiée : [Bonze 0.8.0-dev parallèle](https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.8.0-dev-parallel) ; elle précède la mission BONZE-049 de 90 000 variantes.
 - Contrôles récents : [APK expérimentale BONZE-055 inspectée, succès](https://github.com/greenpower2669/Bonze-AI/actions/runs/41344627317) ; [tests BONZE-056 (sujet unique)](https://github.com/greenpower2669/Bonze-AI/actions/runs/41355014355) verts. Pas d'essai physique Samsung ni de mesure de compréhension réelle du GGUF.
-- **BONZE-057/058 hors Android :** comparaison Linux CPU 230M/1.2B, premier résultat = forte préférence de position (230M souvent « 3 », 1.2B quasi toujours « 0 »). Contre-expérience BONZE-058 avec consigne neutre et 44 rotations par modèle. Voir `docs/bonze058-positions.md`, `todo.md`, `debughistorical.md`.
+- **BONZE-057/058 hors Android, résultats réels :** 230M 11/44 (25 %) et 1.2B 16/44 (36,4 %) sur indices attendus avec permutations, fort biais de position. Voir `docs/bonze058-positions.md` et `debughistorical.md`. Android conservé ; aucune Release.
 - Mission BONZE-050 : sélection de 1–4 phrases complètes selon sujet, émotion et intention, puis filtre anti-répétition ; voir docs/bonze050-composition-contextuelle.md, todo.md et debughistorical.md. L'APK 0.8 publiée précède ce travail.
 
 ## Les cinq mémoires actives

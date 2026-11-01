@@ -24,3 +24,6 @@ Les deux poids Q4 ont été chargés **successivement** sur Linux CPU et évalu�
 
 ## Contre-expérience BONZE-058
 Protocole détaillé dans [docs/bonze058-positions.md](bonze058-positions.md) : consigne plus courte, suppression du biais explicite vers 0, rotation des quatre réponses pour obtenir 44 décisions par modèle avec cibles réparties 11/11/11/11. Toutes les autres hypothèses sont conservées. Pas de mesure Android ni de publication APK.
+
+## Résultats équilibrés BONZE-058 — conclusion
+[Workflow terminé 41357231288](https://github.com/greenpower2669/Bonze-AI/actions/runs/41357231288), [JSONL complets 13103676754](https://github.com/greenpower2669/Bonze-AI/actions/runs/41357231288/artifacts/13103676754). **230M :** 11/44 bons choix (25 %), 39/44 indices valides, 197 ms. **1.2B :** 16/44 (36,4 %), 44/44 indices valides, 1 212 ms. Les cibles étaient équitablement réparties, mais les réponses du 1.2B se limitaient aux index 2 et 3. **Aucune preuve fiable que l'IA choisit selon le sens plutôt que selon la position.** Voir le détail dans `docs/bonze058-positions.md`.
