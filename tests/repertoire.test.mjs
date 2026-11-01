@@ -373,3 +373,14 @@ test('BONZE-054: after three authored beats the fourth follow-up closes the scen
  assert.notEqual(fifth.candidates[0].trace.source,'authored-story-closure',
   'a finished story does not repeat its closing line');
 });
+
+test('BONZE-054: story closures fit the Piper limit for all 9 personalities',()=>{
+ const corpus=sandbox.BonzeCorpus;
+ for(const role of corpus.roles){
+  for(const theme of [0,3,7,10]){
+   const last=corpus.renderStoryClosure(role,theme,9,4);
+   assert.ok(last.body.length<=220,role+' '+theme+' '+last.body.length);
+   assert.equal(last.intent,'jeu');
+  }
+ }
+});

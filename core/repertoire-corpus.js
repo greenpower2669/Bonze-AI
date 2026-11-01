@@ -231,7 +231,7 @@ function renderStoryClosure(role,theme,form,ending){
   role:role,intent:'jeu',family:'jeu/'+role+'/end'+theme,
   theme:theme,form:form,ending:ending,composed:true,storyStep:3,
   body:[LENSES[role][VOICE_ORDER.indexOf('jeu')],OPENERS.play[form],
-   'Cette aventure trouve une fin. Tu peux imaginer un nouveau personnage ou choisir une autre histoire.',
+   'La suite est à inventer. Tu peux choisir une autre histoire.',
    ENDINGS.play[ending]].join(' ')};
 }
 root.BonzeCorpus={render:render,renderContinuation:renderContinuation,renderStoryClosure:renderStoryClosure,continuationCount:3,sizeFor:sizeFor,intents:SAFE_INTENTS,modes:MODE_OF,
