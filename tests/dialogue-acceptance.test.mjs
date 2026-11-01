@@ -412,3 +412,17 @@ test('BONZE-051: topic coverage is reported without pretending 90k semantic situ
  assert.equal(hit,cases.length);
  console.log('BONZE-055 curated topic mention '+hit+'/'+cases.length+' (this is NOT meaning comprehension)');
 });
+
+test('BONZE-055: repeated explicit known subject stays on topic while forms vary',()=>{
+ let state=null,seen=new Set();
+ for(let i=0;i<20;i++){
+  const p=engine.propose({text:'Imagine un dragon',state,seed:617});
+  assert.equal(p.intent,'jeu');
+  assert.ok(p.candidates.length>=2,'known subject should never be mislabeled unknown');
+  assert.match(p.candidates[0].text,/dragon/i,'explicit story topic stays primary');
+  assert.equal(p.candidates[0].state.turns,i+1);
+  seen.add(p.candidates[0].card);
+  state=p.candidates[0].state;
+ }
+ assert.ok(seen.size>=10,'wording changes without changing the subject');
+});
