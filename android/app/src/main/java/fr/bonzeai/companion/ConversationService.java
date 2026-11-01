@@ -206,6 +206,10 @@ public final class ConversationService extends Service {
      "mechanism",chosenLabel.isEmpty()?"lexical-fallback":"liquid-intent",
      "discarded",disposed||epoch!=workEpoch));
     if(!disposed&&epoch==workEpoch&&turn==diagnosticTurn){
+     // BONZE-050: rank complete vetted sentences, not just isolated synonyms.
+     // A rejected preview must never enter the persistent history.
+     if("precise".equals(mode)&&failure.isEmpty()&&
+        tryContextualComposition(epoch,turn,text,contextData,chosenLabel,fromVoice))return;
      final String authored=scriptedReply(text,chosenLabel,turn);
       final String styleRole=lastAuthoredRole,actualIntent=lastAuthoredIntent;
      final List<String> variants=SynonymChoice.candidates(authored);
@@ -236,7 +240,85 @@ public final class ConversationService extends Service {
    });
   });
  }
- private List<String> recentBonzeReplies(int limit){
+ /**
+  * BONZE-050: the native judge sees only vetted sentences from the same
+  * intent and role. Commit only the finally accepted sentence and its state.
+  */
+  private boolean tryContextualComposition(long epoch,long turn,String text,
+        String previousContext,String label,boolean fromVoice){
+   if(scripted==null)return false;
+   try{
+    JSONObject plan=scripted.preview(text,label,council==null?null:council.snapshot(),true);
+    String intent=plan.getString("intent");
+    if(Arrays.asList("urgence","identite","correction","question").contains(intent))return false;
+    JSONArray raw=plan.getJSONArray("candidates");
+    ArrayList<JSONObject> accepted=new ArrayList<>();
+    List<String> history=recentBonzeReplies(8);
+    ArrayList<String> texts=new ArrayList<>();
+    for(int i=0;i<raw.length()&&accepted.size()<4;i++){
+     JSONObject item=raw.getJSONObject(i);
+     String sentence=item.getString("text");
+     if(!intent.equals(item.optString("intent"))||
+        !plan.optString("role").equals(item.optString("role"))||
+        ("piper-mls".equals(voiceName)&&sentence.codePointCount(0,sentence.length())<65))continue;
+     ReplyQuality.Result check=ReplyQuality.review(text,sentence,memory.repeats(sentence),history);
+     if(check.repaired||texts.contains(check.text))continue;
+     accepted.add(item);texts.add(check.text);
+    }
+    if(accepted.isEmpty())return false;
+    final String role=plan.getString("role"),selectedIntent=intent;
+    final ArrayList<JSONObject> options=accepted;
+    final String[] candidates=texts.toArray(new String[0]);
+    if(options.size()==1){
+     scripted.commit(options.get(0));
+     journal.add("composition",turn,DiagnosticJournal.fields(
+      "mechanism","sole-curated-option","intent",selectedIntent,"role",role,"candidates",1));
+     complete(epoch,candidates[0],fromVoice);return true;
+    }
+    inference.execute(()->{
+     String choice="0",failure="";
+     long began=SystemClock.elapsedRealtime();
+     try{choice=BonzeInference.chooseComposition(text,previousContext,selectedIntent,role,candidates);}
+     catch(Exception|LinkageError error){failure=error.getClass().getSimpleName();}
+     final String result=choice,reason=failure;
+     final long elapsed=SystemClock.elapsedRealtime()-began;
+     main.post(()->{
+      if(disposed||epoch!=workEpoch||turn!=diagnosticTurn)return;
+      int selected=result.matches("[0-3]")?Integer.parseInt(result):0;
+      if(selected>=options.size())selected=0;
+      int winner=-1;
+      List<String> latest=recentBonzeReplies(8);
+      for(int n=0;n<options.size();n++){
+       int index=(selected+n)%options.size();
+       String sentence=candidates[index];
+       if(!ReplyQuality.review(text,sentence,memory.repeats(sentence),latest).repaired){
+        winner=index;break;
+       }
+      }
+      if(winner<0){
+       journal.add("composition",turn,DiagnosticJournal.fields(
+        "mechanism","judge-rejected-all","intent",selectedIntent,"role",role));
+       complete(epoch,scriptedReply(text,selectedIntent,turn),fromVoice);return;
+      }
+      try{
+       scripted.commit(options.get(winner));
+       journal.add("composition",turn,DiagnosticJournal.fields(
+        "mechanism","liquid-topic-index","intent",selectedIntent,"role",role,
+        "candidates",options.size(),"index",winner,"latencyMs",elapsed,"error",reason));
+       complete(epoch,candidates[winner],fromVoice);
+      }catch(JSONException invalid){
+       journal.add("composition",turn,DiagnosticJournal.fields("error","commit-failed"));
+       complete(epoch,scriptedReply(text,selectedIntent,turn),fromVoice);
+      }
+     });
+    });
+    return true;
+   }catch(Exception error){
+    journal.add("composition",turn,DiagnosticJournal.fields("error",error.getClass().getSimpleName()));
+    return false;
+   }
+  }
+  private List<String> recentBonzeReplies(int limit){
   List<String> recent=new ArrayList<>();
   List<DialogueMemory.Entry> entries=memory.entries();
   for(int i=entries.size()-1;i>=0&&recent.size()<limit;i--)
