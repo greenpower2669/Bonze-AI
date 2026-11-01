@@ -314,7 +314,7 @@ export const families=[
     "id": "definition",
     "intent": "question",
     "prompts": [
-      "Que signifie le mot colère ?",
+      "Quelle est la nuance du mot colère ?",
       "Quelle est la définition de la colère ?",
       "Quel est le sens de cette expression ?",
       "Peux-tu expliquer le mot colère ?"
@@ -369,7 +369,7 @@ export const families=[
     "intent": "jeu",
     "prompts": [
       "Et après, que fait le pirate ?",
-      "Que lui arrive-t-il ensuite ?",
+      "Et ensuite, que fait le capitaine ?",
       "Et puis, le bateau fait quoi ?",
       "Continue notre histoire du navire."
     ],
