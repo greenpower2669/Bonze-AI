@@ -44,6 +44,8 @@ _État de référence : `feature/bonze042-field-fixes`, mission BONZE-049 (01/11
 - [x] Liquid classe l'intention et choisit une réponse complète par numéro contrôlé, sans génération libre ; réponses sensibles sous garde.
 - [x] Antirépétition avant et après arbitrage ; seule la réponse approuvée est persistée. Maintenir les préférences de personnalité et un seul GGUF chargé.
 - [x] Tests Node sur proposition sans écriture, cohérence émotionnelle, sujet dragon, sécurité et vingt tours ; tests unitaires initialement verts sur c2bcf149.
-- [ ] Confirmer CI Android et empaquetage réel du dernier commit, SHA-256, signature, manifest ; pas de nouvelle Release sans accord.
-- [ ] P0 : mesurer au moins 50–100 questions/sujets, multi-tours, négations, questions spécifiques, continuité et anti-répétition sur téléphone réel ; observer latence et RAM de l'arbitrage Liquid.
+- [x] BONZE-050 : CI Android et empaquetage expérimental réussis au commit `080e53dd` (run 41325082320), sans artefact APK distribué ni Release.
+- [ ] Revalider le paquet sur le commit BONZE-051 (correctifs d'intention), signature et manifest ; ne publier qu'après accord distinct.
+- [x] Banc **déterministe** BONZE-051 : 82/82 énoncés, 20 intentions, négations, priorités, 20 tours, couverture de thèmes 9/10 sur test ciblé (run 41342420616).
+- [ ] P0 : mesurer **sur Samsung**, avec vrai Liquid, qualité des réponses complètes sur 50–100 situations, hors-sujet, continuité, répétition, latence et RAM. Les 82 tests ne mesurent pas encore la pertinence neuronale.
 - [ ] P0 : tests Samsung pour Piper, casque Bluetooth, Stop/interruption, écran verrouillé et préservation des données ; étendre ensuite les noyaux sémantiques réellement utiles plutôt que les seules formes.

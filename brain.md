@@ -45,3 +45,6 @@ Les décisions dépassées (par exemple génération libre Liquid prioritaire, o
 - Les filtres anti-écho, anti-répétition, qualité et Piper fonctionnent avant et après le choix ; seule la phrase effectivement prononcée est inscrite dans l'historique. Les previews refusées ne sont pas mémorisées.
 - Urgence, identité, questions factuelles et corrections restent conservatrices, sans arbitrage libre par Liquid. KnowledgeGuard conserve sa priorité.
 - Limites : 90 000 assemblages ne représentent que 200 noyaux sémantiques ; cela ne suffit pas à résoudre toute question ou à prouver la pertinence réelle. Tests Samsung et mesure de latence indispensables.
+
+### BONZE-051 — validation fonctionnelle du répertoire (01/11/2026)
+Banc automatique reproductible de 82 énoncés français couvrant 20 intentions : 82/82 reconnus par `BonzeRepertoire.detect` après correction. Priorité des alertes explicites, expressions de pleurs, négations émotionnelles et apostrophes françaises corrigées. Scénario simulé de 20 tours et 9/10 sujets de jeu détectés lexicalement dans les formulations proposées. **Ce score concerne le routeur déterministe et les thèmes, pas les prédictions réelles Liquid ni une compréhension sémantique mesurée sur appareil.** Voir `docs/bonze051-banc-dialogue.md` ; tests Android physiques et latence toujours ouverts.
