@@ -1,5 +1,5 @@
 # Bonze AI — TODO actif après audit du 01/11/2026
-_État de référence : `feature/bonze042-field-fixes` HEAD `5fde323c`. Éléments historiques cochés et toutes les preuves conservés dans `docs/memory-archives/2026-11-01-pre-audit/todo.md`._
+_État de référence : `feature/bonze042-field-fixes`, mission BONZE-049 (01/11/2026)._ Éléments historiques cochés et toutes les preuves conservés dans `docs/memory-archives/2026-11-01-pre-audit/todo.md`._
 
 ## P0 — Bloquants d'acceptation
 - [ ] **Dialogue pertinent :** préparer un banc reproductible de 50–100 phrases françaises, incluant question spécifique, absurde, négation, correction, métalangage, prénom, chiffres, suite « et après », jeu de rôle et séquences de 20 tours. Mesurer adéquation, hors-sujet, répétition, sécurité et continuité ; comparer aux sorties du corpus et à l'intention classée.
@@ -32,7 +32,8 @@ _État de référence : `feature/bonze042-field-fixes` HEAD `5fde323c`. Élémen
 **Règle de clôture :** cocher uniquement après test/proof et indiquer commit, appareil, logs, résultats, limites dans `debughistorical.md`. Aucun merge `main` ni Release sans autorisation explicite.
 
 ## BONZE-049 — extension 10k × 9 et reformulation Liquid
-- [ ] Porter 200 noyaux à 50 formes chacun : 10 000 variantes virtuelles par rôle, neuf rôles, sans 90k chaînes simultanément en RAM.
-- [ ] Enrichir la sélection de variantes Liquid avec intention/contexte et refus d'une sortie libre ; diversifier les tournures sans échos.
-- [ ] Contrôler le comptage, l'unicité, les 220 caractères, les intentions, le lexique Piper, tests JS/JVM et Android CI ; comparer au vrai téléphone pour qualité, RAM et latence.
+- [x] Porter 200 noyaux à 50 formes chacun : 10 000 variantes virtuelles × 9 rôles sans 90k chaînes simultanément en RAM (622705be, CI 41321401979 réussie).
+- [x] Enrichir la sélection de variantes Liquid avec intention/contexte/rôle émotionnel ou juge, tout en refusant une sortie libre (95b0778f). Mesurer encore le gain réel de naturel et la non-répétition sur appareil.
+- [x] Contrôler comptage, unicité, 220 caractères, intentions, lexique Piper, JS/JVM et Android CI au commit 622705be (run 41321401979 success).
+- [ ] Finaliser les mêmes contrôles sur le **dernier commit 95b0778f**, empaqueter expérimentalement sans Release, puis tester sur Samsung (pertinence, RAM, Piper et latence).
 - [ ] Nouvelle APK uniquement après accord explicite de Fab, tests adaptés, signature cohérente et Release directe.

@@ -6,7 +6,7 @@
 - Branche active : feature/bonze042-field-fixes ; mémoires condensées, sources archivées ; main préservée.
 - APK directement publiée : [Bonze 0.8.0-dev parallèle](https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.8.0-dev-parallel) ; elle précède la mission BONZE-049 de 90 000 variantes.
 - Derniers contrôles : [tests HEAD verts](https://github.com/greenpower2669/Bonze-AI/actions/runs/41244426748) ; [packaging complet au SHA a0cc30ad](https://github.com/greenpower2669/Bonze-AI/actions/runs/41243984444). **Aucune preuve d'essai complet sur Samsung.**
-- Priorités : pertinence, extension 90k de la grammaire, Liquid contextuel, Piper et essais Samsung, coffre privé encore séparé.
+- Dernière évolution : BONZE-049, **90 000 formulations composées** (10 000 par rôle), Liquid sélectionneur de reformulation guidé par intention et rôle ; voir todo et debughistorical. Version publiée 0.8 antérieure à ce code.
 
 ## Les cinq mémoires actives
 | Besoin | Fichier canonique |

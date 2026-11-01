@@ -32,3 +32,8 @@ Fab rapporte avoir supprimé plusieurs anciennes Releases, libérant de la place
 
 ## BONZE-049 — demande du 01/11/2026
 10 000 variantes composées pour chacune des huit émotions et pour le juge/sage, total 90 000. Liquid choisit l'intention et des reformulations validées, un seul GGUF lourd actif ; audits unicité, longueur, sécurité, lexique Piper, anti-répétition, et mesures sur appareil à effectuer. Ne pas présenter la quantité comme un gain de compréhension démontré.
+
+### BONZE-049 — réalisation et premières vérifications du 01/11/2026
+- Commit [622705be](https://github.com/greenpower2669/Bonze-AI/commit/622705be4953f0049240f4483fa659a4a0202ada) : 200 noyaux × 10 introducteurs × 5 fins = 10 000 variantes par rôle et 90 000 au total (8 émotions + juge/sage). Le répertoire reste paresseux (pas de matérialisation du catalogue complet en RAM) ; ses tests vérifient textes uniques, bornage à 220 caractères, sécurité des intentions, mémoire récente, et audit du lexique Piper empaqueté.
+- [CI 41321401979](https://github.com/greenpower2669/Bonze-AI/actions/runs/41321401979) réussie (unités JS/JVM, interface et compilation Android), sans publication. Commit [95b0778f](https://github.com/greenpower2669/Bonze-AI/commit/95b0778f05778d92f372e1c8e1804423ed96264c) : le rôle explicite du répertoire est également fourni à Liquid pour choisir un indice de reformulation ; sortie libre refusée. CI du dernier commit à examiner.
+- La hausse de diversité combinatoire ne constitue pas une preuve de meilleures réponses pertinentes, ni de bonne prononciation/latence sur Samsung. La Release 0.8 actuelle est **antérieure** à BONZE-049 ; signature temporaire et distribution future à traiter à part.

@@ -13,7 +13,7 @@ Le répertoire **écrit** exclusivement les répliques prononcées. Liquid class
 
 Le corpus vise désormais 200 noyaux × 50 formes = 10 000 formulations virtuelles par rôle, soit 90 000 pour 8 émotions et le juge/sage. Ce sont des variantes combinatoires, non des connaissances ou 90 000 réponses distinctes validées. Liquid classe et choisit des indices parmi des variantes fermées ; pas de texte libre.
 
-## Ce qui est réellement implémenté (branche BONZE-042, HEAD 5fde323c)
+## Ce qui est réellement implémenté (branche BONZE-042, évolutive)
 - Android Java/Kotlin et WebView locale ; session vocale native dans `ConversationService` ; STT Android `createOnDeviceSpeechRecognizer` quand disponible, service au premier plan, notification Stop, micro arrêté au départ/à la mort du processus.
 - `DialogueMemory` : 30 entrées max, scène, contexte borné ; le passage transmis à Liquid est réduit à 300 caractères de passé dans `BonzeInference`. Il s'agit de mémoire immédiate, pas du coffre de souvenirs.
 - `EmotionalCouncil`/Rhino et corpus partagé ; filtres anti-écho (`ReplyQuality`) et huit tentatives de répertoire, mais aucun jugement général de véracité ou de pertinence.
@@ -32,3 +32,8 @@ Le corpus vise désormais 200 noyaux × 50 formes = 10 000 formulations virtuell
 `docs/bonze043-dialogue-voix-integration.md`, `docs/bonze044-liquid-synonymes.md`, `docs/bonze045-synonymes-piper-questions.md`, `docs/bonze046-heures-piper.md`, `docs/architecture-memoire-a-tiroirs.md`, `docs/bench-dialogue-fr-bonze031-results.md`, `docs/audits/2026-11-01-bonze-audit-sans-code.md`.
 
 Les décisions dépassées (par exemple génération libre Liquid prioritaire, ou voix Android substituée automatiquement à Piper) restent uniquement dans **les archives datées** ; ne pas les restaurer comme invariants actifs.
+
+## BONZE-049 — corpus 90 000 et rôle pour Liquid (01/11/2026)
+- 200 noyaux documentés, 10 ouvertures × 5 conclusions par noyau : **10 000 variantes virtuelles par rôle**, huit émotions + rôle juge/sage = **90 000**. Index calculés au tirage ; pas de liste de 90k chaînes chargée en RAM. Ces variantes ne sont pas des faits ou des connaissances.
+- Liquid reçoit la dernière partie du contexte (jusqu'à 450 caractères), le message courant, l'intention finale et le **rôle choisi par le répertoire** ; il sélectionne l'indice d'une variante lexicale prévalidée, 0 = original. Les limites de 21 paires, un seul remplacement et au plus 4 choix restent volontairement conservatrices. Aucun moteur neural supplémentaire chargé.
+- Commits 622705be (extension/comptage/choix contextuel) et 95b0778f (rôle émotionnel/juge transmis à Liquid). [CI 41321401979](https://github.com/greenpower2669/Bonze-AI/actions/runs/41321401979) réussie sur 622705be, incluant tests et compilation ; validation et empaquetage complets du dernier commit à contrôler avant livraison.
