@@ -136,7 +136,7 @@ for(var r=0;r<ROLES.length;r++){
   }
  }
 }
-function norm(s){var text=String(s||'').toLowerCase();if(text.normalize)text=text.normalize('NFD');return text.replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9' ]/g,' ').replace(/\s+/g,' ').trim();}
+function norm(s){var text=String(s||'').toLowerCase();if(text.normalize)text=text.normalize('NFD');return text.replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();}
 function contains(s,pat){return new RegExp('(?:^| )('+pat+')(?: |$)','i').test(s);}
 function detect(text){
  var n=norm(text);
