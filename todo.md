@@ -58,3 +58,7 @@ _État de référence : `feature/bonze042-field-fixes`, mission BONZE-049 (01/11
 - [ ] Tester la conversation réelle sur Samsung : 20 tours, pertinence des suites, phrases répétées, 33 suites vocales Piper, stop/veille, débit, latence Liquid et consommation mémoire.
 - [x] BONZE-054 : trois événements puis clôture écrite unique, sans répétition automatique ; le juge Liquid voit quatre variations de la même étape, pas des histoires concurrentes. Tests Node [41343614295](https://github.com/greenpower2669/Bonze-AI/actions/runs/41343614295) verts.
 - [ ] Pour des histoires plus longues : enrichir les scènes en fonction des choix explicites de l'utilisateur, sans invention factuelle ni boucle automatique.
+
+### BONZE-054 — suivi du correctif Piper
+- [x] Réduire la longueur de la clôture après l'échec `Oversized story closure peur` sur 2854d3f5 ; ajouter un test pour chaque rôle (ecf253ce).
+- [ ] Vérifier la réussite de l'audit Piper, de la compilation, du lint et de l'APK expérimental sur le dernier code ; signature temporaire, pas de Release.

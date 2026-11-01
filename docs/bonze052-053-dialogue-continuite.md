@@ -13,3 +13,6 @@ _Travail de la branche `feature/bonze042-field-fixes`, sans publication de Relea
 - BONZE-054 : les trois événements aboutissent désormais à une clôture écrite et à la remise à zéro du thème. Liquid choisit uniquement le style d'une **même étape**, ce qui évite de passer à une histoire étrangère. Les nouveaux chapitres interactifs au-delà de cette clôture restent un développement futur.
 - La qualité sur le **vrai Liquid 230M**, la voix Piper et le téléphone Samsung ne sont pas encore mesurées. Le catalogue reste majoritairement composé de 200 noyaux, donc une question hors corpus reste limitée.
 - Aucune fusion dans `main`, aucune nouvelle GitHub Release sans accord explicite ; APK de contrôle expérimental seulement.
+
+## Incident de validation BONZE-054
+Une première clôture dépassait le budget vocal de 220 caractères dans certains rôles émotionnels, détectée par la CI Piper et non par le test initial. La clôture a été raccourcie et le contrôle de longueur renforcé dans le commit `ecf253ce`. Le package physique, l'écoute et la qualité réelle de la reconstruction restent à éprouver sur Android.
