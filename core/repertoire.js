@@ -365,7 +365,7 @@ function propose(input){
  // An unrecognized *specific fiction subject* must not be answered with a
  // random, unrelated scene. Ask for an authored detail instead.
  // No private or unknown word is copied into either the response or the state.
- if(intent==='jeu'&&!continuing&&terms.length>0&&topicalMatch(choices[0])===0
+ if(intent==='jeu'&&!continuing&&/^imagine (?:un|une|des|le|la|l) /.test(text)&&terms.length>0&&topicalMatch(choices[0])===0
     &&corpus.unknownStoryTopic){
   var unknown=corpus.unknownStoryTopic(role);
   var next=JSON.parse(JSON.stringify(first.state));
