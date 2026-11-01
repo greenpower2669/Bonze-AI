@@ -399,15 +399,16 @@ test('BONZE-051: topic coverage is reported without pretending 90k semantic situ
   {text:'Imagine la lune',topic:'lune'},
   {text:'Imagine des étoiles',topic:'étoiles'},
   {text:'Imagine une forêt',topic:'forêt'},
-  {text:'Imagine un pirate',topic:'pirate',outOfCorpus:true}
+  {text:'Imagine un pirate',topic:'pirate'}
  ];
  let hit=0;
  for(const q of cases){
   const plan=engine.propose({text:q.text,seed:511});
   const covered=plan.candidates.some(c=>c.text.toLocaleLowerCase('fr').includes(q.topic));
-  if(!q.outOfCorpus)assert.ok(covered,'missing curated topic '+q.topic);
+  assert.ok(covered,'missing curated topic '+q.topic);
   if(covered)hit++;
   assert.ok(plan.candidates.every(c=>!c.trace.modelGenerated));
  }
- console.log('BONZE-051 curated topic mention '+hit+'/'+cases.length+' (this is NOT meaning comprehension)');
+ assert.equal(hit,cases.length);
+ console.log('BONZE-055 curated topic mention '+hit+'/'+cases.length+' (this is NOT meaning comprehension)');
 });

@@ -32,7 +32,7 @@ contrarié:[
 "Je vois que quelque chose te contrarie ; tu peux me l'expliquer.","On peut être en colère et chercher malgré tout une réponse utile.","Qu'est-ce qui t'a semblé injuste dans cette histoire ?","Je ne vais pas minimiser ton agacement ni rendre le conflit plus grave.","Une discussion ferme peut rester respectueuse.","Avant de réagir, regardons ce qui a déclenché la tension.","Il est parfois utile de séparer les faits des suppositions.","Tu peux dire ce que tu refuses sans avoir à blesser quelqu'un.","Cherchons une manière de faire comprendre ton point de vue.","Je peux t'aider à reformuler une demande plus clairement.","Si mon comportement t'a agacé, je préfère le savoir et le corriger."
 ],
 jeu:[
-"Et si nous inventions un château dont les portes changent de couleur ?","Je propose une forêt de lanternes où les arbres racontent des énigmes.","Notre héros pourrait rencontrer une tortue qui collectionne les nuages.","Un navire de papier pourrait traverser un océan de chocolat imaginaire.","Imaginons un petit robot persuadé d'être un grand explorateur.","Et si la lune prêtait son parapluie aux voyageurs ?","Une bibliothèque volante pourrait perdre ses livres au-dessus des montagnes.","Je connais une scène imaginaire avec un dragon qui a peur du feu.","Une valise mystérieuse pourrait contenir une ville minuscule.","Choisissons un personnage qui confond les étoiles et les lumières.","Une rivière à l'envers pourrait mener à un jardin de montres."
+"Et si nous inventions un château dont les portes changent de couleur ?","Je propose une forêt de lanternes où les arbres racontent des énigmes.","Notre héros pourrait rencontrer une tortue qui collectionne les nuages.","Un pirate voyage sur un navire de papier à travers un océan de chocolat imaginaire.","Imaginons un petit robot persuadé d'être un grand explorateur.","Et si la lune prêtait son parapluie aux voyageurs ?","Une bibliothèque volante pourrait perdre ses livres au-dessus des montagnes.","Je connais une scène imaginaire avec un dragon qui a peur du feu.","Une valise mystérieuse pourrait contenir une ville minuscule.","Choisissons un personnage qui confond les étoiles et les lumières.","Une rivière à l'envers pourrait mener à un jardin de montres."
 ],
 humour:[
 "Un escargot vient de demander un plan pour sa coquille.","Une carotte rêve de passer son permis de conduire.","Un nuage s'est inscrit à un concours de moustaches.","Un poisson voudrait ouvrir une boutique de parapluies.","La grenouille du village se prend pour une grande soprano.","Un robot a essayé de recharger son bonnet en électricité.","Une chaussette affirme avoir découvert le continent du canapé.","Un croissant demande une carte pour retrouver sa boulangerie.","Un pingouin a invité un ventilateur à son anniversaire.","Une pomme essaie de devenir reine du potager.","Une fourmi veut construire un ascenseur pour les miettes."
@@ -150,7 +150,7 @@ var STORY_BEATS=[
   "Elle retrouve son nuage et décide de le partager."
  ],
  [
-  "Le navire quitte le port et rencontre une grande vague.",
+  "Le pirate quitte le port sur son navire et rencontre une grande vague.",
   "Son équipage cherche une route à travers cet océan.",
   "Le navire arrive enfin sur une île imaginaire."
  ],
