@@ -94,3 +94,11 @@ _État de référence : `feature/bonze042-field-fixes`, mission BONZE-049 (01/11
 - [ ] Tester une méthode **non générative** d'arbitrage : règles lexicales et sémantiques déterministes comme référence, puis classifieur compact ou représentations vectorielles si un vrai gain mesuré se manifeste. Ne pas remplacer la mémoire ou ouvrir le coffre automatiquement.
 - [ ] Construire 50–100 situations françaises annotées avec familles sémantiques, variations de sujets, contextes multi-tours et refus du hors-sujet ; évaluer précision, répétitions et latence hors Android.
 - [ ] Préserver Android en état de fonctionnement, ne promouvoir aucun modèle 1.2B dans l'APK sans démonstration de pertinence et coût RAM/temps compatibles ; aucun merge main ni Release sans accord.
+
+## BONZE-059 — arbitre lexical sans génération, démonstrateur Linux (02/11/2026)
+- [x] Écrire un arbitre expérimental déterministe sans GGUF, qui classe quatre réponses selon sujet, contexte et quelques règles de sûreté, avec abstention sur égalité ou manque de preuve. Aucun changement du code Android.
+- [x] Construire 99 demandes françaises distinctes, annotées par le projet, les faire passer dans les 4 positions (396 décisions corrélées), tests Node et CI [41361579786](https://github.com/greenpower2669/Bonze-AI/actions/runs/41361579786) réussis.
+- [x] Mesures : 368 choix corrects, 20 abstentions, 8 erreurs ; vérifier les cas qui échouent plutôt que masquer les erreurs dans un score global. Résultats [GitHub Actions 13105716755](https://github.com/greenpower2669/Bonze-AI/actions/runs/41361579786/artifacts/13105716755).
+- [ ] **P0** Faire annoter par un évaluateur humain **indépendant et à l'aveugle** un jeu de demandes inédites, y compris formulations hors lexique, ironie, contradictions, histoire à suivre et questions factuelles. Séparer réglage et évaluation pour éviter le surajustement.
+- [ ] **P0** Auditer les 8 erreurs de définition et les 20 abstentions (peur, humour, négations) sur un **jeu de développement distinct**, puis revérifier sur des exemples jamais vus. Ne jamais simplement ajuster des règles aux cas du test final.
+- [ ] **P1** Ajouter comparaison de coût RAM/CPU et de robustesse conversationnelle à 20 tours, éventuel arbitre à embeddings/classes spécialisé ; décider Linux/PWA/Android après résultats réels, sans toucher à la Release ni à main.

@@ -31,3 +31,6 @@ Priorité validée : la **pertinence et la continuité du sujet précèdent le n
 
 ## BONZE-057 — essayer l'expérience indépendamment d'Android
 Fab accepte d'envisager d'autres plateformes si Android freine les objectifs conversationnels. Prioriser **l'essai scientifique reproductible de Liquid comme sélecteur de phrases construites**, à l'aide d'un banc Linux CPU, avec comparaison 230M et 1.2B Q4, sans nouveau modèle simultané en RAM. L'expérience doit produire des sorties brutes et mesures contrôlables, éviter les promesses de qualité sans test humain et préserver la possibilité du port Android. Pas de Release, aucune fusion dans main, aucun changement Djipie sans accord dédié.
+
+## BONZE-059 — arbitre lexical sans génération, démonstrateur Linux (02/11/2026)
+Poursuivre l'expérimentation de l'intelligence locale **indépendamment de la plate-forme**. L'arbitre non génératif expérimental BONZE-059 ne remplace pas l'application : 99 demandes projet et 396 rotations mesurent uniquement l'adéquation à des exemples construits par le même développeur, pas une compréhension naturelle. Préserver les bonnes phrases, les émotions, l'anti-répétition, le hors-ligne et les contrôles de sécurité. Exiger un jeu indépendant de validation avant choix d'architecture ou installation sur Android. Pas de fusion main ou de Release sans autorisation.
