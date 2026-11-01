@@ -216,3 +216,55 @@ test('BONZE-049: selected role is explicit and never neural-generated',()=>{
  assert.equal(r.trace.modelGenerated,false);
  assert.equal(say('Comment tu t’appelles ?',null,{semantic:'humour'}).role,'sage');
 });
+
+test('BONZE-050: preview offers topic-matched, same-role authored sentences with independent states',()=>{
+ const before={version:1,seed:74523,turns:4,recent:[],families:[]};
+ const original=JSON.stringify(before);
+ const preview=engine.propose({text:'Imagine un dragon',state:before,semantic:'jeu'});
+ assert.equal(preview.intent,'jeu');
+ assert.ok(preview.candidates.length>=2 && preview.candidates.length<=4);
+ assert.equal(JSON.stringify(before),original,'preview never mutates saved state');
+ const roles=new Set(preview.candidates.map(x=>x.role));
+ assert.equal(roles.size,1,'one emotion or judge for every offered response');
+ assert.ok(preview.candidates.some(x=>/dragon/i.test(x.text)),'topic-matching core is offered');
+ const ids=new Set();
+ for(const candidate of preview.candidates){
+  assert.equal(candidate.intent,preview.intent);
+  assert.equal(candidate.role,preview.role);
+  assert.ok(candidate.text.length>15&&candidate.text.length<=220);
+  assert.equal(candidate.trace.modelGenerated,false);
+  assert.ok(!ids.has(candidate.card));
+  ids.add(candidate.card);
+  assert.equal(candidate.state.turns,5,'preview advances exactly one potential turn');
+  assert.equal(candidate.state.recent.at(-1),candidate.card);
+  assert.equal(candidate.state.families.at(-1),candidate.family);
+  assert.ok(candidate.state.recent.length<=16);
+ }
+ const again=engine.propose({text:'Imagine un dragon',state:before,semantic:'jeu'});
+ assert.deepEqual(preview.candidates.map(x=>x.card),again.candidates.map(x=>x.card),
+  'same state produces deterministic options');
+});
+
+test('BONZE-050: risk, identity, correction and concrete questions do not allow neural recomposition',()=>{
+ for(const text of [
+  'Je suis en danger immédiat','Comment tu t’appelles ?',
+  'Tu te trompes','Quel est le chiffre exact ?'
+ ]){
+  const preview=engine.propose({text,semantic:'humour',seed:234});
+  assert.equal(preview.candidates.length,1,text);
+  assert.equal(preview.candidates[0].trace.modelGenerated,false);
+ }
+});
+test('BONZE-050: multi-turn previews do not consume discarded options or replicate the user',()=>{
+ let state=null,used=new Set();
+ for(let i=0;i<20;i++){
+  const plan=engine.propose({text:'Imagine un dragon',state,seed:209});
+  const choice=plan.candidates[Math.min(i%3,plan.candidates.length-1)];
+  assert.equal(choice.state.turns,i+1);
+  assert.ok(!choice.text.includes('mot-de-passe-super-secret'));
+  used.add(choice.card);
+  state=choice.state;
+ }
+ assert.ok(used.size>=10,'anti-repeat offers useful card diversity');
+ assert.ok(state.recent.length<=16&&state.families.length<=8);
+});
