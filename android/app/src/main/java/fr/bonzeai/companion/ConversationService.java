@@ -28,7 +28,7 @@ public final class ConversationService extends Service {
  private final DialogueMemory memory=new DialogueMemory();
  private final String boot=UUID.randomUUID().toString();
  private Listener listener;private SpeechRecognizer recognizer;private TextToSpeech tts;
- private android.content.SharedPreferences prefs;private DiagnosticJournal journal;private long diagnosticTurn;private EmotionalCouncil council;private ScriptedDialogue scripted;private long councilAt;private String policyHint="";private PiperVoice piper;private String speechEngine="";
+ private android.content.SharedPreferences prefs;private DiagnosticJournal journal;private long diagnosticTurn;private EmotionalCouncil council;private ScriptedDialogue scripted;private long councilAt;private String policyHint="";private PiperVoice piper;private String speechEngine="";private String lastAuthoredRole="sage",lastAuthoredIntent="discussion";
  private PowerManager.WakeLock cpu;
  private AudioManager audio;private AudioFocusRequest focus;
  private boolean promoted,recording,disposed,localVoiceReady,voiceInitFinished;
@@ -207,6 +207,7 @@ public final class ConversationService extends Service {
      "discarded",disposed||epoch!=workEpoch));
     if(!disposed&&epoch==workEpoch&&turn==diagnosticTurn){
      final String authored=scriptedReply(text,chosenLabel,turn);
+      final String styleRole=lastAuthoredRole,actualIntent=lastAuthoredIntent;
      final List<String> variants=SynonymChoice.candidates(authored);
      if(!"precise".equals(mode)||variants.isEmpty()||!failure.isEmpty()){
       journal.add("variation",turn,DiagnosticJournal.fields("mechanism","authored-only","candidates",variants.size()));
@@ -215,7 +216,7 @@ public final class ConversationService extends Service {
       inference.execute(()->{
        String selected="0",variationError="";
        long start=SystemClock.elapsedRealtime();
-       try{selected=BonzeInference.chooseVariation(getApplicationContext(),text,chosenLabel,authored,variants.toArray(new String[0]));}
+       try{selected=BonzeInference.chooseVariation(getApplicationContext(),text,actualIntent,styleRole,authored,variants.toArray(new String[0]));}
        catch(Exception|LinkageError error){variationError=error.getClass().getSimpleName();}
        final String index=selected,error=variationError;
        final long elapsedVariation=SystemClock.elapsedRealtime()-start;
@@ -243,6 +244,7 @@ public final class ConversationService extends Service {
   return recent;
  }
  private String scriptedReply(String text,String label,long turn){
+   lastAuthoredRole="sage";lastAuthoredIntent="discussion";
   if(scripted!=null)try{
    List<String> recentBot=recentBonzeReplies(8);
    for(int attempt=0;attempt<8;attempt++){
@@ -256,6 +258,7 @@ public final class ConversationService extends Service {
     }
     ReplyQuality.Result checked=ReplyQuality.review(text,candidate,memory.repeats(candidate),recentBot);
     if(!checked.repaired){
+     lastAuthoredRole=selected.optString("role","sage");lastAuthoredIntent=selected.optString("intent","discussion");
      journal.add("repertoire",turn,DiagnosticJournal.fields("intent",selected.optString("intent"),
       "card",selected.optString("card"),"mechanism",label.isEmpty()?"lexical-repertoire":"liquid-classified-repertoire",
       "selectionAttempts",attempt+1));

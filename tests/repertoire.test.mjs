@@ -208,3 +208,11 @@ test('BONZE-049: all 9 roles have precisely 10,000 virtual variants, including t
  assert.ok(judge.body.length<=220);
  assert.equal(engine.stats().virtualCards,90000);
 });
+
+test('BONZE-049: selected role is explicit and never neural-generated',()=>{
+ const r=say('Bonjour',null,{seed:998});
+ assert.ok(engine.roles.includes(r.role));
+ assert.equal(r.role,r.card.split('/')[1]);
+ assert.equal(r.trace.modelGenerated,false);
+ assert.equal(say('Comment tu t’appelles ?',null,{semantic:'humour'}).role,'sage');
+});
