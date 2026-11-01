@@ -213,7 +213,8 @@ public final class ConversationService extends Service {
      final String authored=scriptedReply(text,chosenLabel,turn);
       final String styleRole=lastAuthoredRole,actualIntent=lastAuthoredIntent;
      final List<String> variants=SynonymChoice.candidates(authored);
-     if(!"precise".equals(mode)||variants.isEmpty()||!failure.isEmpty()){
+     if(!"precise".equals(mode)||variants.isEmpty()||!failure.isEmpty()||
+       Arrays.asList("urgence","identite","question","correction").contains(actualIntent)){
       journal.add("variation",turn,DiagnosticJournal.fields("mechanism","authored-only","candidates",variants.size()));
       complete(epoch,authored,fromVoice);
      }else{
