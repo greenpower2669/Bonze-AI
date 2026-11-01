@@ -69,3 +69,10 @@ _État de référence : `feature/bonze042-field-fixes`, mission BONZE-049 (01/11
 - [x] Pour 20 demandes successives du même sujet connu, le thème reste prioritaire malgré l'anti-répétition et les formes varient (CI [41344518211](https://github.com/greenpower2669/Bonze-AI/actions/runs/41344518211)).
 - [ ] Vérifier le paquet expérimental, l'audit Piper et son empreinte après BONZE-055 ; conserver les données et la branche `main`, sans nouvelle Release.
 - [ ] Tester sur Samsung 50–100 sujets français avec vrai Liquid, mesure qualité/pertinence, répétition, latence, RAM, Piper et Stop. Le mini-banc 10/10 ne démontre pas une compréhension sémantique.
+
+## BONZE-056 — pertinence du sujet prioritaire dans le choix Liquid (01/11/2026)
+- [x] Éviter de présenter à Liquid des histoires différentes pour une demande explicite sur un sujet précis ; garantir quatre variantes du même noyau et du même rôle.
+- [x] Ajouter un petit dictionnaire d'alias français conservateurs (11 thèmes, pluriels/synonymes choisis), sans modèle supplémentaire ni nouvelles connaissances.
+- [x] Tester les formulations « Raconte-moi une histoire de pirate », « Invente une aventure de robots », « Imagine une forteresse », les ambiguïtés et les répétitions sur vingt tours. CI [41355014355](https://github.com/greenpower2669/Bonze-AI/actions/runs/41355014355) réussie.
+- [ ] Tester la compilation, l'audit Piper et le paquet expérimental complet sur le dernier SHA BONZE-056 ; ne pas publier une nouvelle Release sans accord.
+- [ ] Sur Samsung, contrôler le **choix réel de Liquid** (indice retenu, pertinence, latence, échec/repli) et la voix Piper sur 20 tours. Tester les questions factuelles, négations, contre-exemples, choix de deux scènes, et la mémoire préservée.
