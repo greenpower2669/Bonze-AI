@@ -151,6 +151,43 @@ int main(int argc,char** argv){
    <<",\"latencyMs\":"<<result.millis<<",\"endToEndMs\":"<<totalMs
    <<",\"tokens\":"<<result.tokens<<",\"response\":"<<json(text)<<"}"<<std::endl;
  }
+
+ // BONZE-058: test a *balanced, position-rotated* selector prompt.
+ // Four permutations per situation make a constant 0 or 3 predictor score
+ // exactly 25% on 44 draws, rather than benefiting from answer placement.
+ for(const auto& c:selections){
+  for(int rotation=0;rotation<4;rotation++){
+   auto options=c.options;
+   std::rotate(options.begin(),options.begin()+rotation,options.end());
+   const int expected=(c.expected+4-rotation)%4;
+   std::string prompt="Message : "+c.latest+"\n";
+   if(!c.context.empty())prompt+="Contexte : "+c.context+"\n";
+   prompt+="Choisis la réponse qui correspond au message.\n";
+   for(size_t n=0;n<options.size();n++)
+    prompt+=std::to_string(n)+". "+options[n]+"\n";
+   prompt+="Réponds avec le numéro seul.";
+   const std::string system="Tu classes des réponses françaises. "
+    "Choisis l'option la plus pertinente selon le sujet et le contexte. "
+    "Ta réponse est un seul chiffre : 0, 1, 2 ou 3. Aucun autre texte.";
+   const auto started=std::chrono::steady_clock::now();
+   auto result=generate(model,ctx,{{"system",system},{"user",prompt}},4,true);
+   const auto elapsed=std::chrono::duration_cast<std::chrono::milliseconds>(
+     std::chrono::steady_clock::now()-started).count();
+   auto answer=result.output;
+   const auto first=answer.find_first_not_of(" \t\r\n");
+   if(first==std::string::npos)answer="";
+   else{
+    const auto last=answer.find_last_not_of(" \t\r\n");
+    answer=answer.substr(first,last-first+1);
+   }
+   const bool valid=answer.size()==1&&answer[0]>='0'&&answer[0]<='3';
+   std::cout<<"{\"model\":"<<json(name)<<",\"variant\":\"C2\",\"case\":"<<json(c.name)
+    <<",\"rotation\":"<<rotation<<",\"expected\":"<<expected
+    <<",\"valid\":"<<(valid?"true":"false")
+    <<",\"latencyMs\":"<<result.millis<<",\"endToEndMs\":"<<elapsed
+    <<",\"tokens\":"<<result.tokens<<",\"response\":"<<json(answer)<<"}"<<std::endl;
+  }
+ }
  }catch(const std::exception& e){std::cerr<<"probe: "<<e.what()<<"\n";llama_free(ctx);llama_model_free(model);llama_backend_free();return 5;}
  llama_free(ctx);llama_model_free(model);llama_backend_free();return 0;
 }
