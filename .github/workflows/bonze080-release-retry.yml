@@ -1,0 +1,75 @@
+name: Bonze 0.8 — approved direct APK release retry
+on:
+  push:
+    branches:
+      - release/bonze080-retry-20261101
+    paths:
+      - .github/workflows/bonze080-release-retry.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish-bonze-080:
+    name: Verify and publish Bonze 0.8.0-dev direct APK
+    if: github.ref == 'refs/heads/release/bonze080-retry-20261101'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Download the CI-verified APK from run 41243984444
+        uses: actions/download-artifact@v4
+        with:
+          name: bonze-ai-0.8.0-dev-parallel-apk
+          run-id: 41243984444
+          github-token: ${{ github.token }}
+          path: release-assets
+      - name: Verify exact APK hash, package, offline permission and signing
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release-assets
+          test -s Bonze-AI-v0.8.0-dev-parallel.apk
+          echo '17132763676c6a9fc38a6157fd4f42597563fab29459d961a2a42576888253a3  Bonze-AI-v0.8.0-dev-parallel.apk' | sha256sum -c
+          sha256sum -c Bonze-AI-v0.8.0-dev-parallel.sha256
+          grep -F "name='fr.bonzeai.companion.dev'" package-parallel.txt
+          grep -F "versionCode='8'" package-parallel.txt
+          grep -F "versionName='0.8.0-dev'" package-parallel.txt
+          ! grep -q 'android.permission.INTERNET' permissions-parallel.txt
+          grep -q '^Verifies$' signature-parallel.txt
+      - name: Publish release with direct APK, no ZIP
+        env:
+          GH_TOKEN: ${{ secrets.BONZE_RELEASE_TOKEN || secrets.GH_RELEASE_TOKEN || github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG='bonze-ai-v0.8.0-dev-parallel'
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo 'A release with this tag already exists; refusing to overwrite.'
+            exit 1
+          fi
+          cat > release-notes.md <<'NOTES'
+          🌱 Bonze AI 0.8.0-dev — APK de test parallèle (BONZE-046).
+
+          APK téléchargeable directement, sans ZIP.
+          Version 0.8.0-dev (code 8), application fr.bonzeai.companion.dev : installation séparée de la 0.7.
+          Dialogue local à intentions classées par Liquid et répertoire émotionnel à formulations combinatoires, mémoire privée locale et synthèse Piper.
+          Aucun accès INTERNET requis.
+
+          Source applicative testée au commit a0cc30ad32028195863ac17189900e510fb671bc, build complet et contrôles verts :
+          https://github.com/greenpower2669/Bonze-AI/actions/runs/41243984444
+
+          SHA-256 du fichier APK : 17132763676c6a9fc38a6157fd4f42597563fab29459d961a2a42576888253a3
+
+          IMPORTANT : certificat de test temporaire ; les futures APK de cette variante peuvent refuser une mise à jour sur place. Préserver la 0.7 et ses données. Tests sur téléphone Samsung et écoute humaine de Piper encore nécessaires.
+          NOTES
+          gh release create "$TAG" \
+            release-assets/Bonze-AI-v0.8.0-dev-parallel.apk \
+            release-assets/Bonze-AI-v0.8.0-dev-parallel.sha256 \
+            --repo "$GITHUB_REPOSITORY" \
+            --target a0cc30ad32028195863ac17189900e510fb671bc \
+            --title '🌱 Bonze AI 0.8.0-dev — APK parallèle' \
+            --notes-file release-notes.md \
+            --prerelease
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --json tagName,assets,url \
+            --jq '{tag: .tagName, url: .url, assets: [.assets[].name]}'
