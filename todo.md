@@ -56,4 +56,5 @@ _État de référence : `feature/bonze042-field-fixes`, mission BONZE-049 (01/11
 - [x] Tests Node des nouveaux scénarios, suites et mémoire anti-répétition verts sur [41343213525](https://github.com/greenpower2669/Bonze-AI/actions/runs/41343213525).
 - [ ] Vérifier l'audit lexical Piper, la compilation/lint Android et l'APK expérimental sur le dernier commit avec `bonze-build`, sans Release.
 - [ ] Tester la conversation réelle sur Samsung : 20 tours, pertinence des suites, phrases répétées, 33 suites vocales Piper, stop/veille, débit, latence Liquid et consommation mémoire.
-- [ ] Affiner la suite après le troisième événement : une histoire très longue demande de nouveaux événements utiles, pas de répétition du même noyau.
+- [x] BONZE-054 : trois événements puis clôture écrite unique, sans répétition automatique ; le juge Liquid voit quatre variations de la même étape, pas des histoires concurrentes. Tests Node [41343614295](https://github.com/greenpower2669/Bonze-AI/actions/runs/41343614295) verts.
+- [ ] Pour des histoires plus longues : enrichir les scènes en fonction des choix explicites de l'utilisateur, sans invention factuelle ni boucle automatique.

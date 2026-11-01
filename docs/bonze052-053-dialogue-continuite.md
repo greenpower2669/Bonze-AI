@@ -1,4 +1,4 @@
-# BONZE-052/053 — progression des histoires et mémoire fiable
+# BONZE-052/053/054 — progression des histoires et mémoire fiable
 _Travail de la branche `feature/bonze042-field-fixes`, sans publication de Release._
 
 ## Ce qui est maintenant codé
@@ -10,6 +10,6 @@ _Travail de la branche `feature/bonze042-field-fixes`, sans publication de Relea
 
 ## Validation et limites
 - Node/test : [41343213525](https://github.com/greenpower2669/Bonze-AI/actions/runs/41343213525) vert, nouveaux tests de forme et trois suites ; le contrôle Android [41343213502](https://github.com/greenpower2669/Bonze-AI/actions/runs/41343213502) est distinct.
-- Trois événements par scène ne garantissent pas une conversation créative infinie ; un quatrième et des transitions naturelles seront à approfondir.
+- BONZE-054 : les trois événements aboutissent désormais à une clôture écrite et à la remise à zéro du thème. Liquid choisit uniquement le style d'une **même étape**, ce qui évite de passer à une histoire étrangère. Les nouveaux chapitres interactifs au-delà de cette clôture restent un développement futur.
 - La qualité sur le **vrai Liquid 230M**, la voix Piper et le téléphone Samsung ne sont pas encore mesurées. Le catalogue reste majoritairement composé de 200 noyaux, donc une question hors corpus reste limitée.
 - Aucune fusion dans `main`, aucune nouvelle GitHub Release sans accord explicite ; APK de contrôle expérimental seulement.
