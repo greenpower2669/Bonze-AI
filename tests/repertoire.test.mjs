@@ -312,3 +312,39 @@ test('BONZE-052: preview state only stores categorical theme indices',()=>{
   assert.ok(!JSON.stringify(item.state).includes('mot-de-passe-super-secret'));
  }
 });
+
+test('BONZE-053: repeated follow-ups advance a three-beat authored story instead of repeating its initial nucleus',()=>{
+ const initial=engine.propose({text:'Imagine un dragon',seed:74523});
+ const first=initial.candidates.find(c=>c.trace.composed&&/dragon/i.test(c.text));
+ assert.ok(first);
+ let state=first.state,phrases=new Set();
+ for(let step=0;step<3;step++){
+  const p=engine.propose({text:'Et après ?',state});
+  assert.equal(p.intent,'jeu');
+  const next=p.candidates[0];
+  assert.equal(next.trace.source,'authored-story-continuation');
+  assert.equal(next.state.lastTheme,first.state.lastTheme);
+  assert.equal(next.state.sceneStep,step+1);
+  assert.ok(next.text.length<=220);
+  assert.ok(!phrases.has(next.text),'new narrative beat must not duplicate prior beat');
+  phrases.add(next.text);
+  assert.ok(!next.text.includes(first.text));
+  state=next.state;
+ }
+ assert.equal(phrases.size,3);
+});
+test('BONZE-053: every curated continuation stays bounded, distinct, and separate from the 90k normal catalogue',()=>{
+ const corpus=sandbox.BonzeCorpus,all=new Set();
+ for(const role of corpus.roles)
+  for(let theme=0;theme<11;theme++)
+   for(let step=0;step<3;step++){
+    const item=corpus.renderContinuation(role,theme,step,0,0);
+    assert.ok(item.body.length<=220,item.id);
+    assert.ok(!all.has(item.body),item.id);
+    all.add(item.body);
+    assert.equal(item.intent,'jeu');
+    assert.equal(item.role,role);
+   }
+ assert.equal(all.size,9*11*3);
+ assert.equal(engine.stats().virtualCards,90000);
+});

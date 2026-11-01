@@ -180,7 +180,7 @@ function cleanState(old,seed){
  var associations=Array.isArray(old.associations)?old.associations.filter(function(a){return a&&typeof a.key==='string'&&a.key.length<60&&INTENTS.indexOf(a.key.split('/')[0])>=0&&ROLES.indexOf(a.key.split('/')[1])>=0&&isFinite(a.strength)&&a.strength>=0&&a.strength<=1&&isFinite(a.seen)&&a.seen>=0;}).slice(-24).map(function(a){return {key:a.key,strength:finite(a.strength,0,0,1),seen:finite(a.seen,0,0,1e7)|0};}):[];
  var forms=Array.isArray(old.recentForms)?old.recentForms.filter(function(f){return typeof f==='string'&&f.length<80;}).slice(-8):[];
  return {version:1,seed:finite(old.seed,finite(seed,0x7c25b,-2147483647,2147483647),-2147483647,2147483647)|0,turns:finite(old.turns,0,0,10000000)|0,recent:rec,families:fam,
-  lastIntent:INTENTS.indexOf(old.lastIntent)>=0?old.lastIntent:'',lastRole:ROLES.indexOf(old.lastRole)>=0?old.lastRole:'',lastTheme:finite(old.lastTheme,-1,-1,12)|0,recentForms:forms,associations:associations};
+  lastIntent:INTENTS.indexOf(old.lastIntent)>=0?old.lastIntent:'',lastRole:ROLES.indexOf(old.lastRole)>=0?old.lastRole:'',lastTheme:finite(old.lastTheme,-1,-1,12)|0,sceneStep:finite(old.sceneStep,0,0,3)|0,recentForms:forms,associations:associations};
 }
 function rand(s){s.seed=((Math.imul?Math.imul(s.seed,1664525):s.seed*1664525)+1013904223)|0;return (s.seed>>>0)/4294967296;}
 function choose(input){
@@ -258,7 +258,7 @@ function choose(input){
  if(found>=0){s.associations[found].strength=Math.min(1,s.associations[found].strength*.92+.12);s.associations[found].seen=s.turns;}
  else s.associations.push({key:key,strength:.35,seen:s.turns});
  if(s.associations.length>24)s.associations=s.associations.slice(-24);
- s.lastIntent=intent;s.lastRole=pick.role;s.lastTheme=typeof pick.theme==='number'?pick.theme:-1;
+ s.lastIntent=intent;s.lastRole=pick.role;s.lastTheme=typeof pick.theme==='number'?pick.theme:-1;s.sceneStep=0;
  return {text:body,role:pick.role,emotion:pick.role==='sage'?'calme':pick.role,card:pick.id,family:pick.family,intent:intent,detected:local,semanticUsed:intent===semantic,state:s,trace:{cardsConsidered:ranked.length,substitutions:substitutions,source:'authored-repertoire',composed:pick.composed===true,modelGenerated:false}};
 }
 
@@ -314,18 +314,40 @@ function propose(input){
   if(first.trace.composed===true&&next.recentForms.length)next.recentForms.pop();
   next.recentForms.push(intent+'/'+selected.form+'/'+selected.ending);
   next.recentForms=next.recentForms.slice(-8);
-  next.seed=seed.seed;next.lastRole=role;next.lastIntent=intent;next.lastTheme=selected.theme;
+  next.seed=seed.seed;next.lastRole=role;next.lastIntent=intent;next.lastTheme=selected.theme;next.sceneStep=0;
   var item={text:selected.body,role:role,emotion:first.emotion,card:selected.id,
    family:selected.family,intent:intent,state:next,
    trace:{source:'authored-repertoire',composed:true,modelGenerated:false}};
   used[item.card]=true;usedFamily[item.family]=true;choices.push(item);
+ }
+ // An actual story continuation must advance the scene, not merely repeat
+ // the same semantic kernel with a different greeting or closing sentence.
+ if(continuing&&intent==='jeu'&&corpus.renderContinuation){
+  var step=Math.min(2,Math.max(0,recent.sceneStep));
+  var ff=Math.floor(rand(seed)*50),op=Math.floor(ff/5),en=ff%5;
+  var beat=corpus.renderContinuation(role,followTheme,step,op,en);
+  var committed=JSON.parse(JSON.stringify(first.state));
+  committed.recent[committed.recent.length-1]=beat.id;
+  committed.families[committed.families.length-1]=beat.family;
+  if(first.trace.composed===true&&committed.recentForms.length)
+   committed.recentForms.pop();
+  committed.recentForms.push(intent+'/'+beat.form+'/'+beat.ending);
+  committed.recentForms=committed.recentForms.slice(-8);
+  committed.lastIntent=intent;committed.lastRole=role;committed.lastTheme=followTheme;
+  committed.sceneStep=Math.min(3,step+1);
+  committed.seed=seed.seed;
+  choices.unshift({text:beat.body,role:role,emotion:first.emotion,card:beat.id,
+   family:beat.family,intent:intent,state:committed,
+   trace:{source:'authored-story-continuation',composed:true,modelGenerated:false}});
+  choices=choices.slice(0,4);
  }
  // A lexical topic match is a deterministic fallback when Liquid is unavailable
  // or returns an invalid index. Do not copy the user's text into spoken output.
  function topicalMatch(option){
   var parts=norm(option.text).split(' '),score=0;
   for(var i=0;i<terms.length;i++)if(parts.indexOf(terms[i])>=0)score++;
-  if(continuing&&option.family===intent+'/'+role+'/theme'+followTheme)score+=100;
+  if(continuing&&option.trace.source==='authored-story-continuation')score+=1000;
+  else if(continuing&&option.family===intent+'/'+role+'/theme'+followTheme)score+=100;
   return score;
  }
  choices.sort(function(a,b){return topicalMatch(b)-topicalMatch(a);});

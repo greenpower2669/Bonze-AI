@@ -35,6 +35,18 @@ for(const role of corpus.roles){
  }
 }
 
+// BONZE-053: authored story continuations use the *same* bundled Piper lexicon.
+let storyVariants=0;
+for(const role of corpus.roles)for(let theme=0;theme<11;theme++)for(let step=0;step<3;step++){
+ const c=corpus.renderContinuation(role,theme,step,0,0);
+ storyVariants++;
+ const unknown=[...new Set((c.body.toLocaleLowerCase('fr-FR').match(WORD)||[])
+  .filter(w=>!dictionary.has(w)))];
+ for(const word of unknown)missing.set(word,(missing.get(word)||0)+1);
+ if(c.body.length>220)throw Error('Oversized story continuation '+c.id);
+}
+if(storyVariants!==297)throw Error('Story continuation count changed');
+
 // BONZE-044: a synonym chosen by Liquid must be pronounceable by the same
 // packaged Piper lexicon as our 90,000 authored cards.
 const synonymJava=readFileSync(new URL('../android/app/src/main/java/fr/bonzeai/companion/SynonymChoice.java',import.meta.url),'utf8');

@@ -131,6 +131,65 @@ var ENDINGS={
  farewell:["À bientôt !","Prends soin de toi.","Bonne suite à toi.","Nous pourrons en reparler.","Je te souhaite une belle journée."],
  careful:["Si tu as une source, nous pouvons la vérifier.","Je préfère confirmer les faits avant d'aller plus loin.","Gardons ce doute.","Je veux être exact.","Nous pouvons chercher ensemble."]
 };
+// Original, short and locally authored follow-up beats per imaginary scene.
+// No raw user text is used and no neural generation is accepted as speech.
+var STORY_BEATS=[
+ [
+  "Une porte s'ouvre et notre héros découvre une nouvelle pièce.",
+  "Il choisit une porte et une lumière apparaît derrière lui.",
+  "Le château lui révèle enfin un passage vers un autre monde."
+ ],
+ [
+  "Dans la forêt, une lanterne raconte un secret à notre héros.",
+  "Les arbres lui posent une énigme et attendent sa réponse.",
+  "Une lumière ouvre un chemin entre les branches."
+ ],
+ [
+  "La tortue montre ses nuages à un nouvel ami.",
+  "Un nuage lui échappe et flotte vers la montagne.",
+  "Elle retrouve son nuage et décide de le partager."
+ ],
+ [
+  "Le navire quitte le port et rencontre une grande vague.",
+  "Son équipage cherche une route à travers cet océan.",
+  "Le navire arrive enfin sur une île imaginaire."
+ ],
+ [
+  "Le petit robot découvre une trace dans le sable.",
+  "Il suit cette trace et rencontre un autre explorateur.",
+  "Ensemble, ils choisissent une nouvelle aventure."
+ ],
+ [
+  "La lune tend son parapluie à un jeune voyageur.",
+  "Le voyageur découvre que ce parapluie brille dans la nuit.",
+  "La lune le remercie et éclaire son chemin."
+ ],
+ [
+  "Un livre tombe doucement près d'une maison.",
+  "Une petite fille découvre le livre et cherche sa bibliothèque.",
+  "La bibliothèque revient enfin au-dessus des montagnes."
+ ],
+ [
+  "Le dragon observe une petite flamme et décide de l'approcher.",
+  "Un ami lui montre comment jouer avec la lumière.",
+  "Le dragon comprend que sa peur peut diminuer peu à peu."
+ ],
+ [
+  "La valise s'ouvre et révèle une ville aux petites fenêtres.",
+  "Dans cette ville, une voix invite notre héros à entrer.",
+  "Le héros referme la valise pour protéger ce secret."
+ ],
+ [
+  "Le personnage suit une lumière en croyant voir une étoile.",
+  "Il découvre la différence entre les étoiles et les lampes.",
+  "Il choisit de regarder le ciel avec son nouvel ami."
+ ],
+ [
+  "La rivière mène notre héros au jardin des montres.",
+  "Une montre indique un chemin qu'il ne connaissait pas.",
+  "Le héros repart avec un souvenir de ce jardin."
+ ]
+];
 var SAFE_INTENTS=Object.keys(CORES);
 function validate(){
  var count=0;
@@ -141,6 +200,7 @@ function validate(){
   for(var n=0;n<CORES[k].length;n++)if(typeof CORES[k][n]!=='string'||CORES[k][n].length<30)throw Error('bad seed '+k);
  }
  if(count!==200)throw Error('expected exactly 200 semantic seeds, got '+count);
+ if(STORY_BEATS.length!==CORES.jeu.length||STORY_BEATS.some(function(x){return x.length!==3;}))throw Error('incomplete authored story continuations');
  for(var role in LENSES){if(LENSES[role].length!==VOICE_ORDER.length)throw Error('missing stance '+role);for(var z=0;z<LENSES[role].length;z++)if(typeof LENSES[role][z]!=='string'||LENSES[role][z].length<12)throw Error('invalid stance '+role+'/'+z);}
  for(var role in CUES)for(var mode in OPENERS)if(!CUES[role][mode])throw Error('missing cue '+role+'/'+mode);
  for(var mode in OPENERS)if(OPENERS[mode].length!==10||ENDINGS[mode].length!==5)throw Error('bad forms '+mode);
@@ -154,6 +214,16 @@ function render(role,intent,index){
   body:[LENSES[role][VOICE_ORDER.indexOf(intent)],OPENERS[mode][open],cores[kernel],ENDINGS[mode][close]].join(' '),
   theme:kernel,form:open,ending:close,composed:true};
 }
-root.BonzeCorpus={render:render,sizeFor:sizeFor,intents:SAFE_INTENTS,modes:MODE_OF,
+function renderContinuation(role,theme,step,form,ending){
+ if(!CUES[role]||!STORY_BEATS[theme]||step<0||step>=3||
+    form<0||form>=10||ending<0||ending>=5)
+  throw Error('invalid story continuation');
+ return {id:'jeu/'+role+'/s'+theme+'b'+step+'f'+form+'e'+ending,
+  role:role,intent:'jeu',family:'jeu/'+role+'/theme'+theme,theme:theme,
+  form:form,ending:ending,composed:true,storyStep:step,
+  body:[LENSES[role][VOICE_ORDER.indexOf('jeu')],OPENERS.play[form],
+    STORY_BEATS[theme][step],ENDINGS.play[ending]].join(' ')};
+}
+root.BonzeCorpus={render:render,renderContinuation:renderContinuation,continuationCount:3,sizeFor:sizeFor,intents:SAFE_INTENTS,modes:MODE_OF,
  countPerRole:10000,roles:Object.keys(CUES),source:"composed; 200 curated semantic seeds x 50 forms per role"};
 })(typeof globalThis!=='undefined'?globalThis:this);
