@@ -279,7 +279,7 @@ test('BONZE-052: preview of a materialized first card retains older form history
   const first=engine.choose({text:'Imagine un dragon',state:prior});
   if(first.trace.composed)continue;
   assert.equal(plan.candidates.length>=2,true);
-  for(const candidate of plan.candidates.slice(1)){
+  for(const candidate of plan.candidates.filter(c=>c.trace.composed)){
    assert.equal(candidate.state.recentForms[0],'jeu/1/2');
    assert.equal(candidate.state.recentForms[1],'humour/2/3');
    const index=Number(candidate.card.split('/v')[1]);
