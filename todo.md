@@ -37,3 +37,13 @@ _État de référence : `feature/bonze042-field-fixes`, mission BONZE-049 (01/11
 - [x] Contrôler comptage, unicité, 220 caractères, intentions, lexique Piper, JS/JVM et Android CI au commit 622705be (run 41321401979 success).
 - [ ] Finaliser les mêmes contrôles sur le **dernier commit 95b0778f**, empaqueter expérimentalement sans Release, puis tester sur Samsung (pertinence, RAM, Piper et latence).
 - [ ] Nouvelle APK uniquement après accord explicite de Fab, tests adaptés, signature cohérente et Release directe.
+
+
+## BONZE-050 — objectif prioritaire : reconstruire les phrases selon le sujet
+- [x] Préparer jusqu'à quatre répliques complètes de même rôle et intention, à partir des 90 000 compositions virtuelles, avec classement lexical des noyaux pertinents.
+- [x] Liquid classe l'intention et choisit une réponse complète par numéro contrôlé, sans génération libre ; réponses sensibles sous garde.
+- [x] Antirépétition avant et après arbitrage ; seule la réponse approuvée est persistée. Maintenir les préférences de personnalité et un seul GGUF chargé.
+- [x] Tests Node sur proposition sans écriture, cohérence émotionnelle, sujet dragon, sécurité et vingt tours ; tests unitaires initialement verts sur c2bcf149.
+- [ ] Confirmer CI Android et empaquetage réel du dernier commit, SHA-256, signature, manifest ; pas de nouvelle Release sans accord.
+- [ ] P0 : mesurer au moins 50–100 questions/sujets, multi-tours, négations, questions spécifiques, continuité et anti-répétition sur téléphone réel ; observer latence et RAM de l'arbitrage Liquid.
+- [ ] P0 : tests Samsung pour Piper, casque Bluetooth, Stop/interruption, écran verrouillé et préservation des données ; étendre ensuite les noyaux sémantiques réellement utiles plutôt que les seules formes.

@@ -20,3 +20,8 @@ _Condensés au 01/11/2026 sans altérer l'historique : `docs/memory-archives/202
 
 ## Critères avant de dire « terminé »
 Essai réel Samsung avec 20 tours, jeu de rôle et suites, questions et corrections, prévention d'échos, casque Bluetooth, Piper/nombres/horaires/nom propre, interruptions/Stop/veille/écran verrouillé, RAM/CPU/temps jusqu'au son, coffre/migration et sauvegarde-restauration. Relever logs techniques respectant la confidentialité et tester le package réellement installable. Une CI verte ne vaut pas une validation humaine.
+
+
+## BONZE-050 — objectif prioritaire confirmé par Fab le 01/11/2026
+Bonze doit répondre selon le sujet réel et la continuité du dialogue, puis choisir les variantes propres aux huit émotions et au juge. Liquid classe l'intention puis choisit parmi plusieurs réponses entières composées par le répertoire ; le juge et les règles anti-répétition filtrent les alternatives avant publication. En cas d'hésitation, conserver la solution écrite et contrôlée, sans réponse libre, fausse connaissance ni pression sur la RAM.
+Seule la réponse retenue modifie l'état mémoire ; préserver le fonctionnement hors ligne, les données, le Stop et la voix choisie. Tester situations précises, négations, vingt tours, Piper, Bluetooth, consommation et latence avant toute nouvelle Release autorisée. Ne pas modifier main.

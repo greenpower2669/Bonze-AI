@@ -37,3 +37,11 @@ Les décisions dépassées (par exemple génération libre Liquid prioritaire, o
 - 200 noyaux documentés, 10 ouvertures × 5 conclusions par noyau : **10 000 variantes virtuelles par rôle**, huit émotions + rôle juge/sage = **90 000**. Index calculés au tirage ; pas de liste de 90k chaînes chargée en RAM. Ces variantes ne sont pas des faits ou des connaissances.
 - Liquid reçoit la dernière partie du contexte (jusqu'à 450 caractères), le message courant, l'intention finale et le **rôle choisi par le répertoire** ; il sélectionne l'indice d'une variante lexicale prévalidée, 0 = original. Les limites de 21 paires, un seul remplacement et au plus 4 choix restent volontairement conservatrices. Aucun moteur neural supplémentaire chargé.
 - Commits 622705be (extension/comptage/choix contextuel) et 95b0778f (rôle émotionnel/juge transmis à Liquid). [CI 41321401979](https://github.com/greenpower2669/Bonze-AI/actions/runs/41321401979) réussie sur 622705be, incluant tests et compilation ; validation et empaquetage complets du dernier commit à contrôler avant livraison.
+
+
+## BONZE-050 — objectif prioritaire : construction contextuelle guidée par Liquid (01/11/2026)
+- Le sujet et l'intention de l'utilisateur déterminent la sélection. Liquid classe l'intention, puis compare 1 à 4 phrases complètes déjà construites à partir des noyaux sémantiques, ouvertures et conclusions du répertoire. Il ne rédige jamais librement une réponse.
+- Le rôle émotionnel ou juge reste constant au sein du lot de variantes ; une heuristique lexicale de sujet trie les propositions avant l'arbitrage Liquid. Les modèles restent locaux, un seul GGUF lourd chargé.
+- Les filtres anti-écho, anti-répétition, qualité et Piper fonctionnent avant et après le choix ; seule la phrase effectivement prononcée est inscrite dans l'historique. Les previews refusées ne sont pas mémorisées.
+- Urgence, identité, questions factuelles et corrections restent conservatrices, sans arbitrage libre par Liquid. KnowledgeGuard conserve sa priorité.
+- Limites : 90 000 assemblages ne représentent que 200 noyaux sémantiques ; cela ne suffit pas à résoudre toute question ou à prouver la pertinence réelle. Tests Samsung et mesure de latence indispensables.
