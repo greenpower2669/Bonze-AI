@@ -348,3 +348,28 @@ test('BONZE-053: every curated continuation stays bounded, distinct, and separat
  assert.equal(all.size,9*11*3);
  assert.equal(engine.stats().virtualCards,90000);
 });
+
+test('BONZE-054: after three authored beats the fourth follow-up closes the scene exactly once',()=>{
+ const initial=engine.propose({text:'Imagine un dragon',seed:74523});
+ let state=initial.candidates.find(x=>x.trace.composed&&/dragon/i.test(x.text)).state;
+ const scenes=[];
+ for(let i=0;i<4;i++){
+  const options=engine.propose({text:'Et après ?',state});
+  assert.equal(options.candidates.length,4);
+  assert.equal(new Set(options.candidates.map(x=>x.family)).size,1,
+   'the neural judge cannot select a different storyline');
+  const selected=options.candidates[0];
+  scenes.push(selected.text);
+  if(i<3)assert.equal(selected.trace.source,'authored-story-continuation');
+  else{
+   assert.equal(selected.trace.source,'authored-story-closure');
+   assert.equal(selected.state.lastTheme,-1);
+   assert.equal(selected.state.sceneStep,0);
+  }
+  state=selected.state;
+ }
+ assert.equal(new Set(scenes).size,4,'all four beats must be distinct');
+ const fifth=engine.propose({text:'Et après ?',state});
+ assert.notEqual(fifth.candidates[0].trace.source,'authored-story-closure',
+  'a finished story does not repeat its closing line');
+});

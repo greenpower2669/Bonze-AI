@@ -323,30 +323,41 @@ function propose(input){
  // An actual story continuation must advance the scene, not merely repeat
  // the same semantic kernel with a different greeting or closing sentence.
  if(continuing&&intent==='jeu'&&corpus.renderContinuation){
-  var step=Math.min(2,Math.max(0,recent.sceneStep));
-  var ff=Math.floor(rand(seed)*50),op=Math.floor(ff/5),en=ff%5;
-  var beat=corpus.renderContinuation(role,followTheme,step,op,en);
-  var committed=JSON.parse(JSON.stringify(first.state));
-  committed.recent[committed.recent.length-1]=beat.id;
-  committed.families[committed.families.length-1]=beat.family;
-  if(first.trace.composed===true&&committed.recentForms.length)
-   committed.recentForms.pop();
-  committed.recentForms.push(intent+'/'+beat.form+'/'+beat.ending);
-  committed.recentForms=committed.recentForms.slice(-8);
-  committed.lastIntent=intent;committed.lastRole=role;committed.lastTheme=followTheme;
-  committed.sceneStep=Math.min(3,step+1);
-  committed.seed=seed.seed;
-  choices.unshift({text:beat.body,role:role,emotion:first.emotion,card:beat.id,
-   family:beat.family,intent:intent,state:committed,
-   trace:{source:'authored-story-continuation',composed:true,modelGenerated:false}});
-  choices=choices.slice(0,4);
+  // When the current story has reached its third beat, close it once and
+  // invite the user to choose another scene. Never loop the final beat.
+  var finished=recent.sceneStep>=3;
+  var step=Math.max(0,Math.min(2,recent.sceneStep));
+  var narrative=[];
+  for(var variation=0;variation<4;variation++){
+   var formNumber=Math.floor(rand(seed)*50),op=Math.floor(formNumber/5),en=formNumber%5;
+   var beat=finished?corpus.renderStoryClosure(role,followTheme,op,en):
+    corpus.renderContinuation(role,followTheme,step,op,en);
+   var committed=JSON.parse(JSON.stringify(first.state));
+   committed.recent[committed.recent.length-1]=beat.id;
+   committed.families[committed.families.length-1]=beat.family;
+   if(first.trace.composed===true&&committed.recentForms.length)
+    committed.recentForms.pop();
+   committed.recentForms.push(intent+'/'+beat.form+'/'+beat.ending);
+   committed.recentForms=committed.recentForms.slice(-8);
+   committed.lastIntent=intent;committed.lastRole=role;
+   committed.lastTheme=finished?-1:followTheme;
+   committed.sceneStep=finished?0:step+1;
+   committed.seed=seed.seed;
+   narrative.push({text:beat.body,role:role,emotion:first.emotion,card:beat.id,
+    family:beat.family,intent:intent,state:committed,
+    trace:{source:finished?'authored-story-closure':'authored-story-continuation',
+      composed:true,modelGenerated:false}});
+  }
+  // Every offered response advances the SAME authored beat, so even a
+  // misclassified Liquid index cannot jump to an unrelated story scene.
+  choices=narrative;
  }
  // A lexical topic match is a deterministic fallback when Liquid is unavailable
  // or returns an invalid index. Do not copy the user's text into spoken output.
  function topicalMatch(option){
   var parts=norm(option.text).split(' '),score=0;
   for(var i=0;i<terms.length;i++)if(parts.indexOf(terms[i])>=0)score++;
-  if(continuing&&option.trace.source==='authored-story-continuation')score+=1000;
+  if(continuing&&/^authored-story-/.test(option.trace.source))score+=1000;
   else if(continuing&&option.family===intent+'/'+role+'/theme'+followTheme)score+=100;
   return score;
  }

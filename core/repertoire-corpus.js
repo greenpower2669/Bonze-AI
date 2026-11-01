@@ -224,6 +224,16 @@ function renderContinuation(role,theme,step,form,ending){
   body:[LENSES[role][VOICE_ORDER.indexOf('jeu')],OPENERS.play[form],
     STORY_BEATS[theme][step],ENDINGS.play[ending]].join(' ')};
 }
-root.BonzeCorpus={render:render,renderContinuation:renderContinuation,continuationCount:3,sizeFor:sizeFor,intents:SAFE_INTENTS,modes:MODE_OF,
+function renderStoryClosure(role,theme,form,ending){
+ if(!CUES[role]||!STORY_BEATS[theme]||form<0||form>=10||ending<0||ending>=5)
+  throw Error('invalid story closure');
+ return {id:'jeu/'+role+'/end'+theme+'f'+form+'e'+ending,
+  role:role,intent:'jeu',family:'jeu/'+role+'/end'+theme,
+  theme:theme,form:form,ending:ending,composed:true,storyStep:3,
+  body:[LENSES[role][VOICE_ORDER.indexOf('jeu')],OPENERS.play[form],
+   'Cette aventure trouve une fin. Tu peux imaginer un nouveau personnage ou choisir une autre histoire.',
+   ENDINGS.play[ending]].join(' ')};
+}
+root.BonzeCorpus={render:render,renderContinuation:renderContinuation,renderStoryClosure:renderStoryClosure,continuationCount:3,sizeFor:sizeFor,intents:SAFE_INTENTS,modes:MODE_OF,
  countPerRole:10000,roles:Object.keys(CUES),source:"composed; 200 curated semantic seeds x 50 forms per role"};
 })(typeof globalThis!=='undefined'?globalThis:this);
