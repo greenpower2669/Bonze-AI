@@ -275,7 +275,7 @@ function choose(input){
 var STORY_THEME_WORDS=[
  ['chateau','chateaux','forteresse','forteresses'],
  ['foret','forets','bois','lanterne','lanternes'],
- ['tortue','tortues'],
+ ['tortue','tortues','nuage','nuages'],
  ['pirate','pirates','bateau','bateaux','navire','navires'],
  ['robot','robots','automate','automates'],
  ['lune'],
