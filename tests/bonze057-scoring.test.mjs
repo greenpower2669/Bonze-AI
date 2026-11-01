@@ -15,6 +15,10 @@ test('BONZE-057: index benchmark scorer separates correct, incorrect and invalid
    {model:'liquid-tiny',variant:'C1',case:'dragon',expected:1,response:'0',valid:true,latencyMs:8,endToEndMs:18,tokens:1},
    {model:'liquid-tiny',variant:'C1',case:'unknown',expected:0,response:'la réponse',valid:false,latencyMs:7,endToEndMs:15,tokens:3},
    {model:'liquid-small',variant:'C1',case:'pirate',expected:2,response:'2',valid:true,latencyMs:5,endToEndMs:11,tokens:1},
+   {model:'liquid-tiny',variant:'C2',case:'pirate',rotation:0,expected:2,response:'2',valid:true,latencyMs:4,endToEndMs:10,tokens:1},
+   {model:'liquid-tiny',variant:'C2',case:'pirate',rotation:1,expected:1,response:'0',valid:true,latencyMs:4,endToEndMs:10,tokens:1},
+   {model:'liquid-tiny',variant:'C2',case:'pirate',rotation:2,expected:0,response:'0',valid:true,latencyMs:4,endToEndMs:10,tokens:1},
+   {model:'liquid-tiny',variant:'C2',case:'pirate',rotation:3,expected:3,response:'0',valid:true,latencyMs:4,endToEndMs:10,tokens:1},
    {model:'liquid-tiny',variant:'R0',case:'pipo_memoire',response:'Pipo se cache près du lac.',latencyMs:45,tokens:15}
   ];
   const path=join(dir,'fixture.jsonl');
@@ -26,5 +30,8 @@ test('BONZE-057: index benchmark scorer separates correct, incorrect and invalid
   assert.match(report,/sorties non conformes : unknown/);
   assert.match(report,/indices erronés : dragon/);
   assert.match(report,/R0 \| 1 \| 45/);
+  assert.match(report,/BONZE-058 — permutation équilibrée/);
+  assert.match(report,/liquid-tiny \| 4 \| 4 \| 2 \| 50\.0 % \| 10 \| 3\/0\/1\/0/);
+  assert.match(report,/pirate:2\/4/);
  } finally {rmSync(dir,{recursive:true,force:true});}
 });
