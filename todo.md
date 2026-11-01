@@ -76,3 +76,10 @@ _État de référence : `feature/bonze042-field-fixes`, mission BONZE-049 (01/11
 - [x] Tester les formulations « Raconte-moi une histoire de pirate », « Invente une aventure de robots », « Imagine une forteresse », les ambiguïtés et les répétitions sur vingt tours. CI [41355014355](https://github.com/greenpower2669/Bonze-AI/actions/runs/41355014355) réussie.
 - [ ] Tester la compilation, l'audit Piper et le paquet expérimental complet sur le dernier SHA BONZE-056 ; ne pas publier une nouvelle Release sans accord.
 - [ ] Sur Samsung, contrôler le **choix réel de Liquid** (indice retenu, pertinence, latence, échec/repli) et la voix Piper sur 20 tours. Tester les questions factuelles, négations, contre-exemples, choix de deux scènes, et la mémoire préservée.
+
+## BONZE-057 — expérience non-Android pour mesurer Liquid
+- [x] Ajouter au comparateur Linux llama.cpp le mode `C1`, 11 cas français de sélection parmi quatre propositions avec réponse attendue et résultat brut.
+- [x] Calculer la validité stricte des indices, choix attendus, échecs individuels et temps total Linux ; test du calcul avec faux échantillons réussi ([41356507988](https://github.com/greenpower2669/Bonze-AI/actions/runs/41356507988)).
+- [ ] **P0** Exécuter sur GitHub Actions les deux modèles Liquid Q4 un à un ; conserver les JSONL bruts, rapport, temps et erreurs ; ne conclure qu'après avoir vérifié l'exécution et les artefacts.
+- [ ] **P0** Revoir les 11 cas avec un humain, étendre à 50–100 demandes dont compositions ambiguës, négations, séquences de 20 tours, émotions et états réels, comparer pertinence avec et sans Liquid. Échantillon de 11 cas = exploratoire uniquement.
+- [ ] **P1** Étudier la suite optimale PC/Linux, PWA ou Android seulement après mesures réelles de qualité, latence, RAM, consommation et voix. Ne pas abandonner le code Android et ne pas modifier main sans autorisation.

@@ -6,7 +6,7 @@
 - Branche active : feature/bonze042-field-fixes ; mémoires condensées, sources archivées ; main préservée.
 - APK directement publiée : [Bonze 0.8.0-dev parallèle](https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.8.0-dev-parallel) ; elle précède la mission BONZE-049 de 90 000 variantes.
 - Contrôles récents : [APK expérimentale BONZE-055 inspectée, succès](https://github.com/greenpower2669/Bonze-AI/actions/runs/41344627317) ; [tests BONZE-056 (sujet unique)](https://github.com/greenpower2669/Bonze-AI/actions/runs/41355014355) verts. Pas d'essai physique Samsung ni de mesure de compréhension réelle du GGUF.
-- **Mission BONZE-056 active :** les quatre options de Liquid pour une histoire explicitement nommée doivent toutes parler du même noyau thématique ; alias français bornés, ambiguïtés → clarification. Voir `docs/bonze056-sujet-unique.md` et `todo.md`.
+- **BONZE-057 (hors Android)** : banc CPU Linux comparant Liquid 230M Q4 et 1.2B Q4 sur 11 choix **d'indices bornés** ; voir `docs/bonze057-banc-linux.md`, `todo.md` et `debughistorical.md`. Le travail Android reste préservé.
 - Mission BONZE-050 : sélection de 1–4 phrases complètes selon sujet, émotion et intention, puis filtre anti-répétition ; voir docs/bonze050-composition-contextuelle.md, todo.md et debughistorical.md. L'APK 0.8 publiée précède ce travail.
 
 ## Les cinq mémoires actives
