@@ -62,3 +62,10 @@ _État de référence : `feature/bonze042-field-fixes`, mission BONZE-049 (01/11
 ### BONZE-054 — suivi du correctif Piper
 - [x] Réduire la longueur de la clôture après l'échec `Oversized story closure peur` sur 2854d3f5 ; ajouter un test pour chaque rôle (ecf253ce).
 - [ ] Vérifier la réussite de l'audit Piper, de la compilation, du lint et de l'APK expérimental sur le dernier code ; signature temporaire, pas de Release.
+
+## BONZE-055 — priorité au sujet plutôt qu'à la variété
+- [x] Ajouter « pirate » à une histoire existante sans gonfler les modèles ni le catalogue 90k ; test ciblé de thèmes lexicaux 10/10.
+- [x] Sujet inventé absent du corpus : clarification écrite, sans hallucination ou réutilisation d'un autre scénario ; ne pas confondre avec « Et après ? ».
+- [x] Pour 20 demandes successives du même sujet connu, le thème reste prioritaire malgré l'anti-répétition et les formes varient (CI [41344518211](https://github.com/greenpower2669/Bonze-AI/actions/runs/41344518211)).
+- [ ] Vérifier le paquet expérimental, l'audit Piper et son empreinte après BONZE-055 ; conserver les données et la branche `main`, sans nouvelle Release.
+- [ ] Tester sur Samsung 50–100 sujets français avec vrai Liquid, mesure qualité/pertinence, répétition, latence, RAM, Piper et Stop. Le mini-banc 10/10 ne démontre pas une compréhension sémantique.

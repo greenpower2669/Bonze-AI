@@ -5,7 +5,8 @@
 ## État de référence
 - Branche active : feature/bonze042-field-fixes ; mémoires condensées, sources archivées ; main préservée.
 - APK directement publiée : [Bonze 0.8.0-dev parallèle](https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.8.0-dev-parallel) ; elle précède la mission BONZE-049 de 90 000 variantes.
-- Contrôles récents : [packaging BONZE-050 réussi](https://github.com/greenpower2669/Bonze-AI/actions/runs/41325082320) ; [banc BONZE-051, 82/82 intentions](https://github.com/greenpower2669/Bonze-AI/actions/runs/41342420616). Pas de test physique Samsung ni de preuve de compréhension neuronale mesurée.
+- Contrôles récents : [packaging BONZE-050 réussi](https://github.com/greenpower2669/Bonze-AI/actions/runs/41325082320) ; [banc BONZE-051/055, 82/82 intentions et 10/10 thèmes lexicaux](https://github.com/greenpower2669/Bonze-AI/actions/runs/41342420616). Pas de test physique Samsung ni de preuve de compréhension neuronale mesurée.
+- BONZE-055 : sujet connu prioritaire même après répétition ; sujet imaginaire absent → question rédigée, sans sortie libre ni ajout de modèle. Voir `docs/bonze051-banc-dialogue.md`.
 - Mission BONZE-050 : sélection de 1–4 phrases complètes selon sujet, émotion et intention, puis filtre anti-répétition ; voir docs/bonze050-composition-contextuelle.md, todo.md et debughistorical.md. L'APK 0.8 publiée précède ce travail.
 
 ## Les cinq mémoires actives

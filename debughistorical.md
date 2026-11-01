@@ -59,3 +59,9 @@ Commits de code : eefa3465, 9597e574, 115dc4dc, c2bcf149, 131e80c0. Un gain de c
 
 ### BONZE-054 — anomalie de longueur détectée par l'audit Piper
 La compilation Android expérimentale du commit 2854d3f5 a été bloquée lors de l'audit du lexique et des longueurs, par `Error: Oversized story closure peur`. Les tests Node étaient verts mais ne contrôlaient pas cette combinaison de personnalité. Correctif `ecf253ce` : clôture raccourcie et test Node supplémentaire de longueur des clôtures pour les neuf rôles. Contrôle [41343767661](https://github.com/greenpower2669/Bonze-AI/actions/runs/41343767661) relancé ; ne pas confondre compilation réussie et essais de voix sur Samsung.
+
+## BONZE-055 — couverture lexicale et anti-hors-sujet (01/11/2026)
+- Ajout du thème pirate à la scène de navire existante (200 noyaux et 90 000 combinaisons inchangés) ; le test ciblé passe à 10/10 sujets présents dans les réponses proposées.
+- Premier correctif de clarification des sujets inconnus (217c0de7) : échec de non-régression, car la reprise « Et après ? » pouvait être interprétée comme un nouveau sujet inconnu. Correctif intermédiaire d7c801ba : encore un échec lorsqu'une scène connue était masquée par l'anti-répétition.
+- Correctif 61fa9786 : distinguer un sujet absent du catalogue d'une scène connue récemment jouée, maintenir le sujet explicitement demandé et varier la formulation malgré la récence. [CI 41344480898](https://github.com/greenpower2669/Bonze-AI/actions/runs/41344480898) réussie. Régression plus stricte de 20 demandes identiques au commit 01cb4acf, [CI 41344518211](https://github.com/greenpower2669/Bonze-AI/actions/runs/41344518211) réussie.
+- Clarification locale pour un nouveau personnage absent : phrase écrite à l'avance, contrôle Piper, aucun mot utilisateur repris, aucun texte libre issu de Liquid. La qualité de compréhension, de voix et la latence doivent être évaluées sur appareil ; aucune nouvelle Release.

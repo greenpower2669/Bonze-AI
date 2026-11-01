@@ -47,7 +47,7 @@ Les décisions dépassées (par exemple génération libre Liquid prioritaire, o
 - Limites : 90 000 assemblages ne représentent que 200 noyaux sémantiques ; cela ne suffit pas à résoudre toute question ou à prouver la pertinence réelle. Tests Samsung et mesure de latence indispensables.
 
 ### BONZE-051 — validation fonctionnelle du répertoire (01/11/2026)
-Banc automatique reproductible de 82 énoncés français couvrant 20 intentions : 82/82 reconnus par `BonzeRepertoire.detect` après correction. Priorité des alertes explicites, expressions de pleurs, négations émotionnelles et apostrophes françaises corrigées. Scénario simulé de 20 tours et 9/10 sujets de jeu détectés lexicalement dans les formulations proposées. **Ce score concerne le routeur déterministe et les thèmes, pas les prédictions réelles Liquid ni une compréhension sémantique mesurée sur appareil.** Voir `docs/bonze051-banc-dialogue.md` ; tests Android physiques et latence toujours ouverts.
+Banc automatique reproductible de 82 énoncés français couvrant 20 intentions : 82/82 reconnus par `BonzeRepertoire.detect` après correction. Priorité des alertes explicites, expressions de pleurs, négations émotionnelles et apostrophes françaises corrigées. Scénario simulé de 20 tours et 10/10 sujets de jeu détectés lexicalement après BONZE-055 dans les formulations proposées. **Ce score concerne le routeur déterministe et les thèmes, pas les prédictions réelles Liquid ni une compréhension sémantique mesurée sur appareil.** Voir `docs/bonze051-banc-dialogue.md` ; tests Android physiques et latence toujours ouverts.
 
 ## BONZE-052/053 — continuité et mémoire des formulations (01/11/2026)
 - `ScriptedDialogue.preview` prépare les réponses sans avancer le compteur ; même le chemin de secours `scriptedReply` examine et filtre les propositions puis appelle `commit` uniquement pour la réplique retenue. Un refus anti-écho/Piper ne consomme pas l'historique.
@@ -57,3 +57,9 @@ Banc automatique reproductible de 82 énoncés français couvrant 20 intentions 
 ## BONZE-054 — clôture narrative et juge limité au même événement (01/11/2026)
 - Sur une reprise de scène, `BonzeRepertoire.propose` fournit quatre variations **du même événement écrit**, jamais quatre histoires différentes. Liquid sélectionne une tournure sans perdre le sujet ; même un index erroné ne permet pas de changer de scène.
 - Trois suites rédigées par thème, puis une conclusion explicite et une remise à zéro du thème. Une cinquième demande peut ouvrir une nouvelle aventure, au lieu de répéter la dernière étape à l'infini. Le nouveau texte de clôture est audité pour le lexique Piper ; aucun autre modèle local n'est ajouté.
+
+### BONZE-055 — priorité au sujet et reconnaissance de l'inconnu (01/11/2026)
+- La scène « pirate » est intégrée à celle du navire : le mini-banc passe **10/10 sujets de fiction cités**, sans ajouter de modèle ni modifier les 90 000 formes virtuelles.
+- Pour une demande explicite « Imagine un/une… » visant un sujet absent des noyaux rédigés, Bonze pose une **question d'imagination écrite** plutôt que d'improviser une scène sans rapport. Aucune mention personnelle inconnue n'est copiée dans l'état ou la réponse.
+- La priorité du sujet connu l'emporte sur les pénalités anti-répétition : la même demande répétée peut fournir de nouvelles tournures sur le même thème. Les reprises « Et après ? » conservent leur circuit narratif indépendant.
+- Tests Node : 82/82 intentions inchangées, 10/10 thèmes disponibles, clarification des sujets inconnus, reprise et répétition sur 20 tours. Cette mesure décrit le **répertoire déterministe**, pas l'intelligence neuronale réelle de Liquid.
