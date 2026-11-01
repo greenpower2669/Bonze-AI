@@ -292,13 +292,16 @@ function propose(input){
   byTheme[t]={theme:t,overlap:overlap+(t===followTheme?100:0),tie:rand(seed)};
  }
  var sorted=Object.keys(byTheme).map(function(k){return byTheme[k];});
+ var hasAuthoredTopic=sorted.some(function(x){return x.overlap>0;});
  sorted.sort(function(a,b){return b.overlap-a.overlap||a.tie-b.tie;});
  for(var j=0;j<sorted.length&&choices.length<4;j++){
   var kernel=sorted[j].theme,selected=null,best=1e9;
   for(var turn=0;turn<8;turn++){
    var form=Math.floor(rand(seed)*50),index=kernel*50+form,item=corpus.render(role,intent,index);
-   if(used[item.id]||usedFamily[item.family]||recent.families.indexOf(item.family)>=0)continue;
+   if(used[item.id]||usedFamily[item.family]||
+      (recent.families.indexOf(item.family)>=0&&sorted[j].overlap===0))continue;
    var penalty=(recent.recent.indexOf(item.id)>=0?20:0)+
+    (recent.families.indexOf(item.family)>=0?10:0)+
     (recent.recentForms.indexOf(intent+'/'+item.form+'/'+item.ending)>=0?3:0);
    if(penalty<best){best=penalty;selected=item;}
    if(penalty===0)break;
@@ -365,7 +368,7 @@ function propose(input){
  // An unrecognized *specific fiction subject* must not be answered with a
  // random, unrelated scene. Ask for an authored detail instead.
  // No private or unknown word is copied into either the response or the state.
- if(intent==='jeu'&&!continuing&&/^imagine (?:un|une|des|le|la|l) /.test(text)&&terms.length>0&&topicalMatch(choices[0])===0
+ if(intent==='jeu'&&!continuing&&/^imagine (?:un|une|des|le|la|l) /.test(text)&&terms.length>0&&!hasAuthoredTopic
     &&corpus.unknownStoryTopic){
   var unknown=corpus.unknownStoryTopic(role);
   var next=JSON.parse(JSON.stringify(first.state));
