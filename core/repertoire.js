@@ -311,6 +311,14 @@ function propose(input){
    trace:{source:'authored-repertoire',composed:true,modelGenerated:false}};
   used[item.card]=true;usedFamily[item.family]=true;choices.push(item);
  }
+ // A lexical topic match is a deterministic fallback when Liquid is unavailable
+ // or returns an invalid index. Do not copy the user's text into spoken output.
+ function topicalMatch(option){
+  var parts=norm(option.text).split(' '),score=0;
+  for(var i=0;i<terms.length;i++)if(parts.indexOf(terms[i])>=0)score++;
+  return score;
+ }
+ choices.sort(function(a,b){return topicalMatch(b)-topicalMatch(a);});
  return {intent:intent,role:role,candidates:choices};
 }
 function run(json){var input=JSON.parse(json);return JSON.stringify(choose(input));}

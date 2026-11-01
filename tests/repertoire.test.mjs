@@ -227,6 +227,7 @@ test('BONZE-050: preview offers topic-matched, same-role authored sentences with
  const roles=new Set(preview.candidates.map(x=>x.role));
  assert.equal(roles.size,1,'one emotion or judge for every offered response');
  assert.ok(preview.candidates.some(x=>/dragon/i.test(x.text)),'topic-matching core is offered');
+ assert.match(preview.candidates[0].text,/dragon/i,'topical fallback is ordered first');
  const ids=new Set();
  for(const candidate of preview.candidates){
   assert.equal(candidate.intent,preview.intent);

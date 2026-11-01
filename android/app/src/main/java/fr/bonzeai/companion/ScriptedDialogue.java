@@ -83,9 +83,20 @@ final class ScriptedDialogue {
         JSONObject affect=emotionalState==null?null:emotionalState.optJSONObject("state");
         JSONObject forces=affect==null?null:affect.optJSONObject("forces");
         JSONObject endurances=affect==null?null:affect.optJSONObject("endurances");
+        JSONObject presentationForces=new JSONObject(forces==null?"{}":forces.toString());
+        try {
+            JSONObject style=new JSONObject(prefs.getString("personalizationStyleV1","{}"));
+            String preset=style.optString("preset","naturel");
+            String preferred="doux".equals(preset)?"empathie":
+                "joueur".equals(preset)?"joie":
+                "enqueteur".equals(preset)?"reflexion":
+                "calme".equals(preset)?"calme":"";
+            if(!preferred.isEmpty())
+                presentationForces.put(preferred,Math.max(.85,presentationForces.optDouble(preferred,.38)));
+        } catch(JSONException ignored) {}
         JSONObject request=new JSONObject().put("text",userText).put("semantic",semantic)
             .put("state",state).put("synonyms",synonyms)
-            .put("forces",forces==null?new JSONObject():forces)
+            .put("forces",presentationForces)
             .put("endurances",endurances==null?new JSONObject():endurances);
         org.mozilla.javascript.Context cx=org.mozilla.javascript.Context.enter();
         try {
