@@ -234,6 +234,13 @@ function renderStoryClosure(role,theme,form,ending){
    'La suite est à inventer. Tu peux choisir une autre histoire.',
    ENDINGS.play[ending]].join(' ')};
 }
-root.BonzeCorpus={render:render,renderContinuation:renderContinuation,renderStoryClosure:renderStoryClosure,continuationCount:3,sizeFor:sizeFor,intents:SAFE_INTENTS,modes:MODE_OF,
+// Fixed clarification for topics absent from the authored story kernels.
+function unknownStoryTopic(role){
+ if(!CUES[role])throw Error('invalid author role');
+ return {id:'jeu/'+role+'/unknown-topic',role:role,intent:'jeu',
+  family:'jeu/'+role+'/unknown-topic',form:-1,ending:-1,composed:false,
+  body:"Je peux inventer une histoire avec toi. Quel personnage aimerais-tu imaginer pour commencer ?"};
+}
+root.BonzeCorpus={render:render,renderContinuation:renderContinuation,renderStoryClosure:renderStoryClosure,unknownStoryTopic:unknownStoryTopic,continuationCount:3,sizeFor:sizeFor,intents:SAFE_INTENTS,modes:MODE_OF,
  countPerRole:10000,roles:Object.keys(CUES),source:"composed; 200 curated semantic seeds x 50 forms per role"};
 })(typeof globalThis!=='undefined'?globalThis:this);

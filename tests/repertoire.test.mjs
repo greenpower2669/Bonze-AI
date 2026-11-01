@@ -384,3 +384,27 @@ test('BONZE-054: story closures fit the Piper limit for all 9 personalities',()=
   }
  }
 });
+
+test('BONZE-055: unknown fictional subjects trigger a useful clarification, not a random scene',()=>{
+ for(const topic of ['panda','licorne','volcan','brocoli']){
+  const text='Imagine un '+topic;
+  const plan=engine.propose({text,seed:74523});
+  assert.equal(plan.intent,'jeu');
+  assert.equal(plan.candidates.length,1,text);
+  const item=plan.candidates[0];
+  assert.equal(item.trace.source,'authored-unknown-topic',text);
+  assert.equal(item.trace.modelGenerated,false);
+  assert.ok(item.text.length>=65 && item.text.length<=220);
+  assert.equal(item.state.lastTheme,-1);
+  assert.equal(item.state.sceneStep,0);
+  assert.ok(!JSON.stringify(item).includes(topic),'do not parrot unknown user topic');
+ }
+});
+test('BONZE-055: a documented fictional topic still gets real story proposals',()=>{
+ for(const topic of ['dragon','pirate','robot','tortue']){
+  const plan=engine.propose({text:'Imagine un '+topic,seed:74523});
+  assert.ok(plan.candidates.length>=2,topic);
+  assert.notEqual(plan.candidates[0].trace.source,'authored-unknown-topic',topic);
+  assert.match(plan.candidates[0].text,new RegExp(topic,'i'));
+ }
+});

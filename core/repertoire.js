@@ -362,6 +362,23 @@ function propose(input){
   return score;
  }
  choices.sort(function(a,b){return topicalMatch(b)-topicalMatch(a);});
+ // An unrecognized *specific fiction subject* must not be answered with a
+ // random, unrelated scene. Ask for an authored detail instead.
+ // No private or unknown word is copied into either the response or the state.
+ if(intent==='jeu'&&!continuing&&terms.length>0&&topicalMatch(choices[0])===0
+    &&corpus.unknownStoryTopic){
+  var unknown=corpus.unknownStoryTopic(role);
+  var next=JSON.parse(JSON.stringify(first.state));
+  next.recent[next.recent.length-1]=unknown.id;
+  next.families[next.families.length-1]=unknown.family;
+  if(first.trace.composed===true&&next.recentForms.length)next.recentForms.pop();
+  next.lastTheme=-1;next.sceneStep=0;
+  return {intent:intent,role:role,candidates:[{
+   text:unknown.body,role:role,emotion:first.emotion,card:unknown.id,
+   family:unknown.family,intent:intent,state:next,
+   trace:{source:'authored-unknown-topic',composed:false,modelGenerated:false}
+  }]};
+ }
  return {intent:intent,role:role,candidates:choices};
 }
 function run(json){var input=JSON.parse(json);return JSON.stringify(choose(input));}

@@ -47,6 +47,13 @@ for(const role of corpus.roles)for(let theme=0;theme<11;theme++)for(let step=0;s
 }
 if(storyVariants!==297)throw Error('Story continuation count changed');
 for(const role of corpus.roles){
+ const extra=corpus.unknownStoryTopic(role);
+ if(extra.body.length>220)throw Error('Oversized unknown-topic clarification '+role);
+ const unknown=[...new Set((extra.body.toLocaleLowerCase('fr-FR').match(WORD)||[])
+  .filter(w=>!dictionary.has(w)))];
+ for(const word of unknown)missing.set(word,(missing.get(word)||0)+1);
+}
+for(const role of corpus.roles){
  const item=corpus.renderStoryClosure(role,0,0,0);
  if(item.body.length>220)throw Error('Oversized story closure '+role);
  const unknown=[...new Set((item.body.toLocaleLowerCase('fr-FR').match(WORD)||[])
