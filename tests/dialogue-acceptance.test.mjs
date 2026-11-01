@@ -426,3 +426,20 @@ test('BONZE-055: repeated explicit known subject stays on topic while forms vary
  }
  assert.ok(seen.size>=10,'wording changes without changing the subject');
 });
+
+test('BONZE-056: 20 repeats of a particular subject never give Liquid another storyline',()=>{
+ let state=null,cards=new Set();
+ for(let turn=0;turn<20;turn++){
+  const plan=engine.propose({text:'Imagine un pirate',state,seed:346});
+  assert.equal(plan.candidates.length,4);
+  for(const candidate of plan.candidates){
+   assert.equal(candidate.state.lastTheme,3);
+   assert.equal(Math.floor(Number(candidate.card.split('/v')[1])/50),3);
+   assert.match(candidate.text,/pirate/i);
+  }
+  const chosen=plan.candidates[turn%4];
+  cards.add(chosen.card);state=chosen.state;
+  assert.equal(state.turns,turn+1);
+ }
+ assert.ok(cards.size>=10);
+});

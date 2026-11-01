@@ -408,3 +408,38 @@ test('BONZE-055: a documented fictional topic still gets real story proposals',(
   assert.match(plan.candidates[0].text,new RegExp(topic,'i'));
  }
 });
+
+test('BONZE-056: Liquid receives four unique phrasings from ONE named story scene',()=>{
+ const samples=[
+  ['Imagine un dragon',7],['Imagine des dragons',7],
+  ['Raconte-moi une histoire de pirate',3],
+  ['Invente une aventure de robots',4],
+  ['Imagine une forteresse',0],
+  ['Imagine une bibliothèque',6],
+  ['Imagine une rivière',10],
+ ];
+ for(const [prompt,theme] of samples){
+  const plan=engine.propose({text:prompt,seed:241});
+  assert.equal(plan.intent,'jeu',prompt);
+  assert.equal(plan.candidates.length,4,prompt);
+  assert.equal(new Set(plan.candidates.map(c=>c.card)).size,4,prompt);
+  for(const c of plan.candidates){
+   assert.equal(c.state.lastTheme,theme,prompt);
+   assert.equal(c.card.split('/v')[1]!==undefined,true);
+   assert.equal(Math.floor(Number(c.card.split('/v')[1])/50),theme,prompt);
+   assert.equal(c.trace.source,'authored-specific-topic');
+   assert.equal(c.trace.modelGenerated,false);
+   assert.ok(c.text.length<=220);
+  }
+ }
+});
+test('BONZE-056: two named stories or an unknown scene never become a random story',()=>{
+ for(const msg of ['Imagine un robot avec un dragon','Imagine une licorne',
+    'Raconte-moi une histoire de panda']){
+  const plan=engine.propose({text:msg,seed:345});
+  assert.equal(plan.intent,'jeu',msg);
+  assert.equal(plan.candidates.length,1,msg);
+  assert.equal(plan.candidates[0].trace.source,'authored-unknown-topic',msg);
+  assert.equal(plan.candidates[0].trace.modelGenerated,false);
+ }
+});

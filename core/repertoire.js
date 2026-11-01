@@ -165,7 +165,8 @@ function detect(text){
  if(/^(?:coucou|bonjour|salut|hello|bonsoir)(?: bonze| a toi| a vous| tout le monde| les amis)?$/.test(n))return 'salut';
  if(contains(n,'tu me manques|je t aime|calin|affection|je t adore'))return 'affection';
  if(contains(n,'blague|drole|rire|humour|rigolo|plaisanterie|fou rire')&&!contains(n,'pas drole'))return 'humour';
- if(contains(n,'jouons|on joue|imagine|dragon|histoire imaginaire|faire semblant|role'))return 'jeu';
+ if(contains(n,'jouons|on joue|imagine|dragon|histoire imaginaire|faire semblant|role')||
+    /\b(?:raconte|racontons|invente|inventons|cree|ecris)(?: moi| nous)? (?:un|une|des|l)? ?(?:histoire|conte|aventure)\b/.test(n))return 'jeu';
  if(contains(n,'incroyable|surprise|inattendu|impressionnant|etonnant'))return 'surprise';
  if(contains(n,'decouvrir|curieux|apprendre|explorer|interessant|comment ca marche'))return 'curiosite';
  if(contains(n,'aide moi|peux tu|pourrais tu|fais moi|je voudrais|j aimerais|essaye'))return 'demande';
@@ -266,6 +267,35 @@ function choose(input){
  * A preview does not consume the live conversation state: the caller commits
  * only the approved, spoken option. All candidates share a vetted role/intent.
  */
+
+/* BONZE-056: closed, conservative subject lexicon for our eleven authored
+ * imaginary scenes. Only categorical theme IDs are persisted, never the text.
+ * No fuzzy match: unfamiliar fictional characters require clarification.
+ */
+var STORY_THEME_WORDS=[
+ ['chateau','chateaux','forteresse','forteresses'],
+ ['foret','forets','bois','lanterne','lanternes'],
+ ['tortue','tortues'],
+ ['pirate','pirates','bateau','bateaux','navire','navires'],
+ ['robot','robots','automate','automates'],
+ ['lune'],
+ ['bibliotheque','bibliotheques','livre','livres'],
+ ['dragon','dragons'],
+ ['valise','valises'],
+ ['etoile','etoiles'],
+ ['riviere','rivieres','montre','montres']
+];
+function explicitStoryThemes(text){
+ var n=norm(text),tokens=n.split(' '),hits=[];
+ for(var i=0;i<STORY_THEME_WORDS.length;i++){
+  for(var j=0;j<STORY_THEME_WORDS[i].length;j++)
+   if(tokens.indexOf(STORY_THEME_WORDS[i][j])>=0){hits.push(i);break;}
+ }
+ return hits;
+}
+function explicitStoryPrompt(text){
+ return /^(?:imagine|imagines|imaginons|invente|inventons|cree|creons|raconte|racontes|racontons|ecris|ecrivez)\b/.test(norm(text));
+}
 function propose(input){
  input=input&&typeof input==='object'?input:{};
  var first=choose(input);
@@ -283,6 +313,10 @@ function propose(input){
    contains(norm(input.text),'continue|la suite|et apres|et ensuite|et puis|poursuis')&&
    recent.lastTheme>=0;
  var followTheme=continuing?recent.lastTheme:-1;
+ // An explicit request for a known scene is represented by a single authored
+ // semantic nucleus. Liquid may choose 4 phrasings, never different stories.
+ var explicit=explicitStoryPrompt(input.text),known=explicit&&intent==='jeu'&&!continuing?
+  explicitStoryThemes(input.text):[];
  var virtual=corpus.sizeFor(intent),byTheme={},seed={seed:first.state.seed};
  used[first.card]=true;usedFamily[first.family]=true;
  for(var t=0;t<Math.floor(virtual/50);t++){
@@ -322,6 +356,38 @@ function propose(input){
    family:selected.family,intent:intent,state:next,
    trace:{source:'authored-repertoire',composed:true,modelGenerated:false}};
   used[item.card]=true;usedFamily[item.family]=true;choices.push(item);
+ }
+
+ // The user named a particular known fictional subject. Offer four independent
+ // surface forms of that exact nucleus, despite recency penalties.
+ if(known.length===1&&intent==='jeu'){
+  var target=known[0],versions=[],chosen={};
+  for(var choice=0;choice<4;choice++){
+   var best=null,penaltyBest=1e9;
+   for(var tries=0;tries<32;tries++){
+    var pos=target*50+Math.floor(rand(seed)*50);
+    var card=corpus.render(role,intent,pos);
+    if(chosen[card.id])continue;
+    var penalty=(recent.recent.indexOf(card.id)>=0?20:0)+
+      (recent.recentForms.indexOf(intent+'/'+card.form+'/'+card.ending)>=0?5:0);
+    if(penalty<penaltyBest){best=card;penaltyBest=penalty;}
+    if(penalty===0)break;
+   }
+   if(!best)continue;
+   chosen[best.id]=true;
+   var next=JSON.parse(JSON.stringify(first.state));
+   next.recent[next.recent.length-1]=best.id;
+   next.families[next.families.length-1]=best.family;
+   if(first.trace.composed===true&&next.recentForms.length)next.recentForms.pop();
+   next.recentForms.push(intent+'/'+best.form+'/'+best.ending);
+   next.recentForms=next.recentForms.slice(-8);
+   next.lastIntent=intent;next.lastRole=role;next.lastTheme=target;next.sceneStep=0;
+   next.seed=seed.seed;
+   versions.push({text:best.body,role:role,emotion:first.emotion,card:best.id,
+    family:best.family,intent:intent,state:next,
+    trace:{source:'authored-specific-topic',composed:true,modelGenerated:false}});
+  }
+  return {intent:intent,role:role,candidates:versions};
  }
  // An actual story continuation must advance the scene, not merely repeat
  // the same semantic kernel with a different greeting or closing sentence.
@@ -368,7 +434,7 @@ function propose(input){
  // An unrecognized *specific fiction subject* must not be answered with a
  // random, unrelated scene. Ask for an authored detail instead.
  // No private or unknown word is copied into either the response or the state.
- if(intent==='jeu'&&!continuing&&/^imagine (?:un|une|des|le|la|l) /.test(text)&&terms.length>0&&!hasAuthoredTopic
+ if(intent==='jeu'&&!continuing&&explicit&&terms.length>0&&known.length!==1
     &&corpus.unknownStoryTopic){
   var unknown=corpus.unknownStoryTopic(role);
   var next=JSON.parse(JSON.stringify(first.state));
