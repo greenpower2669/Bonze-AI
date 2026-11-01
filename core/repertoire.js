@@ -141,8 +141,9 @@ function contains(s,pat){return new RegExp('(?:^| )('+pat+')(?: |$)','i').test(s
 function detect(text){
  var n=norm(text);
  if(!n)return 'discussion';
- if(contains(n,'comment tu t appelles|comment tu t appelles|quel est ton nom|qui es tu'))return 'identite';
+ // Priority: explicit danger is never hidden behind a simultaneous identity/greeting.
  if(contains(n,'suicide|me tuer|me faire du mal|danger immediat|au secours|urgence vitale|je suis en danger'))return 'urgence';
+ if(contains(n,'comment tu t appelles|quel est ton nom|qui es tu'))return 'identite';
  // An explicit definition/question about a greeting or an emotion is a
  // question, not the greeting or emotion itself.
  var literalQuestion=/^(?:pourquoi|comment|que|qu est ce que|quel|quelle|quels|quelles|combien|quand|ou|d ou)\b/.test(n);
@@ -152,9 +153,10 @@ function detect(text){
  if(contains(n,'au revoir|a bientot|bonne nuit|je dois partir|bye|bisous'))return 'depart';
  if(contains(n,'pas compris|je comprends pas|je ne comprends pas|c est incomprehensible|confus|perdu dans'))return 'confusion';
  if(contains(n,'tu te trompes|c est faux|erreur|corrige|correction|pas juste|naze|nul|perroquet|tu repetes|tu fais le perroquet'))return 'correction';
- if(contains(n,'triste|deprime|chagrin|pleurer|peine|malheureux')&&!contains(n,'pas triste|ne suis pas triste'))return 'tristesse';
- if(contains(n,'peur|inquiet|angoisse|stress|effraye|panique')&&!contains(n,'pas peur|plus peur'))return 'inquietude';
- if(contains(n,'colere|enerve|agace|furieux|injustice|frustre'))return 'contrarié';
+ if(contains(n,'triste|deprime|chagrin|pleurer|je pleure|peine|malheureux')&&!contains(n,'pas triste|ne suis pas triste'))return 'tristesse';
+ if(contains(n,'peur|inquiet|angoisse|stress|effraye|panique')&&!contains(n,'pas peur|plus peur|plus inquiet|pas inquiet|ne suis plus inquiet'))return 'inquietude';
+ if(contains(n,'colere|enerve|agace|furieux|injustice|frustre')&&
+    !contains(n,'pas en colere|pas furieux|pas enerve|pas agace'))return 'contrarié';
  if(contains(n,'fatigue|epuise|repos|dormir|sommeil'))return 'fatigue';
  if(contains(n,'bravo|reussi|victoire|j ai gagne|bien joue'))return 'reussite';
  if(/^merci(?: beaucoup| pour tout| a toi| bonze)?$/.test(n)||contains(n,'gentil de ta part'))return 'merci';
@@ -188,7 +190,7 @@ function choose(input){
  // Neural labels are hints, never permission to invent an answer or bypass a safety gate.
  var uncertain=local==='discussion'||local==='question'||local==='demande'||local==='curiosite'||local==='surprise';
  var barred=['tristesse','inquietude','contrarié','urgence','correction'];
- var denied=contains(norm(txt),'pas triste|ne suis pas triste|pas peur|ne suis pas inquiet|pas drole|ce n est pas drole');
+ var denied=contains(norm(txt),'pas triste|ne suis pas triste|pas peur|plus inquiet|pas inquiet|pas en colere|pas furieux|ne suis pas inquiet|pas drole|ce n est pas drole');
  var intent=uncertain&&!denied&&barred.indexOf(semantic)<0&&INTENTS.indexOf(semantic)>=0?semantic:local;
  if(local==='urgence'||local==='correction'||local==='tristesse'||local==='inquietude')intent=local;
  // An explicit definition question wins over a neural hint such as 'salut'
