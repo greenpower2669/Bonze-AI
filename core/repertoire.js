@@ -259,8 +259,62 @@ function choose(input){
  s.lastIntent=intent;s.lastRole=pick.role;
  return {text:body,role:pick.role,emotion:pick.role==='sage'?'calme':pick.role,card:pick.id,family:pick.family,intent:intent,detected:local,semanticUsed:intent===semantic,state:s,trace:{cardsConsidered:ranked.length,substitutions:substitutions,source:'authored-repertoire',composed:pick.composed===true,modelGenerated:false}};
 }
+
+/* BONZE-050: virtual cards are alternatives, not emitted text from a neural model.
+ * A preview does not consume the live conversation state: the caller commits
+ * only the approved, spoken option. All candidates share a vetted role/intent.
+ */
+function propose(input){
+ input=input&&typeof input==='object'?input:{};
+ var first=choose(input);
+ var choices=[first];
+ var intent=first.intent,role=first.role;
+ if(!corpus||!corpus.sizeFor(intent)||['urgence','identite','correction','question'].indexOf(intent)>=0)
+  return {intent:intent,role:role,candidates:choices};
+ // Search only the current intent. Prefer kernels that mention the user's subject,
+ // then use the usual recent-family penalty, keeping randomness as a tie breaker.
+ var text=norm(input.text),terms=text.split(' ').filter(function(w){
+  return w.length>=4&&['dans','avec','pour','nous','vous','elle','elles','quoi','comment','imagine','faire','veux','voudrais','bonjour'].indexOf(w)<0;
+ });
+ var recent=cleanState(input.state,input.seed),used={},usedFamily={};
+ var virtual=corpus.sizeFor(intent),byTheme={},seed={seed:first.state.seed};
+ used[first.card]=true;usedFamily[first.family]=true;
+ for(var t=0;t<Math.floor(virtual/50);t++){
+  var representative=corpus.render(role,intent,t*50),words=norm(representative.body).split(' ');
+  var overlap=0;for(var k=0;k<terms.length;k++)if(words.indexOf(terms[k])>=0)overlap++;
+  // Alternate forms must not depend on spelling out the user's private words.
+  byTheme[t]={theme:t,overlap:overlap,tie:rand(seed)};
+ }
+ var sorted=Object.keys(byTheme).map(function(k){return byTheme[k];});
+ sorted.sort(function(a,b){return b.overlap-a.overlap||a.tie-b.tie;});
+ for(var j=0;j<sorted.length&&choices.length<4;j++){
+  var kernel=sorted[j].theme,selected=null,best=1e9;
+  for(var turn=0;turn<8;turn++){
+   var form=Math.floor(rand(seed)*50),index=kernel*50+form,item=corpus.render(role,intent,index);
+   if(used[item.id]||usedFamily[item.family]||recent.families.indexOf(item.family)>=0)continue;
+   var penalty=(recent.recent.indexOf(item.id)>=0?20:0)+
+    (recent.recentForms.indexOf(intent+'/'+item.form+'/'+item.ending)>=0?3:0);
+   if(penalty<best){best=penalty;selected=item;}
+   if(penalty===0)break;
+  }
+  if(!selected)continue;
+  var next=JSON.parse(JSON.stringify(first.state));
+  // The initial call to choose already advanced exactly one turn.
+  // Replace that provisional card with the actual selected card.
+  next.recent[next.recent.length-1]=selected.id;
+  next.families[next.families.length-1]=selected.family;
+  if(next.recentForms.length)
+   next.recentForms[next.recentForms.length-1]=intent+'/'+selected.form+'/'+selected.ending;
+  next.seed=seed.seed;next.lastRole=role;next.lastIntent=intent;
+  var item={text:selected.body,role:role,emotion:first.emotion,card:selected.id,
+   family:selected.family,intent:intent,state:next,
+   trace:{source:'authored-repertoire',composed:true,modelGenerated:false}};
+  used[item.card]=true;usedFamily[item.family]=true;choices.push(item);
+ }
+ return {intent:intent,role:role,candidates:choices};
+}
 function run(json){var input=JSON.parse(json);return JSON.stringify(choose(input));}
-root.BonzeRepertoire={run:run,choose:choose,detect:detect,auditCards:function(){return ITEMS.map(function(c){return {id:c.id,body:c.body};});},auditSlots:function(){return SYNS;},stats:function(){var per={};for(var p in byIntent)per[p]=byIntent[p].length;var perRole={},virtualCards=0;for(var i=0;i<ROLES.length;i++){var n=ROLES[i],local=ITEMS.filter(function(c){return c.role===n;}).length,composed=corpus?corpus.countPerRole:0;perRole[n]=local+composed;virtualCards+=composed;}
+root.BonzeRepertoire={run:run,choose:choose,propose:propose,detect:detect,auditCards:function(){return ITEMS.map(function(c){return {id:c.id,body:c.body};});},auditSlots:function(){return SYNS;},stats:function(){var per={};for(var p in byIntent)per[p]=byIntent[p].length;var perRole={},virtualCards=0;for(var i=0;i<ROLES.length;i++){var n=ROLES[i],local=ITEMS.filter(function(c){return c.role===n;}).length,composed=corpus?corpus.countPerRole:0;perRole[n]=local+composed;virtualCards+=composed;}
   if(corpus)for(var j=0;j<corpus.intents.length;j++){var intent=corpus.intents[j];per[intent]=(per[intent]||0)+ROLES.length*corpus.sizeFor(intent);}
   return {cards:ITEMS.length+virtualCards,materializedCards:ITEMS.length,virtualCards:virtualCards,perRole:perRole,roles:ROLES.slice(),byIntent:per};},roles:ROLES.slice(),intents:INTENTS.slice()};
 })(typeof globalThis!=='undefined'?globalThis:this);

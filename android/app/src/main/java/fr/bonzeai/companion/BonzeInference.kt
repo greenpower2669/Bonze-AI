@@ -119,6 +119,41 @@ object BonzeInference {
         }
     }
 
+    /**
+     * BONZE-050: the loaded Liquid model ranks only complete, pre-authored
+     * sentences for the actual topic/intent/role. No text generation is accepted.
+     * An invalid prediction always selects option zero, the deterministic default.
+     */
+    @JvmStatic @Synchronized
+    fun chooseComposition(
+        userText: String, previousContext: String, intent: String, role: String,
+        sentences: Array<String>
+    ): String = runBlocking {
+        if (loaded == null || sentences.size < 2 || sentences.size > 4 ||
+            sentences.any { it.isBlank() || it.length > 240 }) return@runBlocking "0"
+        val system = "Tu es le juge de pertinence de Bonze. " +
+            "Choisis uniquement un numéro entre 0 et " + (sentences.size - 1) +
+            ". Les phrases sont déjà écrites et contrôlées. " +
+            "Choisis celle qui répond le mieux au sujet du dernier message, " +
+            "avec le ton de la personnalité. Ne crée aucun texte. " +
+            "Si aucune option ne traite correctement le sujet, réponds 0."
+        val options = sentences.mapIndexed { index, value -> "$index : $value" }.joinToString("\n")
+        val prompt = "Contexte récent : " + previousContext.takeLast(220) + "\n" +
+            "Dernier message : " + userText.take(200) + "\n" +
+            "Intention : " + intent.take(32) + "\n" +
+            "Rôle : " + role.take(24) + "\n" +
+            "Formulations contrôlées :\n" + options + "\nNuméro :"
+        try {
+            val raw = Llama.complete(loaded!!, prompt = prompt,
+                systemPrompt = system, maxTokens = 4).text.trim()
+            if (raw.length == 1 && raw[0] in '0'..('0' + sentences.size - 1)) raw else "0"
+        } catch (_: Exception) {
+            "0"
+        } catch (_: LinkageError) {
+            "0"
+        }
+    }
+
     /** Initialise le modèle à partir des poids inclus dans l'APK, sans réseau. */
     private fun ensureModel(context: Context): File {
         val dir = File(context.filesDir, "gguf")
