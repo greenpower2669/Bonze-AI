@@ -87,7 +87,8 @@ test('BONZE-066: scripted three-story diagnostic is reproducible without weights
   const entry=fileURLToPath(new URL('../scripts/bench-bonze066.mjs',import.meta.url));
   assert.match(execFileSync(process.execPath,[entry],{cwd:dir,encoding:'utf8'}),/BONZE_066_RESULT/);
   const report=JSON.parse(readFileSync(join(dir,'bonze066-results.json'),'utf8'));
-  assert.equal(report.trials.length,480);
+  assert.equal(report.rows.length,480);
+  assert.equal(report.trials,480);
   assert.equal(report.summary.length,2);
   assert.equal(report.summary[0].trials,240);
   assert.equal(report.summary[1].trials,240);
