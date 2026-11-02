@@ -1,0 +1,3 @@
+name: BONZE-067 conservative contradiction tests
+on: workflow_dispatch
+jobs: {}
