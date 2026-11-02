@@ -43,3 +43,9 @@ Le prototype de classement des phrases ne doit jamais être seul responsable d'u
 
 ## BONZE-062 — priorités, refus et changements de sujet (02/11/2026)
 Mandat « continue » : développer et mesurer un **prototype expérimental** qui écoute les préférences explicites et respecte les refus de sujets. Privilégier le sens de la demande courante sur l'ancien contexte et le choix aléatoire. Une demande ambiguë ou absente du répertoire mène à une clarification/abstention plutôt qu'à un autre thème. Le filtre d'urgence reste distinct et prioritaire ; il ne produit pas d'indice de conversation. Ne pas toucher au comportement Android réel, ni aux données utilisateur, ni à `main`, ni publier une APK/Release avant preuves indépendantes et autorisation. Référence détaillée : `docs/bonze062-priorites-dialogue.md`.
+
+## BONZE-063 — prospective auto-étiqueté et propagation des erreurs (02/11/2026)
+La continuation de Bonze doit tester de manière transparente les **expressions inconnues, les changements de sujet et l'accumulation d'erreurs**. Les 72 entrées du banc et ses 896 décisions sont auto-étiquetées et non indépendantes ; les proportions ne décrivent pas une compréhension naturelle. Les erreurs de sécurité (danger indirect non reconnu et citation littéraire prise pour confession) exigent revue humaine. La publication et la fusion `main` restent interdites sans validation explicite de Fab.
+
+## BONZE-064 — ancre symbolique de sujet hors Android (02/11/2026)
+Expérimenter une **mémoire de sujet explicite, distincte des réponses produites**. Un candidat hors sujet ne doit jamais effacer le thème confirmé par l'utilisateur. Conserver seulement une étiquette canonique locale dans l'expérience, sans l'assimiler au coffre SVC ou à une mémoire factuelle. Les scores 160/160 sur les scripts déjà vus ne doivent pas être utilisés comme preuve de compréhension générale. Aucune Release, merge main ni modification de l'APK installée.

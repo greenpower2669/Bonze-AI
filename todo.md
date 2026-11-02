@@ -125,3 +125,13 @@ _État de référence : `feature/bonze042-field-fixes`, mission BONZE-049 (01/11
 - [ ] **P0** Vérifier par **évaluateurs indépendants** sur nouveaux énoncés l'extraction réelle des sujets préférés/refusés, les phrases portant plusieurs sujets, les négations complexes et la différence entre changement de thème et affirmation d'émotion. Les jeux 060/062 sont maintenant des tests de développement.
 - [ ] **P0** Tester les phrases de danger implicite et affirmations rapportées séparément du classifieur, sans affirmer que le prototype est suffisamment sûr. Ne pas connecter aux réponses de crise Android sans revue des gardes-fous existants et de l'expérience utilisateur.
 - [ ] **P1** Mesurer la conversation réelle sur 20 tours, mémoire de contexte, voix Piper, interruption immédiate et coûts CPU/RAM. Conserver le code et l'APK publiée ; aucun merge main ni nouvelle Release sans validation.
+
+## BONZE-063 — prospective auto-étiqueté et propagation des erreurs (02/11/2026)
+- [x] Préparer 32 formulations nouvelles + 2 histoires de 20 tours, 4 permutations, comparer arbitres et deux modes de contexte : [run 41489978787](https://github.com/greenpower2669/Bonze-AI/actions/runs/41489978787). 52/128 sur demandes isolées avec préférences ; passage de 156/160 contexte parfait à 140/160 en contexte auto-alimenté.
+- [ ] **P0 Sécurité** : analyser les 4 faux négatifs d'une expression indirecte d'automutilation et les 4 faux positifs sur une citation de roman ; faire revoir les règles et réponses fixes par un humain. Ne brancher aucun mécanisme expérimental aux alertes Android.
+- [ ] **P0** Obtenir un ensemble véritablement inédit, non rédigé ni annoté par le concepteur du code, incluant ambiguïtés et erreurs de transcription, et mettre en place des critères indépendants de précision/abstention.
+
+## BONZE-064 — ancre symbolique de sujet hors Android (02/11/2026)
+- [x] Tester une **ancre symbolique du thème** qui n'est pas écrasée par les réponses produites : [run 41490598696](https://github.com/greenpower2669/Bonze-AI/actions/runs/41490598696), 160/160 choix corrects sur les scripts déjà connus de BONZE-063 ; huit rejeux parfaits, sans démonstration de généralisation.
+- [ ] **P0** Étendre à un jeu indépendant de conversations spontanées avec rappels de personnes, temporalité, faits et préférences ; l'ancre ne remplace pas la mémoire conversationnelle, doit rester séparée des tiroirs chiffrés.
+- [ ] **P1** Examiner les coûts CPU/RAM et la latence sur Samsung, vérifier voix Piper et interruptions ; conserver Android et la Release existante. Ne pas intégrer cette expérimentation sans autorisation et validation sur appareil.
