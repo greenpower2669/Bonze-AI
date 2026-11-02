@@ -1,0 +1,35 @@
+name: BONZE-066 — scene acknowledgment experimental benchmark
+on:
+  push:
+    branches: [feature/bonze042-field-fixes]
+    paths:
+      - 'core/scene-anchor.js'
+      - 'tests/bonze066.test.mjs'
+      - 'scripts/bench-bonze066.mjs'
+      - '.github/workflows/bonze066-scene.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scene-diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test explicit delivery acknowledgment, reset and no message echo
+        run: node --test tests/bonze066.test.mjs
+      - name: Compare topic-only vs topic-and-scene, known developer cases
+        run: node scripts/bench-bonze066.mjs
+      - name: Archive all scores and individual decisions
+        uses: actions/upload-artifact@v4
+        with:
+          name: bonze066-scene-acknowledged
+          path: |
+            bonze066-results.json
+            bonze066-decisions.jsonl
+            bonze066-report.md
+          if-no-files-found: error
+          retention-days: 30
