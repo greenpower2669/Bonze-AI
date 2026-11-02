@@ -53,7 +53,7 @@ function route(text){
  if(!s)return {priority:'none',reason:'empty',template:null,body:null};
  // For explicit *talk about wording*, refrain from classifying the quote
  // as a direct confession. This is a limited heuristic, not a guarantee.
- if(has(s,METALINGUISTIC))return {priority:'none',reason:'quoted-or-defined',template:null,body:null};
+ if(METALINGUISTIC.some(function(p){return s===p||s.indexOf(p+' ')===0;}))\n  return {priority:'none',reason:'quoted-or-defined',template:null,body:null};
  // A negative reassurance alone does not declare an emergency.
  var denied=has(s,NEGATED_DANGER);
  var selfHarm=has(s,[
@@ -64,9 +64,9 @@ function route(text){
   'il va se tuer','elle va se tuer','il veut se suicider','elle veut se suicider',
   'j ai pris trop de medicaments','j ai avale trop de medicaments'
  ]);
- if(selfHarm&&!denied)return {priority:'immediate',reason:'explicit-self-harm',
+ if(selfHarm)return {priority:'immediate',reason:'explicit-self-harm',
   template:'selfHarm',body:RESPONSES.selfHarm};
- if(has(s,IMMEDIATE)&&!denied)return {priority:'immediate',reason:'immediate-danger',
+ if(has(s,IMMEDIATE)&&!has(s,['pas en danger immediat','pas d urgence vitale']))return {priority:'immediate',reason:'immediate-danger',
   template:'immediate',body:RESPONSES.immediate};
  if(has(s,EMOTIONAL))return {priority:'supportive',reason:'explicit-distress',
   template:'supportive',body:RESPONSES.supportive};
