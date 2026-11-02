@@ -75,7 +75,7 @@ function parse(text){
   var size=matchWords(seq,DENY,i);
   if(!size)continue;
   var tail=seq.slice(i+size,Math.min(seq.length,i+size+7)).join(' ');
-  var limited=tail.split(/\b(?:mais|plutot|au lieu de|en fait|sinon|et|je prefere|je veux|je voudrais|je souhaite|raconte|imagine|invente)\b/)[0];
+  var limited=tail.split(/\b(?:mais|plutot|au lieu de|en fait|sinon|et|je prefere|je veux|je voudrais|je souhaite|donne|explique|raconte|imagine|invente)\b/)[0];
   for(var key of hits(limited))if(!ban[key]){ban[key]=true;exclusions.push(key);}
   i+=size-1;
  }
