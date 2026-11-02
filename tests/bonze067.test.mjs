@@ -8,7 +8,7 @@ test('BONZE-067: frozen cases',()=>{
  assert.equal(contradictionCases.filter(x=>x.conflict).length,14);
 });
 const ctx={};
-for(const name of ['story-consistency.js'])
+for(const name of ['non-neural-arbiter.js','safety-priority.js','preference-arbiter.js','topic-anchor.js','story-consistency.js','scene-anchor.js'])
  runInNewContext(readFileSync(new URL('../core/'+name,import.meta.url),'utf8'),ctx);
 test('BONZE-067: comparison against frozen cases',()=>{
  const check=ctx.BonzeStoryConsistency.check;
