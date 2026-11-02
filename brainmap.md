@@ -6,7 +6,7 @@
 - Branche active : feature/bonze042-field-fixes ; mémoires condensées, sources archivées ; main préservée.
 - APK directement publiée : [Bonze 0.8.0-dev parallèle](https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.8.0-dev-parallel) ; elle précède la mission BONZE-049 de 90 000 variantes.
 - Contrôles récents : [APK expérimentale BONZE-055 inspectée, succès](https://github.com/greenpower2669/Bonze-AI/actions/runs/41344627317) ; [tests BONZE-056 (sujet unique)](https://github.com/greenpower2669/Bonze-AI/actions/runs/41355014355) verts. Pas d'essai physique Samsung ni de mesure de compréhension réelle du GGUF.
-- **BONZE-067 — garde-fou narratif expérimental :** `core/story-consistency.js` vérifie quelques contradictions explicites avant qu'une phrase soit mémorisée par `core/scene-anchor.js` ; 14/14 paires contradictoires, 18/18 sans conflit prouvé sur le jeu de projet gelé, mais **0 veto** sur les trois anciens récits (132/240 choix corrects, inchangé). Voir `docs/bonze067-coherence-narrative.md`, `todo.md` et `debughistorical.md`. Android, APK, main inchangés.
+- **BONZE-068 — pièges narratifs et correction prudente :** 35 paires simples réussies 35/35 ; sur 20 cas plus difficiles, ancien filtre 1/10 contradictions, 3 faux veto ; corrigé 6/10 et 0 faux veto **sur ce jeu devenu données de développement**. 4 conflits complexes ouverts (quantificateurs, « jamais/hier », pronom d'objet). Voir `docs/bonze068-nouveaux-pieges.md`, `todo.md`. Android, `main`, APK intacts.
 - Mission BONZE-050 : sélection de 1–4 phrases complètes selon sujet, émotion et intention, puis filtre anti-répétition ; voir docs/bonze050-composition-contextuelle.md, todo.md et debughistorical.md. L'APK 0.8 publiée précède ce travail.
 
 ## Les cinq mémoires actives
