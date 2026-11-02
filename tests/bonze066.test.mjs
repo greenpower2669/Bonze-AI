@@ -70,6 +70,17 @@ test('BONZE-066: memory snapshot cannot leak delivered text or raw user message'
  assert.deepEqual(JSON.parse(JSON.stringify(session.snapshot())),
   {topic:null,turn:0,hasScene:false,hasPending:false});
 });
+test('BONZE-066: stale receipt stays invalid even after session reset',()=>{
+ const session=create();
+ const first=session.step({text:'Imagine un robot.',options:choices});
+ const previousReceipt=first.receipt;
+ session.reset();
+ const second=session.step({text:'Imagine un robot.',options:choices});
+ assert.notEqual(previousReceipt,second.receipt);
+ assert.equal(session.acknowledge(previousReceipt),false);
+ assert.equal(session.snapshot().hasScene,false);
+ assert.equal(session.acknowledge(second.receipt),true);
+});
 test('BONZE-066: scripted three-story diagnostic is reproducible without weights',()=>{
  const dir=mkdtempSync(join(tmpdir(),'bonze066-'));
  try {
