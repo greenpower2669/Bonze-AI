@@ -7,6 +7,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {scenarios} from './fixtures/bonze068-new-scenes.mjs';
+import {hardCases} from './fixtures/bonze068-hard-cases.mjs';
 
 test('BONZE-068: freeze 35 uniquely named, developer-labeled cases',()=>{
  assert.equal(scenarios.length,35);
@@ -33,4 +34,16 @@ test('BONZE-068: the safety guard cannot decide a narrative contradiction',()=>{
  const a=env.BonzeStoryConsistency.check('La porte est ouverte.','Maintenant la porte est fermée.');
  assert.equal(a.conflict,false);
  assert.equal(a.reason,'time-may-have-passed');
+});
+
+test('BONZE-068: development regressions on actor identity and exclusive states',()=>{
+ const env={};
+ runInNewContext(readFileSync(new URL('../core/story-consistency.js',import.meta.url),'utf8'),env);
+ const known=['h01','h03','h06','h07','h08','h09','h11','h12','h13'];
+ for(const id of known){
+  const c=hardCases.find(x=>x.id===id);
+  assert.ok(c,id+' must exist');
+  const observed=env.BonzeStoryConsistency.check(c.prior,c.next);
+  assert.equal(observed.conflict,c.expected,id+' '+observed.reason);
+ }
 });
