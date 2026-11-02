@@ -53,7 +53,8 @@ function route(text){
  if(!s)return {priority:'none',reason:'empty',template:null,body:null};
  // For explicit *talk about wording*, refrain from classifying the quote
  // as a direct confession. This is a limited heuristic, not a guarantee.
- if(METALINGUISTIC.some(function(p){return s===p||s.indexOf(p+' ')===0;}))\n  return {priority:'none',reason:'quoted-or-defined',template:null,body:null};
+ if(METALINGUISTIC.some(function(p){return s===p||s.indexOf(p+' ')===0;}))
+  return {priority:'none',reason:'quoted-or-defined',template:null,body:null};
  // A negative reassurance alone does not declare an emergency.
  var denied=has(s,NEGATED_DANGER);
  var selfHarm=has(s,[
