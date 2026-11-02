@@ -1,0 +1,37 @@
+name: BONZE-060 — frozen stress challenge
+on:
+  push:
+    branches:
+      - feature/bonze042-field-fixes
+    paths:
+      - 'tests/fixtures/bonze060-stress-cases.mjs'
+      - 'scripts/bench-stress-bonze060.mjs'
+      - 'tests/bonze060.test.mjs'
+      - '.github/workflows/bonze060-stress.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  frozen-adversarial:
+    name: 50 French stress prompts / 200 rotated decisions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate the frozen cases and reporting
+        run: node --test tests/bonze060.test.mjs
+      - name: Evaluate the unchanged BONZE-059 arbiter
+        run: node scripts/bench-stress-bonze060.mjs
+      - name: Retain all raw decisions and shortcomings
+        uses: actions/upload-artifact@v4
+        with:
+          name: bonze060-frozen-stress
+          path: |
+            bonze060-stress.json
+            bonze060-decisions.jsonl
+            bonze060-report.md
+          if-no-files-found: error
+          retention-days: 30
