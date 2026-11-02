@@ -59,7 +59,7 @@ let md='# BONZE-066 — mémoire de sujet + scène reconnue\n\n';
 md+='Deux modes sur les **mêmes récits BONZE-065 déjà inspectés** (3 histoires de 20 tours, 4 rotations). Le nouvel état conserve la dernière phrase de fiction **uniquement après accusé de livraison**. Une réponse simplement envisagée ne devient jamais un événement de scène.\n\n';
 md+='| Mode | Choix attendus | Décisions | Abstentions | Choix erronés | Sessions 20/20 |\n|---|---:|---:|---:|---:|---:|\n';
 for(const x of summary)md+='| '+x.mode+' | '+x.correct+' | '+x.trials+' | '+x.abstentions+' | '+x.wrongIndices+' | '+x.perfectSessions+'/12 |\n';
-md+='\n**Interprétation :** régression de développement, et non validation hors échantillon. L’ancre de thème seule peut être plus robuste si la phrase précédente était incorrecte ; la scène peut créer de nouvelles erreurs. Le module ne gère pas encore l'histoire structurée, les personnes et l'ironie.\n';
+md+='\n**Interprétation :** régression de développement, et non validation hors échantillon. L’ancre de thème seule peut être plus robuste si la phrase précédente était incorrecte ; la scène peut créer de nouvelles erreurs. Le module ne gère pas encore la narration structurée ni les personnes.\n';
 for(const w of report.caveats)md+='- '+w+'\n';
 writeFileSync('bonze066-report.md',md);
 console.log('BONZE_066_RESULT '+JSON.stringify({summary,elapsedMs:report.elapsedMs}));
