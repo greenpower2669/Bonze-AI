@@ -17,3 +17,13 @@ test('BONZE-067: comparison against frozen cases',()=>{
   assert.equal(check(c.candidate,c.prior).conflict,c.conflict,c.id);
  }
 });
+
+test('BONZE-067: scene must abstain on mutually exclusive state',()=>{
+ const session=ctx.BonzeSceneAnchor.createSession();
+ const first=session.step({text:'Imagine un robot.',options:['Le robot est endormi.']});
+ assert.equal(first.index,0);
+ assert.equal(session.acknowledge(first.receipt),true);
+ const next=session.step({text:'Et ensuite ?',options:['Le robot est réveillé.']});
+ assert.equal(next.index,-1);
+ assert.equal(next.reason,'story-contradiction');
+});
