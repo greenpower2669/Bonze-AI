@@ -22,6 +22,7 @@ function measure(samples,name){
    baselineAbstained:base.index===-1,abstained:newer.index===-1});
  }
  const correct=rows.filter(r=>r.correct).length,base=rows.filter(r=>r.baselineCorrect).length;
+ const safetyHandoffs=rows.filter(r=>r.reason==='safety-priority').length;
  const group=[...new Set(rows.map(r=>r.category))].map(category=>{
   const a=rows.filter(r=>r.category===category);
   return {category,count:a.length,baseline:a.filter(r=>r.baselineCorrect).length,
@@ -30,6 +31,7 @@ function measure(samples,name){
  return {set:name,requests:samples.length,decisions:rows.length,
   baselineCorrect:base,correct,baselinePct:+(100*base/rows.length).toFixed(1),
   modifiedPct:+(100*correct/rows.length).toFixed(1),
+  safetyHandoffs:safetyHandoffs,
   abstentions:rows.filter(r=>r.abstained).length,
   wrongChoices:rows.filter(r=>!r.correct&&!r.abstained).length,
   groups:group,rows};
@@ -48,13 +50,14 @@ writeFileSync('bonze062-comparison.json',JSON.stringify(report,null,2)+'\n');
 let md='# BONZE-062 — refus, préférences et changement de sujet\n\n';
 for(const r of [oldSet,newSet]){
  md+='## '+r.set+'\n\n';
- md+='| Décisions | Ancien arbitre | Avec préférences | Abstentions nouvelles | Mauvais choix nouveaux |\n';
- md+='|---:|---:|---:|---:|---:|\n';
- md+='| '+r.decisions+' | '+r.baselineCorrect+' ('+r.baselinePct+' %) | '+r.correct+' ('+r.modifiedPct+' %) | '+r.abstentions+' | '+r.wrongChoices+' |\n\n';
+ md+='| Décisions | Ancien arbitre | Choix stricts avec préférences | Transferts urgents | Abstentions totales | Mauvais indices |\n';
+ md+='|---:|---:|---:|---:|---:|---:|\n';
+ md+='| '+r.decisions+' | '+r.baselineCorrect+' ('+r.baselinePct+' %) | '+r.correct+' ('+r.modifiedPct+' %) | '+r.safetyHandoffs+' | '+r.abstentions+' | '+r.wrongChoices+' |\n\n';
  md+='| Catégorie | Ancien / total | BONZE-062 / total |\n|---|---:|---:|\n';
  for(const a of r.groups)md+='| '+a.category+' | '+a.baseline+'/'+a.count+' | '+a.modified+'/'+a.count+' |\n';
  md+='\n';
 }
+md+='Les transferts urgents n’aboutissent pas à la sélection d’un indice : un routeur distinct doit rendre une réponse de sécurité. Ils ne sont donc pas intégrés aux choix strictement corrects.\n\n';
 md+='Ces chiffres vérifient un **prototype co-développé et des cas de régression connus** ; aucun gain de compréhension générale prouvé. Les énoncés inconnus, multi-sujets ou contradictions ambiguës doivent pouvoir déclencher une abstention. Garde-fou de danger en amont, pas de publication Android.\n\n';
 for(const w of report.warnings)md+='- '+w+'\n';
 writeFileSync('bonze062-comparison.md',md);
