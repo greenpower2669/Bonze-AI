@@ -110,3 +110,10 @@ _État de référence : `feature/bonze042-field-fixes`, mission BONZE-049 (01/11
 - [ ] **P0 Compréhension des priorités** : distinguer les clauses refusées (« pas de pirate »), la préférence explicite (« plutôt robot »), la négation émotionnelle et le souhait de changer de sujet. Tester sur un *nouveau* ensemble de développement, puis validation humaine aveugle.
 - [ ] **P0** Disjoindre les questions de définition des confessions d'émotion ; tester questions identitaires et calculs sans halluciner. Journaliser fausses abstentions, erreurs et indices; les 15 cas BONZE-060 sont maintenant diagnostiques, non un test vierge après modification.
 - [ ] **P1** Evaluer avec un intervenant externe, sur conversations réelles de 20 tours et langage libre, la généralisation, la sûreté, la latence CPU/RAM et Piper. Conserver Android, ne fusionner ni publier sans accord.
+
+## BONZE-061 — routeur de priorité de sécurité expérimental (02/11/2026)
+- [x] Créer un détecteur d'urgence **séparé de l'arbitre lexical** avec réponses prudentes rédigées et priorité sur négations implicites ; aucun modèle supplémentaire, stockage ni connexion réseau.
+- [x] Tests Node du module d'expérience (danger direct, détresse, citation de définition, négations, danger dans une clause tardive) réussis : [41403737605](https://github.com/greenpower2669/Bonze-AI/actions/runs/41403737605), commit `3d4a9f3b`.
+- [ ] **P0** Auditer les protections déjà existantes dans la conversation Android avant d'y incorporer un nouveau routeur, afin d'éviter les régressions sur urgence, Stop, écran verrouillé et accessibilité.
+- [ ] **P0** Étendre avec des énoncés indépendants annotés en aveugle (surtout danger, négations imbriquées, citations, erreurs de transcription vocale, français oral, anglais) et obtenir revue humaine des réponses fixes. Aucune garantie clinique par quelques tests unitaires.
+- [ ] **P0** Séparer complètement le garde-fou sécurité du classement des phrases et des interruptions, avec trace de priorité et zéro conservation de texte sensible ; aucune Release sans vérification concrète sur téléphone.

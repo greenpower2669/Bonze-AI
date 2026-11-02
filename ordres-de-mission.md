@@ -37,3 +37,6 @@ Poursuivre l'expérimentation de l'intelligence locale **indépendamment de la p
 
 ## BONZE-060 — stress figé des formulations françaises (02/11/2026)
 Continuer l'expérience Bonze en mettant la **pertinence réelle avant les performances annoncées**. Conserver les résultats complets du nouveau banc BONZE-060, notamment les abstentions inutiles et les formulations de détresse non reconnues. Ne jamais substituer un arbitre lexical expérimental aux garde-fous critiques ; élaborer une détection de danger indépendante et testée. Une amélioration au vu de ces échecs exigera un **autre jeu d'essai non exploité** avant revendication de qualité. Android préservé, ni fusion main ni Release sans approbation.
+
+## BONZE-061 — routeur de priorité de sécurité expérimental (02/11/2026)
+Le prototype de classement des phrases ne doit jamais être seul responsable d'un message d'urgence. Le module `core/safety-priority.js` étudie un signal de priorité distinct, sans extraire d'information personnelle ni appeler de service en ligne. Il reste expérimental, non branché aux applications. Les tests unitaires ne constituent ni certification médicale ni preuve de couverture du français. Vérifier d'abord les mécanismes Android existants, puis valider cas adversariaux et revue humaine avant toute intégration ; conserver `main`, données et APK publiée intactes.
