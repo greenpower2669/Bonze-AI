@@ -34,3 +34,6 @@ Fab accepte d'envisager d'autres plateformes si Android freine les objectifs con
 
 ## BONZE-059 — arbitre lexical sans génération, démonstrateur Linux (02/11/2026)
 Poursuivre l'expérimentation de l'intelligence locale **indépendamment de la plate-forme**. L'arbitre non génératif expérimental BONZE-059 ne remplace pas l'application : 99 demandes projet et 396 rotations mesurent uniquement l'adéquation à des exemples construits par le même développeur, pas une compréhension naturelle. Préserver les bonnes phrases, les émotions, l'anti-répétition, le hors-ligne et les contrôles de sécurité. Exiger un jeu indépendant de validation avant choix d'architecture ou installation sur Android. Pas de fusion main ou de Release sans autorisation.
+
+## BONZE-060 — stress figé des formulations françaises (02/11/2026)
+Continuer l'expérience Bonze en mettant la **pertinence réelle avant les performances annoncées**. Conserver les résultats complets du nouveau banc BONZE-060, notamment les abstentions inutiles et les formulations de détresse non reconnues. Ne jamais substituer un arbitre lexical expérimental aux garde-fous critiques ; élaborer une détection de danger indépendante et testée. Une amélioration au vu de ces échecs exigera un **autre jeu d'essai non exploité** avant revendication de qualité. Android préservé, ni fusion main ni Release sans approbation.

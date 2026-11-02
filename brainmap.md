@@ -6,7 +6,7 @@
 - Branche active : feature/bonze042-field-fixes ; mémoires condensées, sources archivées ; main préservée.
 - APK directement publiée : [Bonze 0.8.0-dev parallèle](https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.8.0-dev-parallel) ; elle précède la mission BONZE-049 de 90 000 variantes.
 - Contrôles récents : [APK expérimentale BONZE-055 inspectée, succès](https://github.com/greenpower2669/Bonze-AI/actions/runs/41344627317) ; [tests BONZE-056 (sujet unique)](https://github.com/greenpower2669/Bonze-AI/actions/runs/41355014355) verts. Pas d'essai physique Samsung ni de mesure de compréhension réelle du GGUF.
-- **BONZE-059 hors Android :** arbitre lexical sans GGUF, banc projet de 99 demandes et 396 permutations : 368/396 choix attendus, 20 abstentions, 8 erreurs. Score potentiellement fortement surajusté ; **ne pas intégrer** avant banc indépendant. Voir `docs/bonze059-evaluation.md`, `todo.md`, `debughistorical.md`.
+- **BONZE-060, test de robustesse :** sur 50 nouveaux énoncés/200 permutations, 140/200 (70 %) décisions correctes, **56 abstentions inutiles et 4 mauvais choix** malgré 52/52 abstentions justifiées. Enjeu : priorité des clauses, émotion, métalangage, sécurité. Voir `docs/bonze060-robustesse.md`, `todo.md` et `debughistorical.md` ; Android et main préservés.
 - Mission BONZE-050 : sélection de 1–4 phrases complètes selon sujet, émotion et intention, puis filtre anti-répétition ; voir docs/bonze050-composition-contextuelle.md, todo.md et debughistorical.md. L'APK 0.8 publiée précède ce travail.
 
 ## Les cinq mémoires actives
