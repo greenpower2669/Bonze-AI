@@ -33,7 +33,7 @@ test('BONZE-063 comparison reports correlated rotations and self-replay separate
   assert.match(output,/BONZE_063_SUMMARY/);
   const r=JSON.parse(readFileSync(join(dir,'bonze063-results.json'),'utf8'));
   assert.equal(r.prompts,72);
-  assert.equal(r.results.length,576);
+  assert.equal(r.results.length,896);
   assert.equal(r.summaries.length,6);
   assert.equal(r.firstErrors.length,32);
   assert.equal(r.errorCount,r.errors.length);
