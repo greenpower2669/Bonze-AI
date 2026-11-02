@@ -81,10 +81,11 @@ function parse(text){
  }
  // Priority rules: the last positive directive wins, particularly after
  // a pivot ("mais / plutôt") that supersedes the previous topic.
- var positives=[];
+ var positives=[],sawAffirm=false;
  for(i=0;i<seq.length;i++){
   size=matchWords(seq,AFFIRM,i);
   if(!size)continue;
+  sawAffirm=true;
   // A negative directive must not create an affirmative one:
   // "je ne veux pas de pirates" and "je veux pas de pirates".
   if(i>0&&seq[i-1]==='ne')continue;
@@ -103,11 +104,17 @@ function parse(text){
   if(preferred.length)positives.push({at:i,topics:preferred});
   else return {preferred:[],excluded:exclusions,mode:'unresolved-pivot'};
  }
- positives.sort(function(a,b){return a.at-b.at;});
+ // In anaphoric commands ("le dragon, raconte son aventure"), the
+ // requested subject can precede the imperative rather than follow it.
+ if(!positives.length&&sawAffirm&&!exclusions.length){
+  var mentioned=hits(n);
+  if(mentioned.length===1)positives.push({at:seq.length,topics:mentioned});
+ }
+  positives.sort(function(a,b){return a.at-b.at;});
  var chosen=positives.length?positives[positives.length-1].topics:[];
  // The latest message may explicitly reject a subject without supplying
  // a replacement. Do not silently fall back to a story from the context.
- var mode=chosen.length===1?'preferred':chosen.length>1?'ambiguous':exclusions.length?'only-refused':'no-directive';
+ var mode=chosen.length===1?'preferred':chosen.length>1?'ambiguous':exclusions.length?'only-refused':sawAffirm?'unresolved-selection':'no-directive';
  return {preferred:chosen,excluded:exclusions,mode:mode};
 }
 function rank(input){
@@ -122,7 +129,7 @@ function rank(input){
  if(safety&&typeof safety.route==='function'&&safety.route(input.text||'').priority==='immediate')
   return {index:-1,reason:'safety-priority',scores:[],safety:'immediate'};
  var directive=parse(input.text||'');
- if(directive.mode==='ambiguous'||directive.mode==='unresolved-pivot')
+ if(directive.mode==='ambiguous'||directive.mode==='unresolved-pivot'||directive.mode==='unresolved-selection')
   return {index:-1,reason:'ambiguous-preference',scores:[],directive:directive};
  var legacy=base.rank(input);
  if(directive.mode==='no-directive')
