@@ -6,7 +6,7 @@
 - Branche active : feature/bonze042-field-fixes ; mémoires condensées, sources archivées ; main préservée.
 - APK directement publiée : [Bonze 0.8.0-dev parallèle](https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.8.0-dev-parallel) ; elle précède la mission BONZE-049 de 90 000 variantes.
 - Contrôles récents : [APK expérimentale BONZE-055 inspectée, succès](https://github.com/greenpower2669/Bonze-AI/actions/runs/41344627317) ; [tests BONZE-056 (sujet unique)](https://github.com/greenpower2669/Bonze-AI/actions/runs/41355014355) verts. Pas d'essai physique Samsung ni de mesure de compréhension réelle du GGUF.
-- **BONZE-063/064 — robustesse et sujet stable :** 72 requêtes auto-étiquetées / 896 décisions ; préférences 52/128 isolées, scénarios de 20 tours 140/160 en rejeu autonome. Ancre `core/topic-anchor.js` : 160/160 sur **ces scripts déjà inspectés** ; sécurité : 4 dangers manqués et 4 faux transferts (permutations). Lire `docs/bonze063-conversations.md`, `docs/bonze064-ancre-sujet.md`, `todo.md`. Aucun déploiement Android.
+- **BONZE-065 — nouveau défi narratif** : 3 récits ×20 tours, 4 rotations, 3 modes : contexte idéal 124/240, auto-alimenté 140/240, ancre de thème 112/240 malgré 220/240 bons sujets. Sécurité 20/23 concordances provisoires et 7 ambiguïtés à revoir ; pas de couverture certifiée. `docs/bonze065-narration-et-securite.md`, `todo.md`, `debughistorical.md`. BONUS-066 mémoire d'événement **non codée**. Android préservé.
 - Mission BONZE-050 : sélection de 1–4 phrases complètes selon sujet, émotion et intention, puis filtre anti-répétition ; voir docs/bonze050-composition-contextuelle.md, todo.md et debughistorical.md. L'APK 0.8 publiée précède ce travail.
 
 ## Les cinq mémoires actives
