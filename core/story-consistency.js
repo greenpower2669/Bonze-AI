@@ -1,4 +1,4 @@
-/* BONZE-067 — conservative offline story contradiction probe.
+/* BONZE-067/068 — conservative offline story contradiction probe.
  * Only identifies a few explicit, same-event assertions or simultaneous
  * exclusive states. False => conflict is unproven, NOT verified consistency.
  * Never stores, returns, or logs user text. Not used for clinical safety.
@@ -22,11 +22,22 @@ function negated(s){
  return /\b(?:ne|n)\b(?: [a-z0-9]+){0,6} \bpas\b/.test(s);
 }
 var STATES={ouvert:'open',ouverte:'open',ferme:'closed',fermee:'closed',
- endormi:'asleep',endormie:'asleep',reveille:'awake',reveillee:'awake'};
-var OPPOSITE={open:'closed',closed:'open',asleep:'awake',awake:'asleep'};
+ endormi:'asleep',endormie:'asleep',reveille:'awake',reveillee:'awake',
+ vivant:'alive',vivante:'alive',mort:'dead',morte:'dead',
+ present:'present',presente:'present',absent:'absent',absente:'absent',
+ vide:'empty',plein:'full',pleine:'full'};
+var OPPOSITE={open:'closed',closed:'open',asleep:'awake',awake:'asleep',
+ alive:'dead',dead:'alive',present:'absent',absent:'present',empty:'full',full:'empty'};
 function parseState(s){
- var m=/^((?:le|la|l|un|une) [a-z0-9]+) est (?:(?:toujours|encore) )?(ouvert|ouverte|ferme|fermee|endormi|endormie|reveille|reveillee)$/.exec(s);
+ var m=/^((?:le|la|l|un|une) [a-z0-9]+) est (?:(?:toujours|encore|bien|reste|restee) )?(ouvert|ouverte|ferme|fermee|endormi|endormie|reveille|reveillee|vivant|vivante|mort|morte|present|presente|absent|absente|vide|plein|pleine)$/.exec(s);
  return m?{actor:m[1],state:STATES[m[2]]}:null;
+}
+function sameDefiniteSubject(a,b){
+ var pa=/^(le|la|les|l) ([a-z0-9]+)/.exec(a),pb=/^(le|la|les|l) ([a-z0-9]+)/.exec(b);
+ if(pa||pb)return Boolean(pa&&pb&&pa[1]===pb[1]&&pa[2]===pb[2]);
+ // Repeated personal pronouns remain a limited reference assumption.
+ var qa=/^(il|elle|ils|elles) /.exec(a),qb=/^(il|elle|ils|elles) /.exec(b);
+ return Boolean(qa&&qb&&qa[1]===qb[1]);
 }
 function check(prior,candidate){
  var a=norm(prior),b=norm(candidate);
@@ -37,7 +48,7 @@ function check(prior,candidate){
  if(sa&&sb&&sa.actor===sb.actor&&OPPOSITE[sa.state]===sb.state)
   return {conflict:true,reason:'exclusive-simultaneous-state'};
  var aa=stripped(a),bb=stripped(b);
- if(aa&&aa===bb&&aa.split(' ').length>=2&&negated(a)!==negated(b))
+ if(aa&&aa===bb&&aa.split(' ').length>=2&&sameDefiniteSubject(a,b)&&negated(a)!==negated(b))
   return {conflict:true,reason:'opposite-explicit-assertion'};
  return {conflict:false,reason:'no-provable-contradiction'};
 }
