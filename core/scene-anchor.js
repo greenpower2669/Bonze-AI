@@ -26,6 +26,15 @@ function createSession(){
    var context='Histoire : '+first.topic+'. Derniere phrase : '+lastSentence;
    response=selector.rank({text:input.text||'',options:input.options,context:context});
   }
+  // An optional independent guard abstains on an explicit contradiction.
+  // A non-match is UNKNOWN, never a proof that the story is coherent.
+  var checker=root.BonzeStoryConsistency;
+  if(checker&&typeof checker.check==='function'&&lastSentence&&
+      Array.isArray(input.options)&&response.index>=0&&response.index<input.options.length&&
+      checker.check(lastSentence,input.options[response.index]).conflict){
+   return {index:-1,reason:'story-contradiction',topic:first.topic,
+    turn:first.turn,hasScene:true,receipt:null};
+  }
   var receipt=null;
   if(Array.isArray(input.options)&&response.index>=0&&response.index<input.options.length){
    receipt='turn-'+(++serial);
