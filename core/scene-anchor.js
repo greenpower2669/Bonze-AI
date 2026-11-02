@@ -42,7 +42,8 @@ function createSession(){
  }
  return {step:step,acknowledge:acknowledge,
   snapshot:function(){var x=anchor.snapshot();return {topic:x.topic,turn:x.turn,hasScene:Boolean(lastSentence),hasPending:Boolean(pending)};},
-  reset:function(){anchor.reset();clear();} // preserve monotonic receipts across reset};
+  reset:function(){anchor.reset();clear();} // Keep receipts monotonic across reset.
+ };
 }
 root.BonzeSceneAnchor={createSession:createSession,version:'BONZE-066'};
 })(typeof globalThis!=='undefined'?globalThis:this);
