@@ -1,0 +1,36 @@
+name: BONZE-063 — frozen prospective conversation challenge
+on:
+  push:
+    branches: [feature/bonze042-field-fixes]
+    paths:
+      - 'tests/fixtures/bonze063-prospective.mjs'
+      - 'scripts/bench-bonze063.mjs'
+      - 'tests/bonze063.test.mjs'
+      - '.github/workflows/bonze063-challenge.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prospective:
+    name: 32 standalone + 2 scripted 20-turn sessions, four option rotations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify frozen test protocol
+        run: node --test tests/bonze063.test.mjs
+      - name: Run prospective baseline and preference comparison
+        run: node scripts/bench-bonze063.mjs
+      - name: Archive results, all decisions and failed cases
+        uses: actions/upload-artifact@v4
+        with:
+          name: bonze063-conversation-prospective
+          path: |
+            bonze063-results.json
+            bonze063-decisions.jsonl
+            bonze063-report.md
+          if-no-files-found: error
+          retention-days: 30
