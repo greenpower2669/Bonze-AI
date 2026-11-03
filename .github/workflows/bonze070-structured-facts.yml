@@ -1,0 +1,36 @@
+name: BONZE-070 structured fiction facts experiment
+on:
+  push:
+    branches: [feature/bonze042-field-fixes]
+    paths:
+      - 'core/scene-facts.js'
+      - 'core/scene-ledger.js'
+      - 'tests/fixtures/bonze070-structured-facts.mjs'
+      - 'tests/bonze070.test.mjs'
+      - 'scripts/bench-bonze070.mjs'
+      - '.github/workflows/bonze070-structured-facts.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  structured-facts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test frozen corpus and delivery provenance
+        run: node --test tests/bonze070.test.mjs
+      - name: Compare BONZE-069 and structured facts without tuning
+        run: node scripts/bench-bonze070.mjs
+      - name: Preserve full pair diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: bonze070-structured-fiction-prototype
+          path: |
+            bonze070-results.json
+            bonze070-report.md
+          if-no-files-found: error
+          retention-days: 30
