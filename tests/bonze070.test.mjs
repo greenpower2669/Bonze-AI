@@ -92,6 +92,6 @@ test('BONZE-070: separate benchmark produces both matrices, no raw text',()=>{
   assert.equal(result.rows.length,74);
   for(const s of result.summary)
    assert.equal(s.counts.tp+s.counts.fn+s.counts.fp+s.counts.tn,37);
-  assert.ok(result.caveats.some(x=>x.includes('not general')));
+  assert.ok(result.caveats.some(x=>x.includes('not a general')));
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
