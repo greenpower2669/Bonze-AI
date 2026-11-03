@@ -137,7 +137,7 @@ public final class ConversationService extends Service {
    String chosenModel=c.optString("model",LocalModelStore.SMALL);
    String activeModel=LocalModelStore.choice(this);
    if((LocalModelStore.SMALL.equals(chosenModel)||LocalModelStore.LARGE.equals(chosenModel))
-        &&(LocalModelStore.SMALL.equals(chosenModel)||LocalModelStore.available(this))
+        &&(LocalModelStore.SMALL.equals(chosenModel)||LocalModelStore.available(this)||LocalModelStore.bundled(this))
         &&!chosenModel.equals(activeModel)){
     if(session.active())stop(request,"Changement de moteur : conversation arrêtée.");
     prefs.edit().putString("modelChoice",chosenModel).remove("modelLastFallback").apply();
@@ -187,6 +187,37 @@ public final class ConversationService extends Service {
   }
   if(!neural||!Arrays.asList("precise","eco").contains(mode)){
    complete(epoch,scriptedReply(text,"",turn),fromVoice);return;
+  }
+  // BONZE-072: only the separate .lab12b app generates actual dialogue.
+  // Existing Bonze editions keep the curated reply process untouched.
+  if(getPackageName().endsWith(".lab12b") &&
+     LocalModelStore.LARGE.equals(LocalModelStore.choice(this))){
+   if(!generating.compareAndSet(false,true)){
+    complete(epoch,scriptedReply(text,"",turn),fromVoice);return;
+   }
+   inference.execute(()->{
+    String output="",failure="";long began=SystemClock.elapsedRealtime();
+    long cpuBegan=SystemClock.currentThreadTimeMillis();
+    try{output=BonzeInference.generateDialogue(getApplicationContext(),text,contextData);}
+    catch(Exception|LinkageError error){failure=error.getClass().getSimpleName();}
+    catch(OutOfMemoryError oom){failure="OutOfMemoryError";BonzeInference.release();}
+    finally{generating.set(false);}
+    final String candidate=output,why=failure;
+    final long elapsed=SystemClock.elapsedRealtime()-began;
+    final long cpu=SystemClock.currentThreadTimeMillis()-cpuBegan;
+    main.post(()->{
+     if(disposed||epoch!=workEpoch||turn!=diagnosticTurn)return;
+     lastLatency=elapsed;lastCpu=cpu;
+     ReplyQuality.Result verdict=ReplyQuality.review(text,candidate,memory.repeats(candidate),recentBonzeReplies(8));
+     journal.add("large-dialogue",turn,DiagnosticJournal.fields(
+       "mechanism","liquid-1.2b-generated","latencyMs",elapsed,"cpuMs",cpu,
+       "accepted",!verdict.repaired,"reason",verdict.reason,"error",why));
+     if(!verdict.repaired&&verdict.text.length()>=3)
+      complete(epoch,verdict.text,fromVoice);
+     else complete(epoch,scriptedReply(text,"",turn),fromVoice);
+    });
+   });
+   return;
   }
   // A busy classifier must never inject a canned response or hold the UI indefinitely.
   if(!generating.compareAndSet(false,true)){
@@ -516,7 +547,7 @@ public final class ConversationService extends Service {
   JSONObject o=base("snapshot");try{
    if(council!=null)o.put("council",council.snapshot());
    o.put("active",session.active()).put("state",state).put("busy","thinking".equals(state)).put("status",status).put("voice",voiceName)
-    .put("model",LocalModelStore.choice(this)).put("model12Ready",LocalModelStore.available(this))
+    .put("model",LocalModelStore.choice(this)).put("model12Ready",LocalModelStore.available(this)||LocalModelStore.bundled(this))
     .put("modelFallback",prefs.getString("modelLastFallback",""));
    JSONArray rows=new JSONArray();for(DialogueMemory.Entry e:memory.entries())rows.put(new JSONObject().put("id",e.id).put("role",e.role).put("text",e.text));o.put("history",rows).put("importedThrough",prefs.getLong("importedThrough",0));
    JSONArray voices=new JSONArray();voices.put(new JSONObject().put("name","piper-mls").put("quality",400));if(voiceInitFinished&&tts!=null)for(Voice v:localVoices())voices.put(new JSONObject().put("name",v.getName()).put("quality",v.getQuality()));o.put("voices",voices);
