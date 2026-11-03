@@ -21,7 +21,7 @@ test('BONZE-072: large Q4 uses matching official weight and atomic copy',()=>{
  assert.match(store,/b1b3de114215d9507409a662a501a631095a479a419584e8a2ded6304b19b4f5/);
  assert.match(store,/ensureBundled\(Context context\)/);
  assert.match(store,/MessageDigest\.getInstance\("SHA-256"\)/);
- assert.match(store,/context\.assets\.open\("models\/"\+LARGE_FILE\)/);
+ assert.match(store,/context\.getAssets\(\)\.open\("models\/"\+LARGE_FILE\)/);
  assert.match(store,/out\.getFD\(\)\.sync\(\)/);
  assert.match(store,/temp\.renameTo\(dest\)/);
  assert.match(store,/\.lab12b/);
