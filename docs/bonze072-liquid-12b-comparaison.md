@@ -22,3 +22,14 @@ La taille des poids **ne garantit pas** une bonne conversation. Le modèle 1,2B 
 Il faut tester sur Samsung la **latence réelle**, la RAM libre, la cohérence sur plusieurs tours, les répétitions, la qualité des réponses, les interruptions Stop et la préférence entre les deux moteurs. La barrière symbolique des conversations fictives n'est pas automatiquement un garde-fou de sécurité clinique.
 
 **Important :** jusqu'à confirmation du workflow et de la présence réelle de l'asset GitHub, aucune APK directe n'est déclarée livrée. Ne jamais inventer de lien, fournir une archive ZIP en remplacement ou supprimer la version précédente.
+
+## Livraison effective et limites de provenance (03/11/2026)
+
+Le [build GitHub Actions 41607888706](https://github.com/greenpower2669/Bonze-AI/actions/runs/41607888706) a réussi : APK Android 0.8.2-lab12b code 10, `fr.bonzeai.companion.lab12b`, signature APK v2 debug vérifiée, permission `INTERNET` absente, GGUF officiel et licence embarqués. **SHA-256 du fichier APK** : `e9333ae016c808118e1078f066761caf73dabb341321fff559a5d0b516366ee9` ; taille **1 002 315 668 octets**.
+
+La première publication a échoué en HTTP 403 sur création de Release ciblant un SHA qui modifie des workflows. Le [workflow de publication séparé 41609120245](https://github.com/greenpower2669/Bonze-AI/actions/runs/41609120245) a finalement réussi via une **Release technique ciblée sur main, sans fusion**. **La vraie source de l'APK est le commit de branche `94d8f6a064ea48978c0a9314e25f2b418880f94e`, et non le contenu de la balise Git de cette Release.** Cette séparation est inscrite dans la notice de publication et doit être corrigée à terme avec des droits GitHub adaptés, plutôt que dissimulée.
+
+- [Télécharger directement Bonze-AI-v0.8.2-lab12b.apk](https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.8.2-lab12b/Bonze-AI-v0.8.2-lab12b.apk) — asset `.apk` autonome, pas ZIP, présence et taille vérifiées par API GitHub.
+- [Prérelease officielle de test](https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.8.2-lab12b).
+
+**Essai sur téléphone non réalisé en CI.** L'utilisateur peut conserver ses autres Bonze, sélectionner 1,2B et comparer avec 230M. Prévoir 3–4 Go libres pour les pics de stockage, le téléchargement et la copie du modèle ; le premier chargement peut être long. Ne pas annoncer de bénéfice de compréhension avant test de terrain.
