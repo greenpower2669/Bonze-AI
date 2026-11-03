@@ -35,3 +35,7 @@ Le téléchargement ne doit être annoncé comme disponible qu'après confirmati
 Si le build ou la publication échoue (droits GitHub, SDK, signature, téléchargement de poids, quotas), ne pas inventer de lien direct ; garder les logs et ouvrir un point de reprise dans `todo.md`.
 
 Aucune fusion `main`, aucun remplacement de la Release Bonze 0.8.0-dev-parallel, aucune mise à jour du dépôt Djipie sans validation.
+
+## Résultat vérifié de la livraison
+
+**Succès** : [workflow Android 41604105320](https://github.com/greenpower2669/Bonze-AI/actions/runs/41604105320), toutes les étapes terminées. La prérelease [Bonze Lab 070](https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.8.1-lab070) contient l'asset [Bonze-AI-v0.8.1-lab070.apk](https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.8.1-lab070/Bonze-AI-v0.8.1-lab070.apk) vérifié via l'API GitHub, taille **271413270 octets**, sans archive à manipuler. Hash SHA-256 : `4ce51f8ccb9b7617e73fd220dcfe4d23b161f2dba65641d96dc71497b81f04ad`. Signée debug avec certificat v2 (CN=Bonze Lab 070), et sans permission Internet. Package `fr.bonzeai.companion.lab070`, code 9, version 0.8.1-lab070. **Aucun essai physique sur Samsung n'a encore été effectué.** La conversation native n'a pas reçu les nouvelles heuristiques ; elles sont visibles uniquement dans le laboratoire.
