@@ -19,6 +19,7 @@ const STORAGE='bonze-proto-01';
 const session=createConversationSession();
 const nativeView=createNativeView(),speechMotion=createSpeechMotion();
 const isNative=!!window.BonzeAndroid;
+const largeModelLab=isNative&&window.BonzeAndroid.isLargeTestBuild?.()===true;
 const face=el('face'), nativeButton=el('native-mic'), faceTouch=el('face-touch');
 let profile=null,history=[],trainedWeights=null,pendingInput=null;
 let nativeReady=false,mode='off',lastSaved=performance.now(),lastTick=performance.now();
@@ -38,7 +39,7 @@ if(saved&&typeof saved==='object'){
  browserVoiceEnabled=saved.browserVoiceEnabled===true;lastNativeHumanId=Number.isSafeInteger(saved.lastNativeHumanId)?saved.lastNativeHumanId:0;
 }
 personalization=normalizeStyle(saved?.personalization);scriptedState=saved?.scriptedState||null;
-identity=restoreIdentity(saved?.identity);memoryVault=saved?.memoryVault??null;modelChoice=saved?.modelChoice==='12b'?'12b':'230m';councilState=saved?.councilState||{version:1,forces:{...identity.acquired.forces},globalEndurance:identity.acquired.endurance};councilParams=saved?.councilParams||null;try{councilJournal=JSON.parse(localStorage.getItem("bonze-diagnostics")||"[]");}catch{}
+identity=restoreIdentity(saved?.identity);memoryVault=saved?.memoryVault??null;modelChoice=saved?.modelChoice==='12b'||(largeModelLab&&!saved?.modelChoice)?'12b':'230m';councilState=saved?.councilState||{version:1,forces:{...identity.acquired.forces},globalEndurance:identity.acquired.endurance};councilParams=saved?.councilParams||null;try{councilJournal=JSON.parse(localStorage.getItem("bonze-diagnostics")||"[]");}catch{}
 function webState(){return {profile,history:history.slice(-30),fontSize,resourceMode,neuralEnabled,contrast,reduceMotion,identity,browserVoiceEnabled,lastNativeHumanId,councilState,councilParams,memoryVault,modelChoice,personalization,scriptedState};}
 function saveNativeWeb(){if(isNative&&nativeConnected)window.BonzeAndroid.command('save-web',JSON.stringify({web:webState(),weights:trainedWeights}),'');}
 function save(){
@@ -177,7 +178,9 @@ window.BonzeNativeEvent=e=>{
   nativeActive=e.active===true;nativeBusy=e.busy===true;
   model12Ready=e.model12Ready===true;modelChoice=e.model==='12b'?'12b':'230m';
   el('local-model').value=modelChoice;el('local-model').querySelector('option[value="12b"]').disabled=!model12Ready;
-  el('local-model-status').textContent='Moteur actif : '+(modelChoice==='12b'?'Liquid 1.2B Q4':'Liquid 230M Q4')+'. Liquid 1.2B '+(model12Ready?'installé et vérifié.':'non installé.')+' Aucun modèle supplémentaire chargé sans demande.'+(e.modelFallback?' '+String(e.modelFallback).slice(0,180):'');
+  el('local-model-status').textContent=largeModelLab
+      ?'Mode : '+(modelChoice==='12b'?'Liquid 1,2B dialogue libre':'Liquid 230M répliques préparées')+'. '+(model12Ready?'Poids inclus. Vérification au premier usage.':'Poids indisponibles.')+(e.modelFallback?' '+String(e.modelFallback).slice(0,180):'')
+      :'Moteur actif : '+(modelChoice==='12b'?'Liquid 1.2B Q4':'Liquid 230M Q4')+'. Liquid 1.2B '+(model12Ready?'installé et vérifié.':'non installé.')+' Aucun modèle supplémentaire chargé sans demande.'+(e.modelFallback?' '+String(e.modelFallback).slice(0,180):'');
   if(Number.isSafeInteger(e.importedThrough))lastNativeHumanId=Math.max(lastNativeHumanId,e.importedThrough);
   applyNativeHistory(e.history);el('message').disabled=nativeBusy;el('send-message').disabled=nativeBusy;
   el('native-status').textContent=String(e.status||'');state(e.state);
@@ -247,6 +250,12 @@ visualSettings();
 el('voice').checked=browserVoiceEnabled;el('native-voice-row').hidden=!isNative;
 el('native-voice').addEventListener('change',e=>{const wanted=e.target.value;pendingVoice=wanted;nativeVoice=wanted;stopAll();configureNative();});
 el('local-model-row').hidden=!isNative;
+if(largeModelLab){
+ el('local-model-import').hidden=true;
+ el('local-model').querySelector('option[value="12b"]').textContent='Liquid 1.2B Instruct · dialogue libre (intégré hors ligne)';
+ el('brain-status').textContent='🧠 Test Liquid 1,2B : réponses générées directement. L’ancienne conversation reste accessible en choisissant 230M.';
+}
+
 el('local-model').value=modelChoice;
 el('local-model').querySelector('option[value="12b"]').disabled=true;
 el('local-model').addEventListener('change',e=>{
