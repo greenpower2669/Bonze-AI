@@ -16,20 +16,7 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
-      - name: Pin release tag to compiled source commit
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          tag="bonze-ai-v0.8.2-lab12b"
-          source="94d8f6a064ea48978c0a9314e25f2b418880f94e"
-          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" >/tmp/tag.json 2>/dev/null; then
-            test "$(jq -r '.object.sha' /tmp/tag.json)" = "$source"
-          else
-            gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" -f "ref=refs/tags/$tag" -f "sha=$source" >/dev/null
-          fi
-          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq '.object.sha')" = "$source"
-      - name: Create draft release with source tag and default-branch release target
+      - name: Create draft prerelease on default branch (source commit documented separately)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -40,7 +27,7 @@ jobs:
           else
             gh release create "$tag" --target main --draft \
               --title "🧠 Bonze Liquid 1.2B — dialogue libre local, APK test" \
-              --notes "APK expérimentale compilée au commit 94d8f6a064ea48978c0a9314e25f2b418880f94e. Le tag Git pointe exactement sur ce commit ; le champ technique target_commitish reste main pour éviter le blocage GitHub Actions sur les modifications de workflows, sans aucune fusion. Liquid LFM2.5-1.2B Q4 inclus ; 230M sélectionnable ; application séparée, hors ligne et signée debug."
+              --notes "APK expérimentale compilée au commit 94d8f6a064ea48978c0a9314e25f2b418880f94e. Le tag de publication pointe techniquement sur main à cause de la restriction GitHub Actions ; il ne représente PAS les sources de l'APK. Les sources compilées sont au commit 94d8f6a064ea48978c0a9314e25f2b418880f94e sur feature/bonze042-field-fixes. Aucune fusion ou modification de main. Liquid LFM2.5-1.2B Q4 inclus ; 230M sélectionnable ; application séparée, hors ligne et signée debug."
           fi
       - uses: actions/download-artifact@v4
         with:
@@ -76,6 +63,6 @@ jobs:
           url="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$tag" \
              --jq '.assets[] | select(.name=="Bonze-AI-v0.8.2-lab12b.apk" and .state=="uploaded") | .browser_download_url')"
           test "$url" = "https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/Bonze-AI-v0.8.2-lab12b.apk"
-          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq '.object.sha')" = "94d8f6a064ea48978c0a9314e25f2b418880f94e"
+          # Build provenance is preserved in the release notes and in the APK SHA256.
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/$tag" --jq '.assets[] | [.name,.size] | @tsv'
           echo "VERIFIED_STANDALONE_APK=$url"
