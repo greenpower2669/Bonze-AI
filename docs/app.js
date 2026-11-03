@@ -13,6 +13,7 @@ import {createNativeView} from '../core/native-view.mjs';
 import {restoreIdentity} from '../core/identity.mjs';
 import {advance,experience} from '../core/organism.mjs';
 import {setupEditor,renderAppearance,renderExpression,describe} from './avatar.js';
+import {setupSceneLab} from './scene-lab.js';
 const el=id=>document.getElementById(id);
 const STORAGE='bonze-proto-01';
 const session=createConversationSession();
@@ -200,6 +201,7 @@ faceTouch.addEventListener('click',toggleConversation);nativeButton.addEventList
 el('stop-all').addEventListener('click',()=>stopAll());
 el('open-keyboard').addEventListener('click',showKeyboard);
 el('chat').addEventListener('submit',e=>{e.preventDefault();handleText(el('message').value);});
+setupSceneLab(); // BONZE-071: opt-in fiction laboratory, never applied to native conversation.
 function closeSettings(){el('settings').hidden=true;el('settings-open').setAttribute('aria-expanded','false');el('settings-open').textContent='⚙️ Options';el('settings-open').focus();}
 el('settings-open').addEventListener('click',()=>{
  if(!el('settings').hidden){closeSettings();return;}
