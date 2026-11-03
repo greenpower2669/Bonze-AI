@@ -80,7 +80,7 @@ jobs:
           AAPT="${ANDROID_HOME}/build-tools/35.0.0/aapt"
           "$AAPT" dump badging "$apk" | head -n 1 | tee package.txt
           grep -q "name='fr.bonzeai.companion.lab12b'" package.txt
-          grep -q "versionCode='9'" package.txt
+          grep -q "versionCode='10'" package.txt
           grep -q "versionName='0.8.2-lab12b'" package.txt
           "$AAPT" dump permissions "$apk" | tee permissions.txt
           if grep -q 'android.permission.INTERNET' permissions.txt; then echo 'Unexpected INTERNET permission'; exit 1; fi
@@ -93,19 +93,6 @@ jobs:
           cp "$apk" Bonze-AI-v0.8.2-lab12b.apk
           sha256sum Bonze-AI-v0.8.2-lab12b.apk | tee Bonze-AI-v0.8.2-lab12b.sha256
           sha256sum -c Bonze-AI-v0.8.2-lab12b.sha256
-      - name: Preserve files for recovery if GitHub Release is blocked
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: bonze072-internal-apk-recovery
-          path: |
-            Bonze-AI-v0.8.2-lab12b.apk
-            Bonze-AI-v0.8.2-lab12b.sha256
-            package.txt
-            permissions.txt
-            signature.txt
-          if-no-files-found: ignore
-          retention-days: 7
       - name: Publish standalone APK to separate TEST prerelease
         env:
           GH_TOKEN: ${{ github.token }}
@@ -130,3 +117,16 @@ jobs:
           test "$uri" = "https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/Bonze-AI-v0.8.2-lab12b.apk"
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/$tag" --jq '.assets[] | select(.name=="Bonze-AI-v0.8.2-lab12b.apk") | [.name,.size,.download_count] | @tsv'
           printf 'Standalone direct APK: %s\n' "$uri"
+      - name: Preserve APK internally only when direct publication fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bonze072-internal-apk-recovery
+          path: |
+            Bonze-AI-v0.8.2-lab12b.apk
+            Bonze-AI-v0.8.2-lab12b.sha256
+            package.txt
+            permissions.txt
+            signature.txt
+          if-no-files-found: ignore
+          retention-days: 7
