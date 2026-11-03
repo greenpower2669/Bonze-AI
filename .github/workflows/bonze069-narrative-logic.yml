@@ -7,6 +7,8 @@ on:
       - 'tests/fixtures/bonze069-quantifiers-anaphora.mjs'
       - 'scripts/bench-bonze069.mjs'
       - 'tests/bonze069.test.mjs'
+      - 'tests/fixtures/bonze069-holdout.mjs'
+      - 'scripts/bench-bonze069-holdout.mjs'
       - '.github/workflows/bonze069-narrative-logic.yml'
   workflow_dispatch:
 permissions:
@@ -24,6 +26,8 @@ jobs:
         run: node scripts/bench-bonze069.mjs
       - name: Experimental regression tests
         run: if [ -f tests/bonze069.test.mjs ]; then node --test tests/bonze069.test.mjs; fi
+      - name: Second-stage challenge on unchanged detector
+        run: node scripts/bench-bonze069-holdout.mjs
       - name: Archive baseline and subsequent comparisons
         uses: actions/upload-artifact@v4
         with:
@@ -31,5 +35,7 @@ jobs:
           path: |
             bonze069-baseline.json
             bonze069-baseline.md
+            bonze069-second-stage.json
+            bonze069-second-stage.md
           if-no-files-found: error
           retention-days: 30
