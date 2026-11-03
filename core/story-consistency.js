@@ -1,4 +1,4 @@
-/* BONZE-067/068 — conservative offline story contradiction probe.
+/* BONZE-067/068/069 — conservative offline story contradiction probe.
  * Only identifies a few explicit, same-event assertions or simultaneous
  * exclusive states. False => conflict is unproven, NOT verified consistency.
  * Never stores, returns, or logs user text. Not used for clinical safety.
@@ -39,11 +39,73 @@ function sameDefiniteSubject(a,b){
  var qa=/^(il|elle|ils|elles) /.exec(a),qb=/^(il|elle|ils|elles) /.exec(b);
  return Boolean(qa&&qb&&qa[1]===qb[1]);
 }
+/* BONZE-069: narrow logic on canonical, definite subjects only.
+ * These are assertions within one fictional scene, not logical entailment
+ * across arbitrary discourse. Incomplete => leave the choice unresolved.
+ */
+function definiteClause(s){
+ var m=/^((?:le|la|l) [a-z0-9]+) (.+)$/.exec(s);
+ return m?{subject:m[1],rest:m[2]}:null;
+}
+function possession(s){
+ var c=definiteClause(s),m;
+ if(!c)return null;
+ m=/^(?:possede|a) (?:un|une|le|la|l) ([a-z0-9]+)$/.exec(c.rest);
+ if(m)return {subject:c.subject,object:m[1],polarity:true};
+ m=/^(?:n a|ne possede) (?:aucun|aucune) ([a-z0-9]+)$/.exec(c.rest);
+ if(m)return {subject:c.subject,object:m[1],polarity:false};
+ m=/^(?:n a pas de|ne possede pas de) ([a-z0-9]+)$/.exec(c.rest);
+ if(m)return {subject:c.subject,object:m[1],polarity:false};
+ return null;
+}
+function everStatement(s){
+ var c=definiteClause(s),m;
+ if(!c)return null;
+ m=/^n a jamais (ouvert|ferme|trouve|cache) (?:le|la|l) ([a-z0-9]+)$/.exec(c.rest);
+ if(m)return {subject:c.subject,verb:m[1],object:m[2],ever:false};
+ m=/^a (ouvert|ferme|trouve|cache) (?:le|la|l) ([a-z0-9]+) (?:hier|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)$/.exec(c.rest);
+ if(m)return {subject:c.subject,verb:m[1],object:m[2],ever:true};
+ return null;
+}
+function referencedAction(s){
+ var c=definiteClause(s),m;
+ if(!c)return null;
+ // Exactly one object in the complete utterance: never resolve multiple
+ // referents, named actors, object modifiers or newly introduced characters.
+ m=/^(ouvre|ferme|garde|cache) (le|la|l) ([a-z0-9]+)$/.exec(c.rest);
+ if(m)return {subject:c.subject,verb:m[1],article:m[2],polarity:true,explicit:true};
+ m=/^n (ouvre|ferme|garde|cache) pas (le|la|l) ([a-z0-9]+)$/.exec(c.rest);
+ if(m)return {subject:c.subject,verb:m[1],article:m[2],polarity:false,explicit:true};
+ m=/^ne (le|la|l) (ouvre|ferme|garde|cache) pas$/.exec(c.rest);
+ if(m)return {subject:c.subject,verb:m[2],article:m[1],polarity:false,explicit:false};
+ m=/^(le|la|l) (ouvre|ferme|garde|cache)$/.exec(c.rest);
+ if(m)return {subject:c.subject,verb:m[2],article:m[1],polarity:true,explicit:false};
+ return null;
+}
+function sameArticle(pronoun,article){
+ return pronoun==='l'||pronoun===article;
+}
+function strictExtension(a,b){
+ var x=possession(a),y=possession(b);
+ if(x&&y&&x.subject===y.subject&&x.object===y.object&&x.polarity!==y.polarity)
+  return 'exclusive-possession-quantifier';
+ x=everStatement(a);y=everStatement(b);
+ if(x&&y&&x.subject===y.subject&&x.object===y.object&&x.verb===y.verb&&x.ever!==y.ever)
+  return 'never-versus-dated-past';
+ x=referencedAction(a);y=referencedAction(b);
+ if(x&&y&&x.subject===y.subject&&x.verb===y.verb&&x.polarity!==y.polarity&&x.explicit!==y.explicit){
+  var pronoun=x.explicit?y.article:x.article,object=x.explicit?x.article:y.article;
+  if(sameArticle(pronoun,object))return 'single-object-pronoun-negation';
+ }
+ return null;
+}
 function check(prior,candidate){
  var a=norm(prior),b=norm(candidate);
  if(!a||!b||a.length>500||b.length>500)return {conflict:false,reason:'insufficient-evidence'};
- if(TIMELINE.test(a)||TIMELINE.test(b))return {conflict:false,reason:'time-may-have-passed'};
  if(REPORTED.test(a)||REPORTED.test(b))return {conflict:false,reason:'reported-or-conditional'};
+ var strict=strictExtension(a,b);
+ if(strict)return {conflict:true,reason:strict};
+ if(TIMELINE.test(a)||TIMELINE.test(b))return {conflict:false,reason:'time-may-have-passed'};
  var sa=parseState(a),sb=parseState(b);
  if(sa&&sb&&sa.actor===sb.actor&&OPPOSITE[sa.state]===sb.state)
   return {conflict:true,reason:'exclusive-simultaneous-state'};
