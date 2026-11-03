@@ -1,4 +1,4 @@
-/* BONZE-069 — original unchanged detector on frozen editorial examples.
+/* BONZE-069 — checked-out detector on frozen editorial examples.
  * Output records only scenario IDs, statuses and reason codes.
  */
 import {readFileSync,writeFileSync} from 'node:fs';
@@ -24,15 +24,15 @@ const byKind=[...new Set(cases.map(x=>x.kind))].map(kind=>{
  return {kind,count:sub.length,correct:sub.filter(x=>x.correct).length,
   misses:sub.filter(x=>!x.correct).map(x=>x.id)};
 });
-const report={protocol:'BONZE-069 editorial frozen 49 cases',module:'BONZE-067/068 unchanged',
+const report={protocol:'BONZE-069 editorial frozen 49 cases',module:'GitHub run HEAD at execution time',
  stats,byKind,cases,caveats:[
   'Labels drafted by the same assistant, not validated or annotated by an independent human.',
   'A false label means no contradiction established, NOT a guarantee of coherent fiction.',
-  'This corpus is frozen before modifying core/story-consistency.js, and becomes development data once inspected.',
+  'The corpus was frozen before BONZE-069 code changes. The first run used the old code; subsequent runs measure a development revision.',
   'No real conversation, Android use, memory, speech or safety response measured.'
  ]};
 writeFileSync('bonze069-baseline.json',JSON.stringify(report,null,2)+'\n');
-let md='# BONZE-069 — baseline avant correction\n\n';
+let md='# BONZE-069 — mesures de la révision courante\n\n';
 md+='| Conflits reconnus | Conflits manqués | Faux blocages | Cas laissés ouverts |\n';
 md+='|---:|---:|---:|---:|\n| '+stats.tp+' | '+stats.fn+' | '+stats.fp+' | '+stats.tn+' |\n\n';
 md+='| Catégorie | Réussis | Total | Échecs |\n|---|---:|---:|---|\n';
