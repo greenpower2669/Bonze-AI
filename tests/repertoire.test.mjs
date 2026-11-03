@@ -13,10 +13,10 @@ const say=(text,state=null,extra={})=>JSON.parse(engine.run(JSON.stringify({text
 
 test('authored repertoire is sizeable and includes nine policy voices',()=>{
   const stats=engine.stats();
-  assert.equal(stats.virtualCards,18000,'2000 constructed replies per each of 9 policy roles');
+  assert.equal(stats.virtualCards,90000,'10000 constructed replies per each of 9 policy roles');
   assert.equal(stats.materializedCards,183,'only small legacy table is eagerly materialized');
-  for(const n of stats.roles)assert.ok(stats.perRole[n]>=2000,n);
-  assert.ok(stats.cards>=18000);
+  for(const n of stats.roles)assert.ok(stats.perRole[n]>=10000,n);
+  assert.ok(stats.cards>=90000);
   assert.equal(stats.roles.length,9);
   for(const role of ['joie','peur','colere','calme','reflexion','empathie','curiosite','humour','sage'])
     assert.ok(stats.roles.includes(role),role);
@@ -87,9 +87,9 @@ test('malformed state is validated and kept bounded',()=>{
   assert.ok(o.text.length>0);
 });
 
-test('BONZE-034: exactly 2,000 composed variants per role with 18,000 unique rendered texts',()=>{
+test('BONZE-034: exactly 10,000 composed variants per role with 90,000 unique rendered texts',()=>{
  const cat=sandbox.BonzeCorpus,all=new Set();
- assert.equal(engine.stats().virtualCards,18000);
+ assert.equal(engine.stats().virtualCards,90000);
  for(const role of cat.roles){
   let count=0;
   for(const intent of cat.intents)for(let i=0;i<cat.sizeFor(intent);i++){
@@ -100,10 +100,10 @@ test('BONZE-034: exactly 2,000 composed variants per role with 18,000 unique ren
    assert.ok(!all.has(item.body),'literal duplicate '+item.id);
    all.add(item.body);count++;
   }
-  assert.equal(count,2000,role);
+  assert.equal(count,10000,role);
  }
- assert.equal(all.size,18000);
- assert.equal(engine.stats().materializedCards,183,'no eager allocation of 18k strings');
+ assert.equal(all.size,90000);
+ assert.equal(engine.stats().materializedCards,183,'no eager allocation of 90k strings');
 });
 test('BONZE-034: distinct emotional semantic lenses alter the same scenario',()=>{
  const cat=sandbox.BonzeCorpus;
@@ -151,7 +151,7 @@ test('BONZE-035: accented emotional intentions retain categorical associations a
  assert.ok(restarted.state.associations.some(x=>x.key.startsWith('contrarié/')));
 });
 
-test('BONZE-037: all 18k cards remain within single 220-character Piper turn budget',()=>{
+test('BONZE-037: all 90k cards remain within single 220-character Piper turn budget',()=>{
  const cat=sandbox.BonzeCorpus,seen=new Set();
  for(const role of cat.roles)for(const intent of cat.intents)for(let i=0;i<cat.sizeFor(intent);i++){
   const item=cat.render(role,intent,i);
@@ -159,7 +159,7 @@ test('BONZE-037: all 18k cards remain within single 220-character Piper turn bud
   assert.ok(!seen.has(item.body),item.id+' duplicated');
   seen.add(item.body);
  }
- assert.equal(seen.size,18000);
+ assert.equal(seen.size,90000);
 });
 
 test('BONZE-041: user feedback on repetitive or inept responses is treated as correction',()=>{
@@ -168,5 +168,278 @@ test('BONZE-041: user feedback on repetitive or inept responses is treated as co
   assert.equal(selected.intent,'correction',text);
   assert.equal(selected.trace.modelGenerated,false);
   assert.ok(!selected.text.toLowerCase().includes(text.toLowerCase()));
+ }
+});
+
+test('BONZE-045: quoted emotional/greeting words inside precise questions do not hijack intent',()=>{
+ const questions=[
+  'Que signifie le mot bonjour ?',
+  'Que veut dire au revoir ?',
+  'Pourquoi utilise-t-on le mot nul ?',
+  'Quelle est la définition du mot humour ?',
+  'Comment écrire une blague ?'
+ ];
+ for(const q of questions){
+  const response=say(q,{seed:123,version:1,recent:[],families:[]},{semantic:'salut'});
+  assert.equal(response.intent,'question',q);
+ }
+ assert.equal(say('Bonjour').intent,'salut');
+ assert.equal(say('Merci beaucoup').intent,'merci');
+ assert.equal(say('Au revoir').intent,'depart');
+ assert.equal(say('Je suis triste').intent,'tristesse');
+ assert.equal(say('Tu es vraiment naze').intent,'correction');
+ assert.equal(say('Pourquoi suis-je en danger immédiat ?',null,{semantic:'question'}).intent,'urgence',
+  'explicit risk must override question grammar and neural hints');
+});
+
+test('BONZE-049: all 9 roles have precisely 10,000 virtual variants, including the judge',()=>{
+ const corpus=sandbox.BonzeCorpus;
+ assert.equal(corpus.countPerRole,10000);
+ assert.equal(corpus.roles.length,9);
+ for(const role of corpus.roles){
+  assert.ok(corpus.roles.includes(role));
+  const last=corpus.render(role,'discussion',corpus.sizeFor('discussion')-1);
+  assert.equal(last.role,role);
+  assert.ok(last.body.length<=220);
+  assert.equal(last.composed,true);
+ }
+ const judge=corpus.render('sage','question',corpus.sizeFor('question')-1);
+ assert.equal(judge.role,'sage');
+ assert.ok(judge.body.length<=220);
+ assert.equal(engine.stats().virtualCards,90000);
+});
+
+test('BONZE-049: selected role is explicit and never neural-generated',()=>{
+ const r=say('Bonjour',null,{seed:998});
+ assert.ok(engine.roles.includes(r.role));
+ assert.equal(r.role,r.card.split('/')[1]);
+ assert.equal(r.trace.modelGenerated,false);
+ assert.equal(say('Comment tu t’appelles ?',null,{semantic:'humour'}).role,'sage');
+});
+
+test('BONZE-050: preview offers topic-matched, same-role authored sentences with independent states',()=>{
+ const before={version:1,seed:74523,turns:4,recent:[],families:[]};
+ const original=JSON.stringify(before);
+ const preview=engine.propose({text:'Imagine un dragon',state:before,semantic:'jeu'});
+ assert.equal(preview.intent,'jeu');
+ assert.ok(preview.candidates.length>=2 && preview.candidates.length<=4);
+ assert.equal(JSON.stringify(before),original,'preview never mutates saved state');
+ const roles=new Set(preview.candidates.map(x=>x.role));
+ assert.equal(roles.size,1,'one emotion or judge for every offered response');
+ assert.ok(preview.candidates.some(x=>/dragon/i.test(x.text)),'topic-matching core is offered');
+ assert.match(preview.candidates[0].text,/dragon/i,'topical fallback is ordered first');
+ const ids=new Set();
+ for(const candidate of preview.candidates){
+  assert.equal(candidate.intent,preview.intent);
+  assert.equal(candidate.role,preview.role);
+  assert.ok(candidate.text.length>15&&candidate.text.length<=220);
+  assert.equal(candidate.trace.modelGenerated,false);
+  assert.ok(!ids.has(candidate.card));
+  ids.add(candidate.card);
+  assert.equal(candidate.state.turns,5,'preview advances exactly one potential turn');
+  assert.equal(candidate.state.recent.at(-1),candidate.card);
+  assert.equal(candidate.state.families.at(-1),candidate.family);
+  assert.ok(candidate.state.recent.length<=16);
+ }
+ const again=engine.propose({text:'Imagine un dragon',state:before,semantic:'jeu'});
+ assert.deepEqual(preview.candidates.map(x=>x.card),again.candidates.map(x=>x.card),
+  'same state produces deterministic options');
+});
+
+test('BONZE-050: risk, identity, correction and concrete questions do not allow neural recomposition',()=>{
+ for(const text of [
+  'Je suis en danger immédiat','Comment tu t’appelles ?',
+  'Tu te trompes','Quel est le chiffre exact ?'
+ ]){
+  const preview=engine.propose({text,semantic:'humour',seed:234});
+  assert.equal(preview.candidates.length,1,text);
+  assert.equal(preview.candidates[0].trace.modelGenerated,false);
+ }
+});
+test('BONZE-050: multi-turn previews do not consume discarded options or replicate the user',()=>{
+ let state=null,used=new Set();
+ for(let i=0;i<20;i++){
+  const plan=engine.propose({text:'Imagine un dragon',state,seed:209});
+  const choice=plan.candidates[Math.min(i%3,plan.candidates.length-1)];
+  assert.equal(choice.state.turns,i+1);
+  assert.ok(!choice.text.includes('mot-de-passe-super-secret'));
+  used.add(choice.card);
+  state=choice.state;
+ }
+ assert.ok(used.size>=10,'anti-repeat offers useful card diversity');
+ assert.ok(state.recent.length<=16&&state.families.length<=8);
+});
+
+test('BONZE-052: preview of a materialized first card retains older form history',()=>{
+ let observed=false;
+ for(let seed=0;seed<1000&&!observed;seed++){
+  const prior={version:1,seed,turns:3,recent:[],families:[],recentForms:['jeu/1/2','humour/2/3']};
+  const plan=engine.propose({text:'Imagine un dragon',state:prior});
+  if(plan.candidates[0].trace.composed&&plan.candidates.length<2)continue;
+  const first=engine.choose({text:'Imagine un dragon',state:prior});
+  if(first.trace.composed)continue;
+  assert.equal(plan.candidates.length>=2,true);
+  for(const candidate of plan.candidates.filter(c=>c.trace.composed)){
+   assert.equal(candidate.state.recentForms[0],'jeu/1/2');
+   assert.equal(candidate.state.recentForms[1],'humour/2/3');
+   const index=Number(candidate.card.split('/v')[1]);
+   assert.ok(Number.isInteger(index));
+   assert.equal(candidate.state.recentForms.at(-1),candidate.intent+'/'+Math.floor(index%50/5)+'/'+index%5);
+  }
+  observed=true;
+ }
+ assert.ok(observed,'test must actually exercise a legacy first card');
+});
+
+test('BONZE-052: a follow-up remains anchored in the existing story scene',()=>{
+ const first=engine.propose({text:'Imagine un dragon',seed:74523});
+ const scene=first.candidates.find(c=>c.trace.composed&&/dragon/i.test(c.text));
+ assert.ok(scene,'a dragon story scene must exist in curated repertoire');
+ assert.ok(scene.state.lastTheme>=0);
+ const follow=engine.propose({text:'Et après ?',state:scene.state});
+ assert.equal(follow.intent,'jeu');
+ assert.equal(follow.candidates[0].family,
+   'jeu/'+follow.role+'/theme'+scene.state.lastTheme,
+   'continuity takes priority over unrelated randomized scenes');
+ assert.ok(follow.candidates[0].card!==scene.card,'continue should vary wording');
+ assert.equal(follow.candidates[0].state.turns,scene.state.turns+1);
+});
+test('BONZE-052: preview state only stores categorical theme indices',()=>{
+ const p=engine.propose({text:'Imagine un mot-de-passe-super-secret',seed:11});
+ for(const item of p.candidates){
+  assert.ok(Number.isInteger(item.state.lastTheme));
+  assert.ok(item.state.lastTheme>=-1&&item.state.lastTheme<=12);
+  assert.ok(!JSON.stringify(item.state).includes('mot-de-passe-super-secret'));
+ }
+});
+
+test('BONZE-053: repeated follow-ups advance a three-beat authored story instead of repeating its initial nucleus',()=>{
+ const initial=engine.propose({text:'Imagine un dragon',seed:74523});
+ const first=initial.candidates.find(c=>c.trace.composed&&/dragon/i.test(c.text));
+ assert.ok(first);
+ let state=first.state,phrases=new Set();
+ for(let step=0;step<3;step++){
+  const p=engine.propose({text:'Et après ?',state});
+  assert.equal(p.intent,'jeu');
+  const next=p.candidates[0];
+  assert.equal(next.trace.source,'authored-story-continuation');
+  assert.equal(next.state.lastTheme,first.state.lastTheme);
+  assert.equal(next.state.sceneStep,step+1);
+  assert.ok(next.text.length<=220);
+  assert.ok(!phrases.has(next.text),'new narrative beat must not duplicate prior beat');
+  phrases.add(next.text);
+  assert.ok(!next.text.includes(first.text));
+  state=next.state;
+ }
+ assert.equal(phrases.size,3);
+});
+test('BONZE-053: every curated continuation stays bounded, distinct, and separate from the 90k normal catalogue',()=>{
+ const corpus=sandbox.BonzeCorpus,all=new Set();
+ for(const role of corpus.roles)
+  for(let theme=0;theme<11;theme++)
+   for(let step=0;step<3;step++){
+    const item=corpus.renderContinuation(role,theme,step,0,0);
+    assert.ok(item.body.length<=220,item.id);
+    assert.ok(!all.has(item.body),item.id);
+    all.add(item.body);
+    assert.equal(item.intent,'jeu');
+    assert.equal(item.role,role);
+   }
+ assert.equal(all.size,9*11*3);
+ assert.equal(engine.stats().virtualCards,90000);
+});
+
+test('BONZE-054: after three authored beats the fourth follow-up closes the scene exactly once',()=>{
+ const initial=engine.propose({text:'Imagine un dragon',seed:74523});
+ let state=initial.candidates.find(x=>x.trace.composed&&/dragon/i.test(x.text)).state;
+ const scenes=[];
+ for(let i=0;i<4;i++){
+  const options=engine.propose({text:'Et après ?',state});
+  assert.equal(options.candidates.length,4);
+  assert.equal(new Set(options.candidates.map(x=>x.family)).size,1,
+   'the neural judge cannot select a different storyline');
+  const selected=options.candidates[0];
+  scenes.push(selected.text);
+  if(i<3)assert.equal(selected.trace.source,'authored-story-continuation');
+  else{
+   assert.equal(selected.trace.source,'authored-story-closure');
+   assert.equal(selected.state.lastTheme,-1);
+   assert.equal(selected.state.sceneStep,0);
+  }
+  state=selected.state;
+ }
+ assert.equal(new Set(scenes).size,4,'all four beats must be distinct');
+ const fifth=engine.propose({text:'Et après ?',state});
+ assert.notEqual(fifth.candidates[0].trace.source,'authored-story-closure',
+  'a finished story does not repeat its closing line');
+});
+
+test('BONZE-054: story closures fit the Piper limit for all 9 personalities',()=>{
+ const corpus=sandbox.BonzeCorpus;
+ for(const role of corpus.roles){
+  for(const theme of [0,3,7,10]){
+   const last=corpus.renderStoryClosure(role,theme,9,4);
+   assert.ok(last.body.length<=220,role+' '+theme+' '+last.body.length);
+   assert.equal(last.intent,'jeu');
+  }
+ }
+});
+
+test('BONZE-055: unknown fictional subjects trigger a useful clarification, not a random scene',()=>{
+ for(const topic of ['panda','licorne','volcan','brocoli']){
+  const text='Imagine un '+topic;
+  const plan=engine.propose({text,seed:74523});
+  assert.equal(plan.intent,'jeu');
+  assert.equal(plan.candidates.length,1,text);
+  const item=plan.candidates[0];
+  assert.equal(item.trace.source,'authored-unknown-topic',text);
+  assert.equal(item.trace.modelGenerated,false);
+  assert.ok(item.text.length>=65 && item.text.length<=220);
+  assert.equal(item.state.lastTheme,-1);
+  assert.equal(item.state.sceneStep,0);
+  assert.ok(!JSON.stringify(item).includes(topic),'do not parrot unknown user topic');
+ }
+});
+test('BONZE-055: a documented fictional topic still gets real story proposals',()=>{
+ for(const topic of ['dragon','pirate','robot','tortue']){
+  const plan=engine.propose({text:'Imagine un '+topic,seed:74523});
+  assert.ok(plan.candidates.length>=2,topic);
+  assert.notEqual(plan.candidates[0].trace.source,'authored-unknown-topic',topic);
+  assert.match(plan.candidates[0].text,new RegExp(topic,'i'));
+ }
+});
+
+test('BONZE-056: Liquid receives four unique phrasings from ONE named story scene',()=>{
+ const samples=[
+  ['Imagine un dragon',7],['Imagine des dragons',7],
+  ['Raconte-moi une histoire de pirate',3],
+  ['Invente une aventure de robots',4],
+  ['Imagine une forteresse',0],
+  ['Imagine une bibliothèque',6],
+  ['Imagine une rivière',10],
+ ];
+ for(const [prompt,theme] of samples){
+  const plan=engine.propose({text:prompt,seed:241});
+  assert.equal(plan.intent,'jeu',prompt);
+  assert.equal(plan.candidates.length,4,prompt);
+  assert.equal(new Set(plan.candidates.map(c=>c.card)).size,4,prompt);
+  for(const c of plan.candidates){
+   assert.equal(c.state.lastTheme,theme,prompt);
+   assert.equal(c.card.split('/v')[1]!==undefined,true);
+   assert.equal(Math.floor(Number(c.card.split('/v')[1])/50),theme,prompt);
+   assert.equal(c.trace.source,'authored-specific-topic');
+   assert.equal(c.trace.modelGenerated,false);
+   assert.ok(c.text.length<=220);
+  }
+ }
+});
+test('BONZE-056: two named stories or an unknown scene never become a random story',()=>{
+ for(const msg of ['Imagine un robot avec un dragon','Imagine une licorne',
+    'Raconte-moi une histoire de panda']){
+  const plan=engine.propose({text:msg,seed:345});
+  assert.equal(plan.intent,'jeu',msg);
+  assert.equal(plan.candidates.length,1,msg);
+  assert.equal(plan.candidates[0].trace.source,'authored-unknown-topic',msg);
+  assert.equal(plan.candidates[0].trace.modelGenerated,false);
  }
 });

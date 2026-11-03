@@ -1,0 +1,35 @@
+name: BONZE-064 — symbolic topic anchor experimental replay
+on:
+  push:
+    branches: [feature/bonze042-field-fixes]
+    paths:
+      - 'core/topic-anchor.js'
+      - 'scripts/bench-topic-anchor-bonze064.mjs'
+      - 'tests/bonze064.test.mjs'
+      - '.github/workflows/bonze064-topic-anchor.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  replay:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test topic anchor invariants and 20-turn replay
+        run: node --test tests/bonze064.test.mjs
+      - name: Produce teacher, self-replay and anchored comparison
+        run: node scripts/bench-topic-anchor-bonze064.mjs
+      - name: Retain all decisions and caveats
+        uses: actions/upload-artifact@v4
+        with:
+          name: bonze064-topic-anchor-diagnostics
+          path: |
+            bonze064-results.json
+            bonze064-decisions.jsonl
+            bonze064-report.md
+          if-no-files-found: error
+          retention-days: 30

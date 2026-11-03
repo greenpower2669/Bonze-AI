@@ -9,10 +9,16 @@
 using Row=std::pair<std::string,std::string>;
 struct Case {std::string name,latest;std::vector<Row> history;};
 struct Result {std::string output;long millis;int tokens;};
+struct ChoiceCase {
+ std::string name, latest, context, intent, role;
+ std::vector<std::string> options;
+ int expected;
+};
+
 static std::string json(const std::string& src){
  std::string out="\"";for(unsigned char c:src){if(c=='"'||c=='\\'){out+='\\';out+=char(c);}else if(c=='\n')out+="\\n";else if(c=='\r')out+="\\r";else if(c=='\t')out+="\\t";else if(c<32)out+='?';else out+=char(c);}return out+"\"";
 }
-static Result generate(llama_model* model,llama_context* ctx,const std::vector<Row>& messages) {
+static Result generate(llama_model* model,llama_context* ctx,const std::vector<Row>& messages,int budget=72,bool greedy=false) {
  std::vector<llama_chat_message> chat;
  for(auto& row:messages)chat.push_back({row.first.c_str(),row.second.c_str()});
  std::vector<char> bytes(30000);
@@ -28,14 +34,17 @@ static Result generate(llama_model* model,llama_context* ctx,const std::vector<R
  auto input=llama_batch_get_one(tokens.data(),size);
  if(llama_decode(ctx,input))throw std::runtime_error("prefill");
  auto* sampler=llama_sampler_chain_init(llama_sampler_chain_default_params());
- llama_sampler_chain_add(sampler,llama_sampler_init_top_k(50));
- llama_sampler_chain_add(sampler,llama_sampler_init_top_p(.9,1));
- llama_sampler_chain_add(sampler,llama_sampler_init_temp(.45f));
- llama_sampler_chain_add(sampler,llama_sampler_init_dist(42));
+ if(greedy)llama_sampler_chain_add(sampler,llama_sampler_init_greedy());
+ else{
+  llama_sampler_chain_add(sampler,llama_sampler_init_top_k(50));
+  llama_sampler_chain_add(sampler,llama_sampler_init_top_p(.9,1));
+  llama_sampler_chain_add(sampler,llama_sampler_init_temp(.45f));
+  llama_sampler_chain_add(sampler,llama_sampler_init_dist(42));
+ }
  auto start=std::chrono::steady_clock::now();
  std::string reply;int n=0;
  try {
-  for(;n<72;n++){
+  for(;n<budget;n++){
    auto t=llama_sampler_sample(sampler,ctx,-1);
    if(llama_vocab_is_eog(vocab,t))break;
    llama_sampler_accept(sampler,t);
@@ -95,6 +104,90 @@ int main(int argc,char** argv){
       <<",\"latencyMs\":"<<result.millis<<",\"tokens\":"<<result.tokens<<",\"response\":"<<json(result.output)<<"}"<<std::endl;
    }
   }
+
+ // BONZE-057: directly evaluate the bounded *index selector* used in the app,
+ // independently of Android. Each synthetic case has one deliberately clear
+ // answer. This is controlled accuracy, NOT general linguistic intelligence.
+ const std::vector<ChoiceCase> selections={
+  {"pirate","Raconte une histoire de pirate.","","jeu","joie",{"Le dragon se cache près d'un volcan.","Une tortue regarde les étoiles.","Le pirate découvre une île derrière son navire.","Un robot cherche une prise électrique."},2},
+  {"dragon","Imagine un dragon qui a peur du feu.","","jeu","empathie",{"Le robot veut visiter la lune.","Un château découvre des lanternes.","Le pirate range son bateau.","Le dragon apprend doucement à approcher une petite flamme."},3},
+  {"robot","Je voudrais une aventure avec un robot.","","jeu","curiosite",{"La tortue reprend son voyage.","Le robot cherche une trace dans le sable.","Le dragon se cache dans le château.","Le pirate prend la mer."},1},
+  {"suite","Et après ?","Nous racontions le voyage d'un pirate sur une île.","jeu","joie",{"Un robot découvre un jardin.","Une tortue collectionne les nuages.","Une rivière apporte des montres.","Le pirate arrive au port après sa traversée."},3},
+  {"tristesse","Je pleure, je suis triste.","","tristesse","empathie",{"Une blague sur les chaussettes !","Tu peux me raconter ce qui te peine, si tu le souhaites.","Un dragon vole très haut.","Je suis certain que tout ira bien demain."},1},
+  {"colere","Je suis en colère parce que c'est injuste.","","contrarié","calme",{"Qu'est-ce qui t'a semblé injuste ? Nous pouvons y réfléchir.","Quel personnage de conte préfères-tu ?","Bonne nuit et à demain.","Une grenouille chante très fort."},0},
+  {"humour","Raconte une blague amusante.","","humour","humour",{"Tu peux me préciser les chiffres ?","Parlons de la définition de la tristesse.","Un pirate traverse une mer calme.","Un escargot demande un plan pour sa coquille."},3},
+  {"negation","Je ne suis pas triste : je voudrais jouer avec un robot.","","jeu","joie",{"Tu sembles triste, veux-tu parler de ta peine ?","Un dragon craint une petite flamme.","Un robot invente un jeu de piste.","Cette question demande une source fiable."},2},
+  {"unknown","Imagine une licorne.","","jeu","sage",{"Je peux inventer une histoire avec toi. Quel personnage aimerais-tu imaginer pour commencer ?","La tortue rassemble ses nuages.","Un pirate se cache sur son bateau.","Le dragon saute au-dessus des montagnes."},0},
+  {"metalangage","Que signifie le mot colère ?","","question","sage",{"Je vois que tu es en colère.","Si tu demandes une définition, nous pouvons examiner le sens précis du mot.","Le dragon se fâche contre la lune.","Tu devrais rire de cette histoire."},1},
+  {"continuite","Que lui arrive-t-il ensuite ?","Nous racontions l'histoire d'une tortue qui collectionne les nuages.","jeu","curiosite",{"Le robot traverse le désert.","Un pirate prépare son navire.","La tortue retrouve son nuage près des montagnes.","Un croissant cherche sa boulangerie."},2}
+ };
+ for(const auto& c:selections){
+  std::string prompt="Contexte récent : "+c.context+"\nDernier message : "+c.latest+
+    "\nIntention : "+c.intent+"\nRôle : "+c.role+"\nFormulations contrôlées :\n";
+  for(size_t n=0;n<c.options.size();n++)
+   prompt+=std::to_string(n)+" : "+c.options[n]+"\n";
+  prompt+="Numéro :";
+  const std::string system=
+   "Tu es le juge de pertinence de Bonze. Choisis uniquement un numéro entre 0 et 3. "
+   "Les phrases sont déjà écrites et contrôlées. Choisis celle qui répond le mieux "
+   "au sujet du dernier message, avec le ton de la personnalité. "
+   "Ne crée aucun texte. Si aucune option ne traite correctement le sujet, réponds 0.";
+  auto since=std::chrono::steady_clock::now();
+  auto result=generate(model,ctx,{{"system",system},{"user",prompt}},4,true);
+  auto totalMs=std::chrono::duration_cast<std::chrono::milliseconds>(
+    std::chrono::steady_clock::now()-since).count();
+  // Mirror Android's restrictive policy: a single digit is the only
+  // accepted response; never interpret extra generated prose as commands.
+  auto text=result.output;
+  const size_t first=text.find_first_not_of(" \t\r\n");
+  if(first==std::string::npos)text="";
+  else{
+   auto end=text.find_last_not_of(" \t\r\n");
+   text=text.substr(first,end-first+1);
+  }
+  const bool valid=text.size()==1&&text[0]>='0'&&text[0]<='3';
+  std::cout<<"{\"model\":"<<json(name)<<",\"variant\":\"C1\",\"case\":"<<json(c.name)
+   <<",\"expected\":"<<c.expected<<",\"valid\":"<<(valid?"true":"false")
+   <<",\"latencyMs\":"<<result.millis<<",\"endToEndMs\":"<<totalMs
+   <<",\"tokens\":"<<result.tokens<<",\"response\":"<<json(text)<<"}"<<std::endl;
+ }
+
+ // BONZE-058: test a *balanced, position-rotated* selector prompt.
+ // Four permutations per situation make a constant 0 or 3 predictor score
+ // exactly 25% on 44 draws, rather than benefiting from answer placement.
+ for(const auto& c:selections){
+  for(int rotation=0;rotation<4;rotation++){
+   auto options=c.options;
+   std::rotate(options.begin(),options.begin()+rotation,options.end());
+   const int expected=(c.expected+4-rotation)%4;
+   std::string prompt="Message : "+c.latest+"\n";
+   if(!c.context.empty())prompt+="Contexte : "+c.context+"\n";
+   prompt+="Choisis la réponse qui correspond au message.\n";
+   for(size_t n=0;n<options.size();n++)
+    prompt+=std::to_string(n)+". "+options[n]+"\n";
+   prompt+="Réponds avec le numéro seul.";
+   const std::string system="Tu classes des réponses françaises. "
+    "Choisis l'option la plus pertinente selon le sujet et le contexte. "
+    "Ta réponse est un seul chiffre : 0, 1, 2 ou 3. Aucun autre texte.";
+   const auto started=std::chrono::steady_clock::now();
+   auto result=generate(model,ctx,{{"system",system},{"user",prompt}},4,true);
+   const auto elapsed=std::chrono::duration_cast<std::chrono::milliseconds>(
+     std::chrono::steady_clock::now()-started).count();
+   auto answer=result.output;
+   const auto first=answer.find_first_not_of(" \t\r\n");
+   if(first==std::string::npos)answer="";
+   else{
+    const auto last=answer.find_last_not_of(" \t\r\n");
+    answer=answer.substr(first,last-first+1);
+   }
+   const bool valid=answer.size()==1&&answer[0]>='0'&&answer[0]<='3';
+   std::cout<<"{\"model\":"<<json(name)<<",\"variant\":\"C2\",\"case\":"<<json(c.name)
+    <<",\"rotation\":"<<rotation<<",\"expected\":"<<expected
+    <<",\"valid\":"<<(valid?"true":"false")
+    <<",\"latencyMs\":"<<result.millis<<",\"endToEndMs\":"<<elapsed
+    <<",\"tokens\":"<<result.tokens<<",\"response\":"<<json(answer)<<"}"<<std::endl;
+  }
+ }
  }catch(const std::exception& e){std::cerr<<"probe: "<<e.what()<<"\n";llama_free(ctx);llama_model_free(model);llama_backend_free();return 5;}
  llama_free(ctx);llama_model_free(model);llama_backend_free();return 0;
 }

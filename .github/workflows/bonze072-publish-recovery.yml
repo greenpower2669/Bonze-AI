@@ -1,0 +1,68 @@
+name: BONZE-072 publish verified 1.2B APK without rebuilding
+on:
+  push:
+    branches: [feature/bonze042-field-fixes]
+    paths: ['.github/workflows/bonze072-publish-recovery.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: bonze072-release-recovery
+  cancel-in-progress: false
+jobs:
+  publish-verified:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create draft prerelease on default branch (source commit documented separately)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="bonze-ai-v0.8.2-lab12b"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            test "$(gh release view "$tag" --json isDraft --jq '.isDraft')" = true
+          else
+            gh release create "$tag" --target main --draft \
+              --title "🧠 Bonze Liquid 1.2B — dialogue libre local, APK test" \
+              --notes "APK expérimentale compilée au commit 94d8f6a064ea48978c0a9314e25f2b418880f94e. Le tag de publication pointe techniquement sur main à cause de la restriction GitHub Actions ; il ne représente PAS les sources de l'APK. Les sources compilées sont au commit 94d8f6a064ea48978c0a9314e25f2b418880f94e sur feature/bonze042-field-fixes. Aucune fusion ou modification de main. Liquid LFM2.5-1.2B Q4 inclus ; 230M sélectionnable ; application séparée, hors ligne et signée debug."
+          fi
+      - uses: actions/download-artifact@v4
+        with:
+          name: bonze072-internal-apk-recovery
+          run-id: 41607888706
+          github-token: ${{ github.token }}
+          path: .
+      - name: Verify exact APK and signing from successful build
+        run: |
+          set -euo pipefail
+          test -s Bonze-AI-v0.8.2-lab12b.apk
+          sha256sum -c Bonze-AI-v0.8.2-lab12b.sha256
+          grep -q "name='fr.bonzeai.companion.lab12b'" package.txt
+          grep -q "versionCode='10'" package.txt
+          grep -q "versionName='0.8.2-lab12b'" package.txt
+          grep -q 'Verified using v2 scheme (APK Signature Scheme v2): true' signature.txt
+          ! grep -q 'android.permission.INTERNET' permissions.txt
+          test "$(cut -d' ' -f1 Bonze-AI-v0.8.2-lab12b.sha256)" = "e9333ae016c808118e1078f066761caf73dabb341321fff559a5d0b516366ee9"
+      - name: Attach standalone APK to draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release upload "bonze-ai-v0.8.2-lab12b" \
+            Bonze-AI-v0.8.2-lab12b.apk Bonze-AI-v0.8.2-lab12b.sha256
+      - name: Publish prerelease and verify direct APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="bonze-ai-v0.8.2-lab12b"
+          gh release edit "$tag" --draft=false --prerelease
+          url="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$tag" \
+             --jq '.assets[] | select(.name=="Bonze-AI-v0.8.2-lab12b.apk" and .state=="uploaded") | .browser_download_url')"
+          test "$url" = "https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/Bonze-AI-v0.8.2-lab12b.apk"
+          # Build provenance is preserved in the release notes and in the APK SHA256.
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$tag" --jq '.assets[] | [.name,.size] | @tsv'
+          echo "VERIFIED_STANDALONE_APK=$url"

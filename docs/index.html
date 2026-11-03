@@ -11,7 +11,7 @@
 </head><body>
 <main class="app">
 <header class="topbar">
- <span class="brand">🌱 Bonze AI <small>0.8.0-dev · Mémoire et dialogue vocal en test</small></span>
+ <span class="brand">🌱 Bonze AI <small>0.8.1-lab070 · Narration en test</small></span>
  <button id="stop-all" type="button" class="stop-button">⏹ Tout arrêter</button>
  <button type="button" id="settings-open" class="quiet-button" aria-controls="settings" aria-expanded="false">⚙️ Options</button>
 </header>
@@ -35,6 +35,29 @@
  </div>
  <button id="native-mic" type="button" class="primary-button" hidden aria-pressed="false">🎙️ Démarrer la conversation</button>
  <button id="open-keyboard" type="button" class="secondary-button" aria-controls="keyboard-panel" aria-expanded="false">⌨️ Écrire plutôt que parler</button>
+ <details id="scene-lab" class="scene-lab">
+  <summary>🧪 BONZE-070 · Voir la nouvelle mémoire narrative</summary>
+  <p class="hint">Laboratoire local de fiction, séparé de la conversation vocale, de Liquid et de tes souvenirs privés.</p>
+  <div class="scene-lab-actions">
+   <button id="scene-lab-example-conflict" type="button" class="secondary-button">🔴 Exemple contradiction</button>
+   <button id="scene-lab-example-time" type="button" class="secondary-button">🟢 Exemple évolution</button>
+  </div>
+  <label for="scene-lab-prior">1. Première phrase de Bonze</label>
+  <textarea id="scene-lab-prior" rows="2" maxlength="240">Le robot possède une clé.</textarea>
+  <button id="scene-lab-first" type="button" class="secondary-button">📖 Raconter et mémoriser cette phrase</button>
+  <p id="scene-lab-delivered" class="scene-lab-delivered" aria-live="polite">Aucune phrase racontée pour le moment.</p>
+  <label for="scene-lab-candidate">2. Suite de l'histoire à examiner</label>
+  <textarea id="scene-lab-candidate" rows="2" maxlength="240">Le robot n'a aucune clé.</textarea>
+  <div class="scene-lab-actions">
+   <button id="scene-lab-check" type="button" class="secondary-button">🔍 Vérifier la suite</button>
+   <button id="scene-lab-deliver-next" type="button" class="secondary-button">📖 Raconter cette suite</button>
+  </div>
+  <p id="scene-lab-result" role="status" aria-live="polite" class="scene-lab-feedback"></p>
+  <strong id="scene-lab-count">0 événement livré (mémoire volatile)</strong>
+  <ol id="scene-lab-records" class="scene-lab-records" aria-label="Faits de fiction livrés"></ol>
+  <button id="scene-lab-reset" type="button" class="secondary-button">🧹 Effacer cette scène</button>
+  <p class="hint">Une contradiction détectée bloque l'ajout de la phrase. Une absence de contradiction reconnue ne garantit pas la cohérence. Mémoire effacée à la fermeture.</p>
+ </details>
  <p id="native-status" class="hint" role="status">Micro désactivé. La voix n'est jamais activée sans ton accord.</p>
  <div id="keyboard-panel" hidden>
   <form id="chat" class="compose">

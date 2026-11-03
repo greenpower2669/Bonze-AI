@@ -4,13 +4,15 @@ android {
     compileSdk 35
     defaultConfig {
         applicationId 'fr.bonzeai.companion'
-        if (project.hasProperty('bonzeParallelInstall')) applicationIdSuffix '.dev'
-        manifestPlaceholders = [bonzeAppLabel: project.hasProperty('bonzeParallelInstall') ? 'Bonze AI Dev' : 'Bonze AI']
+        if (project.hasProperty('bonzeLab12b')) applicationIdSuffix '.lab12b'
+        else if (project.hasProperty('bonzeLab070')) applicationIdSuffix '.lab070'
+        else if (project.hasProperty('bonzeParallelInstall')) applicationIdSuffix '.dev'
+        manifestPlaceholders = [bonzeAppLabel: project.hasProperty('bonzeLab12b') ? 'Bonze Liquid 1.2B' : project.hasProperty('bonzeLab070') ? 'Bonze Lab 070' : project.hasProperty('bonzeParallelInstall') ? 'Bonze AI Dev' : 'Bonze AI']
         minSdk 26
         targetSdk 35
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-        versionCode 8
-        versionName '0.8.0-dev'
+        versionCode project.hasProperty('bonzeLab12b') ? 10 : project.hasProperty('bonzeLab070') ? 9 : 8
+        versionName project.hasProperty('bonzeLab12b') ? '0.8.2-lab12b' : project.hasProperty('bonzeLab070') ? '0.8.1-lab070' : '0.8.0-dev'
         ndk { abiFilters += [project.findProperty('bonzeTestAbi') ?: 'arm64-v8a'] }
     }
     signingConfigs {

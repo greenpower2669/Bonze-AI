@@ -56,6 +56,7 @@ public final class MainActivity extends Activity {
  private void withService(Runnable task){if(destroyed)return;if(engine!=null)task.run();else pending.add(task);}
  private final class Bridge {
   @JavascriptInterface public void admin(String action,String payload){runOnUiThread(()->{if(visible&&!destroyed)backups.command(action,payload);});}
+  @JavascriptInterface public boolean isLargeTestBuild(){return getPackageName().endsWith(".lab12b");}
   @JavascriptInterface public boolean localSpeechAvailable(){return Build.VERSION.SDK_INT>=31&&SpeechRecognizer.isOnDeviceRecognitionAvailable(MainActivity.this);}
   @JavascriptInterface public void connectNative(String initial,String config){runOnUiThread(()->{
    bootstrap=initial;configuration=config;uiReady=true;

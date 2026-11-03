@@ -19,7 +19,7 @@ import java.security.SecureRandom;
 final class ScriptedDialogue {
     private final SharedPreferences prefs;
     private final Scriptable scope;
-    private final Function select;
+    private final Function select,propose;
     private JSONObject state;
     ScriptedDialogue(Context context, SharedPreferences p) throws Exception {
         prefs=p;
@@ -40,14 +40,30 @@ final class ScriptedDialogue {
             }
             Scriptable namespace=(Scriptable)ScriptableObject.getProperty(scope,"BonzeRepertoire");
             select=(Function)ScriptableObject.getProperty(namespace,"run");
+            propose=(Function)ScriptableObject.getProperty(namespace,"propose");
         } finally {org.mozilla.javascript.Context.exit();}
     }
     JSONObject choose(String userText, String semantic, JSONObject emotionalState, boolean synonyms) throws JSONException {
         JSONObject affect=emotionalState==null?new JSONObject():emotionalState.optJSONObject("state");
         if (affect==null)affect=new JSONObject();
+        // Persona preference biases presentation only; never rewrites the
+        // persisted emotional strengths or the private council's state.
+        JSONObject presentationForces=new JSONObject();
+        JSONObject stateForces=affect.optJSONObject("forces");
+        if(stateForces!=null)presentationForces=new JSONObject(stateForces.toString());
+        try {
+            JSONObject style=new JSONObject(prefs.getString("personalizationStyleV1","{}"));
+            String preset=style.optString("preset","naturel");
+            String preferred="doux".equals(preset)?"empathie":
+                "joueur".equals(preset)?"joie":
+                "enqueteur".equals(preset)?"reflexion":
+                "calme".equals(preset)?"calme":"";
+            if(!preferred.isEmpty())
+                presentationForces.put(preferred,Math.max(.85,presentationForces.optDouble(preferred,.38)));
+        } catch(JSONException ignored) {}
         JSONObject request=new JSONObject().put("text",userText).put("semantic",semantic)
             .put("state",state).put("synonyms",synonyms)
-            .put("forces",affect.optJSONObject("forces")==null?new JSONObject():affect.optJSONObject("forces"))
+            .put("forces",presentationForces)
             .put("endurances",affect.optJSONObject("endurances")==null?new JSONObject():affect.optJSONObject("endurances"));
         org.mozilla.javascript.Context cx=org.mozilla.javascript.Context.enter();
         try {
@@ -60,6 +76,51 @@ final class ScriptedDialogue {
             prefs.edit().putString("bonze-repertoire-v1",state.toString()).apply();
             return result;
         } finally {org.mozilla.javascript.Context.exit();}
+    }
+    /** Non-destructive preview. Each option retains a separately derived state.
+     * Do not persist a preview: a rejected phrase must never enter recency history. */
+    JSONObject preview(String userText,String semantic,JSONObject emotionalState,boolean synonyms) throws JSONException {
+        JSONObject affect=emotionalState==null?null:emotionalState.optJSONObject("state");
+        JSONObject forces=affect==null?null:affect.optJSONObject("forces");
+        JSONObject endurances=affect==null?null:affect.optJSONObject("endurances");
+        JSONObject presentationForces=new JSONObject(forces==null?"{}":forces.toString());
+        try {
+            JSONObject style=new JSONObject(prefs.getString("personalizationStyleV1","{}"));
+            String preset=style.optString("preset","naturel");
+            String preferred="doux".equals(preset)?"empathie":
+                "joueur".equals(preset)?"joie":
+                "enqueteur".equals(preset)?"reflexion":
+                "calme".equals(preset)?"calme":"";
+            if(!preferred.isEmpty())
+                presentationForces.put(preferred,Math.max(.85,presentationForces.optDouble(preferred,.38)));
+        } catch(JSONException ignored) {}
+        JSONObject request=new JSONObject().put("text",userText).put("semantic",semantic)
+            .put("state",state).put("synonyms",synonyms)
+            .put("forces",presentationForces)
+            .put("endurances",endurances==null?new JSONObject():endurances);
+        org.mozilla.javascript.Context cx=org.mozilla.javascript.Context.enter();
+        try {
+            cx.setOptimizationLevel(-1);
+            String out=org.mozilla.javascript.Context.toString(propose.call(cx,scope,scope,new Object[]{request.toString()}));
+            JSONObject plan=new JSONObject(out);
+            org.json.JSONArray candidates=plan.getJSONArray("candidates");
+            if(candidates.length()<1||candidates.length()>4)throw new JSONException("candidate-count");
+            for(int i=0;i<candidates.length();i++){
+                JSONObject item=candidates.getJSONObject(i);
+                if(item.getString("text").isEmpty()||item.getString("text").length()>240 ||
+                    !plan.getString("intent").equals(item.getString("intent"))||
+                    !plan.getString("role").equals(item.getString("role")))
+                    throw new JSONException("candidate-inconsistent");
+                canonical(item.getJSONObject("state"));
+            }
+            return plan;
+        } finally {org.mozilla.javascript.Context.exit();}
+    }
+    /** Store only the option that survived the judge and anti-repeat gate. */
+    void commit(JSONObject candidate) throws JSONException {
+        JSONObject next=canonical(candidate.getJSONObject("state"));
+        state=next;
+        prefs.edit().putString("bonze-repertoire-v1",next.toString()).apply();
     }
     static JSONObject canonical(JSONObject raw) throws JSONException {
         JSONObject result=new JSONObject(raw==null?"{}":raw.toString());

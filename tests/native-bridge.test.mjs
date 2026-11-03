@@ -15,7 +15,7 @@ test('microphone service is private, declares permissions and starts only after 
 });
 test('speech callbacks carry playback ranges and guard old utterance ownership',()=>{
  assert.ok(service.includes('onRangeStart'));assert.ok(service.includes('validSpeech(id)'));assert.ok(service.includes('speech-range'));
- assert.ok(service.includes('memory.prompt(text)'));assert.ok(service.includes('BonzeInference.reply'));
+ assert.ok(service.includes('memory.prompt(text)'));assert.ok(service.includes('BonzeInference.classify'));
 });
 test('stop cannot discard inference completion bookkeeping from the main queue',()=>{
  assert.ok(!service.includes('main.removeCallbacksAndMessages(null)'));
@@ -34,4 +34,38 @@ test('model switching imports only pinned local weights and never permits cloud 
  assert.ok(inference.includes('if (loadedChoice != selected) release()'));
  assert.ok(service.includes('LocalModelStore.available'));
  assert.ok(!manifest.includes('android.permission.INTERNET'));
+});
+
+test('BONZE-043: Liquid classifies only, repertoire is the speaking source and Piper never silently changes voices',()=>{
+ const inference=read('android/app/src/main/java/fr/bonzeai/companion/BonzeInference.kt');
+ const classifier=read('android/app/src/main/java/fr/bonzeai/companion/IntentClassify.java');
+ assert.ok(inference.includes('fun classify(')&&inference.includes('IntentClassify.label(rawLabel)'));
+ assert.ok(!service.includes('BonzeInference.reply('));
+ assert.ok(service.includes('scriptedReply(text,chosenLabel,turn)'));
+ assert.ok(service.includes('ReplyQuality.review(text,candidate,memory.repeats(candidate),recentBot)'));
+ assert.ok(classifier.includes('LABELS.contains(first)'));
+ const failedStart=service.indexOf('public void failed(String reason,boolean hadAudio)');
+ const selectedAndroidStart=service.indexOf('}else androidSpeech(epoch,0);',failedStart);
+ assert.ok(failedStart>0&&selectedAndroidStart>failedStart);
+ const failed=service.slice(failedStart,selectedAndroidStart);
+ assert.ok(failed.includes('"nextEngine","none"'));
+ assert.ok(!failed.includes('androidSpeech(epoch,0)'), 'a failed Piper voice must not silently become Android TTS');
+ assert.ok(service.includes('}else androidSpeech(epoch,0);'),'Android remains explicitly selectable');
+});
+
+
+test('BONZE-044: Liquid selects synonyms only, latest turn wins and Piper choice persists',()=>{
+ const inference=read('android/app/src/main/java/fr/bonzeai/companion/BonzeInference.kt');
+ const lexicon=read('android/app/src/main/java/fr/bonzeai/companion/SynonymChoice.java');
+ const audit=read('scripts/audit-piper-corpus.mjs');
+ assert.ok(inference.includes('fun chooseVariation('));
+ assert.ok(inference.includes('maxTokens = 4'));
+ assert.ok(!service.includes('BonzeInference.reply('),'no free-form neural answers in service');
+ assert.ok(service.includes('SynonymChoice.pick(authored,variants,index)'));
+ assert.ok(service.includes('if(!disposed&&epoch==workEpoch&&turn==diagnosticTurn)'));
+ assert.ok(service.includes('if(disposed||epoch!=workEpoch||turn!=diagnosticTurn)return;'));
+ assert.ok(service.includes('if("piper-mls".equals(preferred)){'));
+ assert.ok(service.includes('putString("voiceChoiceV2",voiceName)'));
+ assert.ok(lexicon.includes('candidates(original).contains(candidate)'));
+ assert.ok(audit.includes('synonymOOV'),'all synonym options need Piper lexicon checks');
 });

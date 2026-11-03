@@ -28,7 +28,7 @@ public final class ConversationService extends Service {
  private final DialogueMemory memory=new DialogueMemory();
  private final String boot=UUID.randomUUID().toString();
  private Listener listener;private SpeechRecognizer recognizer;private TextToSpeech tts;
- private android.content.SharedPreferences prefs;private DiagnosticJournal journal;private long diagnosticTurn;private EmotionalCouncil council;private ScriptedDialogue scripted;private long councilAt;private String policyHint="";private PiperVoice piper;private String speechEngine="";
+ private android.content.SharedPreferences prefs;private DiagnosticJournal journal;private long diagnosticTurn;private EmotionalCouncil council;private ScriptedDialogue scripted;private long councilAt;private String policyHint="";private PiperVoice piper;private String speechEngine="";private String lastAuthoredRole="sage",lastAuthoredIntent="discussion";
  private PowerManager.WakeLock cpu;
  private AudioManager audio;private AudioFocusRequest focus;
  private boolean promoted,recording,disposed,localVoiceReady,voiceInitFinished;
@@ -137,7 +137,7 @@ public final class ConversationService extends Service {
    String chosenModel=c.optString("model",LocalModelStore.SMALL);
    String activeModel=LocalModelStore.choice(this);
    if((LocalModelStore.SMALL.equals(chosenModel)||LocalModelStore.LARGE.equals(chosenModel))
-        &&(LocalModelStore.SMALL.equals(chosenModel)||LocalModelStore.available(this))
+        &&(LocalModelStore.SMALL.equals(chosenModel)||LocalModelStore.available(this)||LocalModelStore.bundled(this))
         &&!chosenModel.equals(activeModel)){
     if(session.active())stop(request,"Changement de moteur : conversation arrêtée.");
     prefs.edit().putString("modelChoice",chosenModel).remove("modelLastFallback").apply();
@@ -185,39 +185,218 @@ public final class ConversationService extends Service {
    journal.add("knowledge-guard",turn,DiagnosticJournal.fields("mechanism","authored-offline-rule","output",guarded));
    complete(epoch,guarded,fromVoice);return;
   }
-  if(!neural||!Arrays.asList("precise","eco").contains(mode)){complete(epoch,scriptedReply(text,turn),fromVoice);return;}
-  if(!generating.compareAndSet(false,true)){complete(epoch,"Ma précédente pensée se termine encore. Redis-moi ta phrase dans un instant ?",fromVoice);return;}
-  final boolean eco=economy;
+  if(!neural||!Arrays.asList("precise","eco").contains(mode)){
+   complete(epoch,scriptedReply(text,"",turn),fromVoice);return;
+  }
+  // BONZE-072: only the separate .lab12b app generates actual dialogue.
+  // Existing Bonze editions keep the curated reply process untouched.
+  if(getPackageName().endsWith(".lab12b") &&
+     LocalModelStore.LARGE.equals(LocalModelStore.choice(this))){
+   if(!generating.compareAndSet(false,true)){
+    complete(epoch,scriptedReply(text,"",turn),fromVoice);return;
+   }
+   inference.execute(()->{
+    String output="",failure="";long began=SystemClock.elapsedRealtime();
+    long cpuBegan=SystemClock.currentThreadTimeMillis();
+    try{output=BonzeInference.generateDialogue(getApplicationContext(),text,contextData);}
+    catch(Exception|LinkageError error){failure=error.getClass().getSimpleName();}
+    catch(OutOfMemoryError oom){failure="OutOfMemoryError";BonzeInference.release();}
+    finally{generating.set(false);}
+    final String candidate=output,why=failure;
+    final long elapsed=SystemClock.elapsedRealtime()-began;
+    final long cpu=SystemClock.currentThreadTimeMillis()-cpuBegan;
+    main.post(()->{
+     if(disposed||epoch!=workEpoch||turn!=diagnosticTurn)return;
+     lastLatency=elapsed;lastCpu=cpu;
+     ReplyQuality.Result verdict=ReplyQuality.review(text,candidate,memory.repeats(candidate),recentBonzeReplies(8));
+     journal.add("large-dialogue",turn,DiagnosticJournal.fields(
+       "mechanism","liquid-1.2b-generated","latencyMs",elapsed,"cpuMs",cpu,
+       "accepted",!verdict.repaired,"reason",verdict.reason,"error",why));
+     if(!verdict.repaired&&verdict.text.length()>=3)
+      complete(epoch,verdict.text,fromVoice);
+     else complete(epoch,scriptedReply(text,"",turn),fromVoice);
+    });
+   });
+   return;
+  }
+  // A busy classifier must never inject a canned response or hold the UI indefinitely.
+  if(!generating.compareAndSet(false,true)){
+   complete(epoch,scriptedReply(text,"",turn),fromVoice);return;
+  }
   inference.execute(()->{
-   String result,errorName="";long began=SystemClock.elapsedRealtime(),cpuBegan=SystemClock.currentThreadTimeMillis();
-   try{BonzeInference.setEconomy(eco);result=BonzeInference.reply(getApplicationContext(),prompt,contextData,hint);}
-   catch(Exception|LinkageError error){errorName=error.getClass().getSimpleName();result="Je cherche encore mes mots. Tu peux me le dire autrement ?";}
+   String label="",errorName="";long began=SystemClock.elapsedRealtime(),cpuBegan=SystemClock.currentThreadTimeMillis();
+   try{label=BonzeInference.classify(getApplicationContext(),prompt,contextData,hint);}
+   catch(Exception|LinkageError error){errorName=error.getClass().getSimpleName();}
    finally{generating.set(false);}
-   final String generated=result,failure=errorName;final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
+   final String chosenLabel=label,failure=errorName;
+   final long elapsed=SystemClock.elapsedRealtime()-began,cpuTime=SystemClock.currentThreadTimeMillis()-cpuBegan;
    main.post(()->{
     lastLatency=elapsed;lastCpu=cpuTime;
-    ReplyQuality.Result quality=ReplyQuality.review(text,generated,memory.repeats(generated));
-    journal.add("generation",turn,DiagnosticJournal.fields("output",generated,"error",failure,
-     "latencyMs",elapsed,"cpuMs",cpuTime,"qualityReason",quality.reason,
-     "repairApplied",quality.repaired,"discarded",disposed||epoch!=workEpoch));
-    if(!disposed&&epoch==workEpoch)complete(epoch,(quality.repaired||!failure.isEmpty())?scriptedReply(text,turn):quality.text,fromVoice);
+    journal.add("classification",turn,DiagnosticJournal.fields(
+     "label",chosenLabel,"error",failure,"latencyMs",elapsed,"cpuMs",cpuTime,
+     "mechanism",chosenLabel.isEmpty()?"lexical-fallback":"liquid-intent",
+     "discarded",disposed||epoch!=workEpoch));
+    if(!disposed&&epoch==workEpoch&&turn==diagnosticTurn){
+     // BONZE-050: rank complete vetted sentences, not just isolated synonyms.
+     // A rejected preview must never enter the persistent history.
+     if("precise".equals(mode)&&failure.isEmpty()&&
+        tryContextualComposition(epoch,turn,text,contextData,chosenLabel,fromVoice))return;
+     final String authored=scriptedReply(text,chosenLabel,turn);
+      final String styleRole=lastAuthoredRole,actualIntent=lastAuthoredIntent;
+     final List<String> variants=SynonymChoice.candidates(authored);
+     if(!"precise".equals(mode)||variants.isEmpty()||!failure.isEmpty()||
+       Arrays.asList("urgence","identite","question","correction").contains(actualIntent)){
+      journal.add("variation",turn,DiagnosticJournal.fields("mechanism","authored-only","candidates",variants.size()));
+      complete(epoch,authored,fromVoice);
+     }else{
+      inference.execute(()->{
+       String selected="0",variationError="";
+       long start=SystemClock.elapsedRealtime();
+       try{selected=BonzeInference.chooseVariation(getApplicationContext(),text,actualIntent,styleRole,authored,variants.toArray(new String[0]));}
+       catch(Exception|LinkageError error){variationError=error.getClass().getSimpleName();}
+       final String index=selected,error=variationError;
+       final long elapsedVariation=SystemClock.elapsedRealtime()-start;
+       main.post(()->{
+        if(disposed||epoch!=workEpoch||turn!=diagnosticTurn)return;
+        String candidate=SynonymChoice.pick(authored,variants,index);
+        ReplyQuality.Result verdict=ReplyQuality.review(text,candidate,memory.repeats(candidate),recentBonzeReplies(8));
+        String answer=verdict.repaired?authored:candidate;
+        journal.add("variation",turn,DiagnosticJournal.fields("mechanism","liquid-synonym-index",
+         "variants",variants.size(),"index",index,"accepted",!verdict.repaired,
+         "quality",verdict.reason,"latencyMs",elapsedVariation,"error",error));
+        complete(epoch,answer,fromVoice);
+       });
+      });
+     }
+    }
    });
   });
  }
- private String scriptedReply(String text,long turn){
-  if(scripted!=null)try{
-   JSONObject selected=scripted.choose(text,"",council==null?null:council.snapshot(),true);
-   journal.add("repertoire",turn,DiagnosticJournal.fields("intent",selected.optString("intent"),
-     "card",selected.optString("card"),"mechanism","authored-fallback"));
-   return selected.getString("text");
-  }catch(Exception error){journal.add("repertoire-error",turn,DiagnosticJournal.fields("type",error.getClass().getSimpleName()));}
-  return lightReply(text);
+ /**
+  * BONZE-050: the native judge sees only vetted sentences from the same
+  * intent and role. Commit only the finally accepted sentence and its state.
+  */
+  private boolean tryContextualComposition(long epoch,long turn,String text,
+        String previousContext,String label,boolean fromVoice){
+   if(scripted==null)return false;
+   try{
+    JSONObject plan=scripted.preview(text,label,council==null?null:council.snapshot(),true);
+    String intent=plan.getString("intent");
+    if(Arrays.asList("urgence","identite","correction","question").contains(intent))return false;
+    JSONArray raw=plan.getJSONArray("candidates");
+    ArrayList<JSONObject> accepted=new ArrayList<>();
+    List<String> history=recentBonzeReplies(8);
+    ArrayList<String> texts=new ArrayList<>();
+    for(int i=0;i<raw.length()&&accepted.size()<4;i++){
+     JSONObject item=raw.getJSONObject(i);
+     String sentence=item.getString("text");
+     if(!intent.equals(item.optString("intent"))||
+        !plan.optString("role").equals(item.optString("role"))||
+        ("piper-mls".equals(voiceName)&&sentence.codePointCount(0,sentence.length())<65))continue;
+     ReplyQuality.Result check=ReplyQuality.review(text,sentence,memory.repeats(sentence),history);
+     if(check.repaired||texts.contains(check.text))continue;
+     accepted.add(item);texts.add(check.text);
+    }
+    if(accepted.isEmpty())return false;
+    final String role=plan.getString("role"),selectedIntent=intent;
+    final ArrayList<JSONObject> options=accepted;
+    final String[] candidates=texts.toArray(new String[0]);
+    if(options.size()==1){
+     scripted.commit(options.get(0));
+     journal.add("composition",turn,DiagnosticJournal.fields(
+      "mechanism","sole-curated-option","intent",selectedIntent,"role",role,"candidates",1));
+     complete(epoch,candidates[0],fromVoice);return true;
+    }
+    inference.execute(()->{
+     String choice="0",failure="";
+     long began=SystemClock.elapsedRealtime();
+     try{choice=BonzeInference.chooseComposition(text,previousContext,selectedIntent,role,candidates);}
+     catch(Exception|LinkageError error){failure=error.getClass().getSimpleName();}
+     final String result=choice,reason=failure;
+     final long elapsed=SystemClock.elapsedRealtime()-began;
+     main.post(()->{
+      if(disposed||epoch!=workEpoch||turn!=diagnosticTurn)return;
+      int selected=result.matches("[0-3]")?Integer.parseInt(result):0;
+      if(selected>=options.size())selected=0;
+      int winner=-1;
+      List<String> latest=recentBonzeReplies(8);
+      for(int n=0;n<options.size();n++){
+       int index=(selected+n)%options.size();
+       String sentence=candidates[index];
+       if(!ReplyQuality.review(text,sentence,memory.repeats(sentence),latest).repaired){
+        winner=index;break;
+       }
+      }
+      if(winner<0){
+       journal.add("composition",turn,DiagnosticJournal.fields(
+        "mechanism","judge-rejected-all","intent",selectedIntent,"role",role));
+       complete(epoch,scriptedReply(text,selectedIntent,turn),fromVoice);return;
+      }
+      try{
+       scripted.commit(options.get(winner));
+       journal.add("composition",turn,DiagnosticJournal.fields(
+        "mechanism","liquid-topic-index","intent",selectedIntent,"role",role,
+        "candidates",options.size(),"index",winner,"latencyMs",elapsed,"error",reason));
+       complete(epoch,candidates[winner],fromVoice);
+      }catch(JSONException invalid){
+       journal.add("composition",turn,DiagnosticJournal.fields("error","commit-failed"));
+       complete(epoch,scriptedReply(text,selectedIntent,turn),fromVoice);
+      }
+     });
+    });
+    return true;
+   }catch(Exception error){
+    journal.add("composition",turn,DiagnosticJournal.fields("error",error.getClass().getSimpleName()));
+    return false;
+   }
+  }
+  private List<String> recentBonzeReplies(int limit){
+  List<String> recent=new ArrayList<>();
+  List<DialogueMemory.Entry> entries=memory.entries();
+  for(int i=entries.size()-1;i>=0&&recent.size()<limit;i--)
+   if("bot".equals(entries.get(i).role))recent.add(entries.get(i).text);
+  return recent;
  }
- private String lightReply(String text){
-  if(text.toLowerCase(Locale.FRANCE).matches(".*comment tu t.appelles.*"))return "Je m'appelle Bonze AI ! Et toi ?";
-  return "Je suis en mode léger. Raconte-moi la suite, je t'écoute.";
- }
- private void complete(long epoch,String answer,boolean fromVoice){
+ private String scriptedReply(String text,String label,long turn){
+   lastAuthoredRole="sage";lastAuthoredIntent="discussion";
+   if(scripted!=null)try{
+    JSONObject plan=scripted.preview(text,label,council==null?null:council.snapshot(),true);
+    JSONArray candidates=plan.getJSONArray("candidates");
+    List<String> recentBot=recentBonzeReplies(8);
+    for(int attempt=0;attempt<candidates.length();attempt++){
+     JSONObject item=candidates.getJSONObject(attempt);
+     String candidate=item.getString("text");
+     if("piper-mls".equals(voiceName)&&candidate.codePointCount(0,candidate.length())<65){
+      journal.add("repertoire-reroll",turn,DiagnosticJournal.fields("reason","piper-short-text","attempt",attempt+1));
+      continue;
+     }
+     ReplyQuality.Result checked=ReplyQuality.review(text,candidate,memory.repeats(candidate),recentBot);
+     if(!checked.repaired){
+      // No provisional state is ever saved for an unspoken or rejected answer.
+      scripted.commit(item);
+      lastAuthoredRole=item.optString("role","sage");
+      lastAuthoredIntent=item.optString("intent","discussion");
+      journal.add("repertoire",turn,DiagnosticJournal.fields(
+       "intent",lastAuthoredIntent,"card",item.optString("card"),
+       "mechanism",label.isEmpty()?"lexical-repertoire":"liquid-classified-repertoire",
+       "selectionAttempts",attempt+1,"commit","accepted-only"));
+      return checked.text;
+     }
+     journal.add("repertoire-reroll",turn,DiagnosticJournal.fields("reason",checked.reason,"attempt",attempt+1));
+    }
+    // A repeated urgent call must never become an unrelated clarification.
+    if("urgence".equals(plan.optString("intent")))
+     return "Si tu es en danger immédiat, contacte les secours maintenant et demande de l'aide à une personne de confiance.";
+   }catch(Exception error){journal.add("repertoire-error",turn,DiagnosticJournal.fields("type",error.getClass().getSimpleName()));}
+   List<String> previous=recentBonzeReplies(8);
+   for(String clarification:new String[]{
+    "Je n'ai pas trouvé de réponse adaptée. Peux-tu préciser ce que tu attends de moi ?",
+    "J'ai perdu le fil de ta question. Quel point souhaites-tu éclaircir ?",
+    "Je préfère te demander une précision plutôt que répondre à côté. Quel est le sujet exact ?"
+   })if(!ReplyQuality.review(text,clarification,memory.repeats(clarification),previous).repaired)return clarification;
+   return "Je préfère vérifier ce que tu demandes avant de continuer.";
+  }
+  private void complete(long epoch,String answer,boolean fromVoice){
   if(epoch!=workEpoch||disposed)return;
   memory.add("bot",answer);journal.add("published",diagnosticTurn,DiagnosticJournal.fields("answer",answer));saveMemory();setState("waiting","J'ai une réponse pour toi.");
   if(fromVoice&&session.active()||readText&&!"text".equals(mode)&&!"off".equals(mode))speak(answer,fromVoice,epoch,0);
@@ -305,11 +484,19 @@ public final class ConversationService extends Service {
   voices.sort(Comparator.comparingInt((Voice v)->Locale.FRANCE.equals(v.getLocale())?0:1).thenComparing(Comparator.comparingInt(Voice::getQuality).reversed()).thenComparing(Voice::getName));return voices;
  }
  private void selectVoice(String preferred){
-  if(tts==null||!voiceInitFinished)return;List<Voice> all=localVoices();Voice choice=null;
+  // Saving Piper never depends on Android TextToSpeech initialization.
+  if("piper-mls".equals(preferred)){
+   voiceName="piper-mls";
+   prefs.edit().putString("voiceChoiceV2",voiceName).putString("voice",voiceName).apply();
+   return;
+  }
+  if(tts==null||!voiceInitFinished)return;
+  List<Voice> all=localVoices();Voice choice=null;
   for(Voice v:all)if(v.getName().equals(preferred)){choice=v;break;}
   if(choice==null&&!all.isEmpty())choice=all.get(0);
   localVoiceReady=choice!=null&&tts.setVoice(choice)==TextToSpeech.SUCCESS;
-  if("piper-mls".equals(preferred))voiceName=preferred;else if(localVoiceReady)voiceName=choice.getName();prefs.edit().putString("voiceChoiceV2",voiceName).putString("voice",voiceName).apply();
+  if(localVoiceReady)voiceName=choice.getName();
+  prefs.edit().putString("voiceChoiceV2",voiceName).putString("voice",voiceName).apply();
  }
  public void describe(String text,String id){stop(id,"Lecture demandée.");if(!"off".equals(mode)&&!"text".equals(mode))speak(text,false,workEpoch,0);}
  private void speak(String text,boolean conversation,long epoch,int attempt){
@@ -331,13 +518,14 @@ public final class ConversationService extends Service {
       });
      }
      public void done(){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;finishSpeech();});}
-    public void failed(String reason,boolean hadAudio){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;journal.add("speech-fallback",diagnosticTurn,DiagnosticJournal.fields("reason",reason,"reasonCode",safeAudioFailure(reason),"hadAudio",hadAudio,"nextEngine",hadAudio?"stopped":"android"));if(hadAudio)stop(request,"Lecture interrompue. Tu peux réessayer.");else androidSpeech(epoch,0);});}
+    public void failed(String reason,boolean hadAudio){main.post(()->{if(epoch!=workEpoch||!prefix.equals(speechPrefix))return;journal.add("speech-fallback",diagnosticTurn,DiagnosticJournal.fields("reason",reason,"reasonCode",safeAudioFailure(reason),"hadAudio",hadAudio,"nextEngine","none"));stop(request,
+      "Piper n'a pas pu lire cette phrase ("+safeAudioFailure(reason)+"). Le texte reste affiché ; tu peux choisir une voix Android dans Options si tu le souhaites.");});}
    });
   }else androidSpeech(epoch,0);
  }
  private static String safeAudioFailure(String reason){
   if(reason==null)return "unknown";
-  for(String code:new String[]{"invalid-pcm","audio-write","audio-prefill-write","playback-timeout","silent-pcm","non-finite-pcm"})
+  for(String code:new String[]{"lexicon-number-format","lexicon-number-range","lexicon-number","lexicon-oov","lexicon-empty","piper-short-unstable","invalid-sample-rate","sample-rate-change","audio-duration-limit","invalid-pcm","audio-write","audio-prefill-write","playback-timeout","silent-pcm","non-finite-pcm"})
    if(reason.contains(code))return code;
   return "piper-runtime";
  }
@@ -359,7 +547,7 @@ public final class ConversationService extends Service {
   JSONObject o=base("snapshot");try{
    if(council!=null)o.put("council",council.snapshot());
    o.put("active",session.active()).put("state",state).put("busy","thinking".equals(state)).put("status",status).put("voice",voiceName)
-    .put("model",LocalModelStore.choice(this)).put("model12Ready",LocalModelStore.available(this))
+    .put("model",LocalModelStore.choice(this)).put("model12Ready",LocalModelStore.available(this)||LocalModelStore.bundled(this))
     .put("modelFallback",prefs.getString("modelLastFallback",""));
    JSONArray rows=new JSONArray();for(DialogueMemory.Entry e:memory.entries())rows.put(new JSONObject().put("id",e.id).put("role",e.role).put("text",e.text));o.put("history",rows).put("importedThrough",prefs.getLong("importedThrough",0));
    JSONArray voices=new JSONArray();voices.put(new JSONObject().put("name","piper-mls").put("quality",400));if(voiceInitFinished&&tts!=null)for(Voice v:localVoices())voices.put(new JSONObject().put("name",v.getName()).put("quality",v.getQuality()));o.put("voices",voices);

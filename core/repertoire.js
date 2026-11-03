@@ -136,26 +136,37 @@ for(var r=0;r<ROLES.length;r++){
   }
  }
 }
-function norm(s){var text=String(s||'').toLowerCase();if(text.normalize)text=text.normalize('NFD');return text.replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9' ]/g,' ').replace(/\s+/g,' ').trim();}
+function norm(s){var text=String(s||'').toLowerCase();if(text.normalize)text=text.normalize('NFD');return text.replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();}
 function contains(s,pat){return new RegExp('(?:^| )('+pat+')(?: |$)','i').test(s);}
 function detect(text){
  var n=norm(text);
  if(!n)return 'discussion';
- if(contains(n,'comment tu t appelles|comment tu t appelles|quel est ton nom|qui es tu'))return 'identite';
+ // Priority: explicit danger is never hidden behind a simultaneous identity/greeting.
+ if(contains(n,'suicide|me tuer|me faire du mal|danger immediat|au secours|urgence vitale|je suis en danger'))return 'urgence';
+ if(contains(n,'comment tu t appelles|quel est ton nom|qui es tu'))return 'identite';
+ // An explicit definition/question about a greeting or an emotion is a
+ // question, not the greeting or emotion itself.
+ var literalQuestion=/^(?:pourquoi|comment|que|qu est ce que|quel|quelle|quels|quelles|combien|quand|ou|d ou)\b/.test(n);
+ if(literalQuestion&&(/\b(?:signifie|signification|definition|mot|expression|veut dire|origine|utilise|dire)\b/.test(n)||
+    String(text).indexOf('?')>=0))return 'question';
  if(contains(n,'suicide|me tuer|me faire du mal|danger immediat|au secours|urgence vitale|je suis en danger'))return 'urgence';
  if(contains(n,'au revoir|a bientot|bonne nuit|je dois partir|bye|bisous'))return 'depart';
  if(contains(n,'pas compris|je comprends pas|je ne comprends pas|c est incomprehensible|confus|perdu dans'))return 'confusion';
  if(contains(n,'tu te trompes|c est faux|erreur|corrige|correction|pas juste|naze|nul|perroquet|tu repetes|tu fais le perroquet'))return 'correction';
- if(contains(n,'triste|deprime|chagrin|pleurer|peine|malheureux')&&!contains(n,'pas triste|ne suis pas triste'))return 'tristesse';
- if(contains(n,'peur|inquiet|angoisse|stress|effraye|panique')&&!contains(n,'pas peur|plus peur'))return 'inquietude';
- if(contains(n,'colere|enerve|agace|furieux|injustice|frustre'))return 'contrarié';
+ if(contains(n,'triste|deprime|chagrin|pleurer|je pleure|peine|malheureux')&&!contains(n,'pas triste|ne suis pas triste'))return 'tristesse';
+ if(contains(n,'peur|inquiet|angoisse|stress|effraye|panique')&&!contains(n,'pas peur|plus peur|plus inquiet|pas inquiet|ne suis plus inquiet'))return 'inquietude';
+ if(contains(n,'colere|enerve|agace|furieux|injustice|frustre')&&
+    !contains(n,'pas en colere|pas furieux|pas enerve|pas agace'))return 'contrarié';
  if(contains(n,'fatigue|epuise|repos|dormir|sommeil'))return 'fatigue';
  if(contains(n,'bravo|reussi|victoire|j ai gagne|bien joue'))return 'reussite';
- if(contains(n,'merci|gentil de ta part'))return 'merci';
- if(contains(n,'coucou|bonjour|salut|hello|bonsoir'))return 'salut';
+ if(/^merci(?: beaucoup| pour tout| a toi| bonze)?$/.test(n)||contains(n,'gentil de ta part'))return 'merci';
+ // Only a real salutation counts as greeting; quoted greetings inside
+ // longer questions should not hijack the user's actual intent.
+ if(/^(?:coucou|bonjour|salut|hello|bonsoir)(?: bonze| a toi| a vous| tout le monde| les amis)?$/.test(n))return 'salut';
  if(contains(n,'tu me manques|je t aime|calin|affection|je t adore'))return 'affection';
  if(contains(n,'blague|drole|rire|humour|rigolo|plaisanterie|fou rire')&&!contains(n,'pas drole'))return 'humour';
- if(contains(n,'jouons|on joue|imagine|dragon|histoire imaginaire|faire semblant|role'))return 'jeu';
+ if(contains(n,'jouons|on joue|imagine|dragon|histoire imaginaire|faire semblant|role')||
+    /\b(?:raconte|racontons|invente|inventons|cree|ecris)(?: moi| nous)? (?:un|une|des|l)? ?(?:histoire|conte|aventure)\b/.test(n))return 'jeu';
  if(contains(n,'incroyable|surprise|inattendu|impressionnant|etonnant'))return 'surprise';
  if(contains(n,'decouvrir|curieux|apprendre|explorer|interessant|comment ca marche'))return 'curiosite';
  if(contains(n,'aide moi|peux tu|pourrais tu|fais moi|je voudrais|j aimerais|essaye'))return 'demande';
@@ -170,7 +181,7 @@ function cleanState(old,seed){
  var associations=Array.isArray(old.associations)?old.associations.filter(function(a){return a&&typeof a.key==='string'&&a.key.length<60&&INTENTS.indexOf(a.key.split('/')[0])>=0&&ROLES.indexOf(a.key.split('/')[1])>=0&&isFinite(a.strength)&&a.strength>=0&&a.strength<=1&&isFinite(a.seen)&&a.seen>=0;}).slice(-24).map(function(a){return {key:a.key,strength:finite(a.strength,0,0,1),seen:finite(a.seen,0,0,1e7)|0};}):[];
  var forms=Array.isArray(old.recentForms)?old.recentForms.filter(function(f){return typeof f==='string'&&f.length<80;}).slice(-8):[];
  return {version:1,seed:finite(old.seed,finite(seed,0x7c25b,-2147483647,2147483647),-2147483647,2147483647)|0,turns:finite(old.turns,0,0,10000000)|0,recent:rec,families:fam,
-  lastIntent:INTENTS.indexOf(old.lastIntent)>=0?old.lastIntent:'',lastRole:ROLES.indexOf(old.lastRole)>=0?old.lastRole:'',recentForms:forms,associations:associations};
+  lastIntent:INTENTS.indexOf(old.lastIntent)>=0?old.lastIntent:'',lastRole:ROLES.indexOf(old.lastRole)>=0?old.lastRole:'',lastTheme:finite(old.lastTheme,-1,-1,12)|0,sceneStep:finite(old.sceneStep,0,0,3)|0,recentForms:forms,associations:associations};
 }
 function rand(s){s.seed=((Math.imul?Math.imul(s.seed,1664525):s.seed*1664525)+1013904223)|0;return (s.seed>>>0)/4294967296;}
 function choose(input){
@@ -180,9 +191,12 @@ function choose(input){
  // Neural labels are hints, never permission to invent an answer or bypass a safety gate.
  var uncertain=local==='discussion'||local==='question'||local==='demande'||local==='curiosite'||local==='surprise';
  var barred=['tristesse','inquietude','contrarié','urgence','correction'];
- var denied=contains(norm(txt),'pas triste|ne suis pas triste|pas peur|ne suis pas inquiet|pas drole|ce n est pas drole');
+ var denied=contains(norm(txt),'pas triste|ne suis pas triste|pas peur|plus inquiet|pas inquiet|pas en colere|pas furieux|ne suis pas inquiet|pas drole|ce n est pas drole');
  var intent=uncertain&&!denied&&barred.indexOf(semantic)<0&&INTENTS.indexOf(semantic)>=0?semantic:local;
  if(local==='urgence'||local==='correction'||local==='tristesse'||local==='inquietude')intent=local;
+ // An explicit definition question wins over a neural hint such as 'salut'
+ // when the word bonjour/merci/au revoir is only mentioned as subject matter.
+ if(local==='question'&&/^(?:pourquoi|comment|que|qu est ce que|quel|quelle|quels|quelles|combien|quand|ou|d ou)\b/.test(norm(txt)))intent='question';
  if((local==='discussion'||local==='question')&&contains(norm(txt),'continue|la suite|et apres|et ensuite|et puis|poursuis')&&
    ['jeu','humour','curiosite','discussion'].indexOf(s.lastIntent)>=0)intent=s.lastIntent;
  var force=input.forces&&typeof input.forces==='object'?input.forces:{};
@@ -200,7 +214,7 @@ function choose(input){
   if(s.families.indexOf(c.family)!==-1)weight*=.28;
   ranked.push({card:c,weight:weight});
  }
- // Virtual families are indexed in compressed grammar; never allocate 18,000 strings.
+ // Virtual families are indexed in compressed grammar; never allocate 90,000 strings.
  if(corpus&&corpus.sizeFor(intent)>0){
   for(var p=0;p<corpus.roles.length;p++){
    var role=corpus.roles[p],strength=role==='sage'?.57:finite(force[role],.38,0,1);
@@ -223,7 +237,7 @@ function choose(input){
   for(var attempt=0;attempt<32;attempt++){
    var index=Math.floor(rand(s)*variants),item=corpus.render(pick.role,intent,index);
    var penalty=(s.recent.indexOf(item.id)<0?0:100)+(s.families.indexOf(item.family)<0?0:10)+
-    (s.recentForms.indexOf(intent+'/'+item.form)<0?0:4);
+    (s.recentForms.indexOf(intent+'/'+item.form+'/'+item.ending)<0?0:4);
    if(penalty<bestPenalty){best=item;bestPenalty=penalty;}
    if(!penalty)break;
   }
@@ -238,18 +252,206 @@ function choose(input){
   substitutions.push({slot:key,value:chosen});return chosen;
  });
  s.turns++;s.recent.push(pick.id);s.recent=s.recent.slice(-16);s.families.push(pick.family);s.families=s.families.slice(-8);
- if(typeof pick.form==='number'){s.recentForms.push(intent+'/'+pick.form);s.recentForms=s.recentForms.slice(-8);}
+ if(typeof pick.form==='number'){s.recentForms.push(intent+'/'+pick.form+'/'+pick.ending);s.recentForms=s.recentForms.slice(-8);}
  // Retain only categorical links, never the raw user's phrase or inferred personal facts.
  var key=intent+'/'+pick.role,found=-1;
  for(var a=0;a<s.associations.length;a++)if(s.associations[a].key===key)found=a;
  if(found>=0){s.associations[found].strength=Math.min(1,s.associations[found].strength*.92+.12);s.associations[found].seen=s.turns;}
  else s.associations.push({key:key,strength:.35,seen:s.turns});
  if(s.associations.length>24)s.associations=s.associations.slice(-24);
- s.lastIntent=intent;s.lastRole=pick.role;
- return {text:body,emotion:pick.role==='sage'?'calme':pick.role,card:pick.id,family:pick.family,intent:intent,detected:local,semanticUsed:intent===semantic,state:s,trace:{cardsConsidered:ranked.length,substitutions:substitutions,source:'authored-repertoire',composed:pick.composed===true,modelGenerated:false}};
+ s.lastIntent=intent;s.lastRole=pick.role;s.lastTheme=typeof pick.theme==='number'?pick.theme:-1;s.sceneStep=0;
+ return {text:body,role:pick.role,emotion:pick.role==='sage'?'calme':pick.role,card:pick.id,family:pick.family,intent:intent,detected:local,semanticUsed:intent===semantic,state:s,trace:{cardsConsidered:ranked.length,substitutions:substitutions,source:'authored-repertoire',composed:pick.composed===true,modelGenerated:false}};
+}
+
+/* BONZE-050: virtual cards are alternatives, not emitted text from a neural model.
+ * A preview does not consume the live conversation state: the caller commits
+ * only the approved, spoken option. All candidates share a vetted role/intent.
+ */
+
+/* BONZE-056: closed, conservative subject lexicon for our eleven authored
+ * imaginary scenes. Only categorical theme IDs are persisted, never the text.
+ * No fuzzy match: unfamiliar fictional characters require clarification.
+ */
+var STORY_THEME_WORDS=[
+ ['chateau','chateaux','forteresse','forteresses'],
+ ['foret','forets','bois','lanterne','lanternes'],
+ ['tortue','tortues','nuage','nuages'],
+ ['pirate','pirates','bateau','bateaux','navire','navires'],
+ ['robot','robots','automate','automates'],
+ ['lune'],
+ ['bibliotheque','bibliotheques','livre','livres'],
+ ['dragon','dragons'],
+ ['valise','valises'],
+ ['etoile','etoiles'],
+ ['riviere','rivieres','montre','montres']
+];
+function explicitStoryThemes(text){
+ var n=norm(text),tokens=n.split(' '),hits=[];
+ for(var i=0;i<STORY_THEME_WORDS.length;i++){
+  for(var j=0;j<STORY_THEME_WORDS[i].length;j++)
+   if(tokens.indexOf(STORY_THEME_WORDS[i][j])>=0){hits.push(i);break;}
+ }
+ return hits;
+}
+function explicitStoryPrompt(text){
+ return /^(?:imagine|imagines|imaginons|invente|inventons|cree|creons|raconte|racontes|racontons|ecris|ecrivez)\b/.test(norm(text));
+}
+function propose(input){
+ input=input&&typeof input==='object'?input:{};
+ var first=choose(input);
+ var choices=[first];
+ var intent=first.intent,role=first.role;
+ if(!corpus||!corpus.sizeFor(intent)||['urgence','identite','correction','question'].indexOf(intent)>=0)
+  return {intent:intent,role:role,candidates:choices};
+ // Search only the current intent. Prefer kernels that mention the user's subject,
+ // then use the usual recent-family penalty, keeping randomness as a tie breaker.
+ var text=norm(input.text),terms=text.split(' ').filter(function(w){
+  return w.length>=4&&['dans','avec','pour','nous','vous','elle','elles','quoi','comment','imagine','faire','veux','voudrais','bonjour'].indexOf(w)<0;
+ });
+ var recent=cleanState(input.state,input.seed),used={},usedFamily={};
+ var continuing=recent.lastIntent===intent&&
+   contains(norm(input.text),'continue|la suite|et apres|et ensuite|et puis|poursuis')&&
+   recent.lastTheme>=0;
+ var followTheme=continuing?recent.lastTheme:-1;
+ // An explicit request for a known scene is represented by a single authored
+ // semantic nucleus. Liquid may choose 4 phrasings, never different stories.
+ var explicit=explicitStoryPrompt(input.text),known=explicit&&intent==='jeu'&&!continuing?
+  explicitStoryThemes(input.text):[];
+ var virtual=corpus.sizeFor(intent),byTheme={},seed={seed:first.state.seed};
+ used[first.card]=true;usedFamily[first.family]=true;
+ for(var t=0;t<Math.floor(virtual/50);t++){
+  var representative=corpus.render(role,intent,t*50),words=norm(representative.body).split(' ');
+  var overlap=0;for(var k=0;k<terms.length;k++)if(words.indexOf(terms[k])>=0)overlap++;
+  // Alternate forms must not depend on spelling out the user's private words.
+  byTheme[t]={theme:t,overlap:overlap+(t===followTheme?100:0),tie:rand(seed)};
+ }
+ var sorted=Object.keys(byTheme).map(function(k){return byTheme[k];});
+ var hasAuthoredTopic=sorted.some(function(x){return x.overlap>0;});
+ sorted.sort(function(a,b){return b.overlap-a.overlap||a.tie-b.tie;});
+ for(var j=0;j<sorted.length&&choices.length<4;j++){
+  var kernel=sorted[j].theme,selected=null,best=1e9;
+  for(var turn=0;turn<8;turn++){
+   var form=Math.floor(rand(seed)*50),index=kernel*50+form,item=corpus.render(role,intent,index);
+   if(used[item.id]||usedFamily[item.family]||
+      (recent.families.indexOf(item.family)>=0&&sorted[j].overlap===0))continue;
+   var penalty=(recent.recent.indexOf(item.id)>=0?20:0)+
+    (recent.families.indexOf(item.family)>=0?10:0)+
+    (recent.recentForms.indexOf(intent+'/'+item.form+'/'+item.ending)>=0?3:0);
+   if(penalty<best){best=penalty;selected=item;}
+   if(penalty===0)break;
+  }
+  if(!selected)continue;
+  var next=JSON.parse(JSON.stringify(first.state));
+  // The initial call to choose already advanced exactly one turn.
+  // Replace that provisional card with the actual selected card.
+  next.recent[next.recent.length-1]=selected.id;
+  next.families[next.families.length-1]=selected.family;
+  // A materialized first card has not appended a form; never overwrite
+  // the previous turn's recorded form. Replace only the provisional new form.
+  if(first.trace.composed===true&&next.recentForms.length)next.recentForms.pop();
+  next.recentForms.push(intent+'/'+selected.form+'/'+selected.ending);
+  next.recentForms=next.recentForms.slice(-8);
+  next.seed=seed.seed;next.lastRole=role;next.lastIntent=intent;next.lastTheme=selected.theme;next.sceneStep=0;
+  var item={text:selected.body,role:role,emotion:first.emotion,card:selected.id,
+   family:selected.family,intent:intent,state:next,
+   trace:{source:'authored-repertoire',composed:true,modelGenerated:false}};
+  used[item.card]=true;usedFamily[item.family]=true;choices.push(item);
+ }
+
+ // The user named a particular known fictional subject. Offer four independent
+ // surface forms of that exact nucleus, despite recency penalties.
+ if(known.length===1&&intent==='jeu'){
+  var target=known[0],versions=[],chosen={};
+  for(var choice=0;choice<4;choice++){
+   var best=null,penaltyBest=1e9;
+   for(var tries=0;tries<32;tries++){
+    var pos=target*50+Math.floor(rand(seed)*50);
+    var card=corpus.render(role,intent,pos);
+    if(chosen[card.id])continue;
+    var penalty=(recent.recent.indexOf(card.id)>=0?20:0)+
+      (recent.recentForms.indexOf(intent+'/'+card.form+'/'+card.ending)>=0?5:0);
+    if(penalty<penaltyBest){best=card;penaltyBest=penalty;}
+    if(penalty===0)break;
+   }
+   if(!best)continue;
+   chosen[best.id]=true;
+   var next=JSON.parse(JSON.stringify(first.state));
+   next.recent[next.recent.length-1]=best.id;
+   next.families[next.families.length-1]=best.family;
+   if(first.trace.composed===true&&next.recentForms.length)next.recentForms.pop();
+   next.recentForms.push(intent+'/'+best.form+'/'+best.ending);
+   next.recentForms=next.recentForms.slice(-8);
+   next.lastIntent=intent;next.lastRole=role;next.lastTheme=target;next.sceneStep=0;
+   next.seed=seed.seed;
+   versions.push({text:best.body,role:role,emotion:first.emotion,card:best.id,
+    family:best.family,intent:intent,state:next,
+    trace:{source:'authored-specific-topic',composed:true,modelGenerated:false}});
+  }
+  return {intent:intent,role:role,candidates:versions};
+ }
+ // An actual story continuation must advance the scene, not merely repeat
+ // the same semantic kernel with a different greeting or closing sentence.
+ if(continuing&&intent==='jeu'&&corpus.renderContinuation){
+  // When the current story has reached its third beat, close it once and
+  // invite the user to choose another scene. Never loop the final beat.
+  var finished=recent.sceneStep>=3;
+  var step=Math.max(0,Math.min(2,recent.sceneStep));
+  var narrative=[];
+  for(var variation=0;variation<4;variation++){
+   var formNumber=Math.floor(rand(seed)*50),op=Math.floor(formNumber/5),en=formNumber%5;
+   var beat=finished?corpus.renderStoryClosure(role,followTheme,op,en):
+    corpus.renderContinuation(role,followTheme,step,op,en);
+   var committed=JSON.parse(JSON.stringify(first.state));
+   committed.recent[committed.recent.length-1]=beat.id;
+   committed.families[committed.families.length-1]=beat.family;
+   if(first.trace.composed===true&&committed.recentForms.length)
+    committed.recentForms.pop();
+   committed.recentForms.push(intent+'/'+beat.form+'/'+beat.ending);
+   committed.recentForms=committed.recentForms.slice(-8);
+   committed.lastIntent=intent;committed.lastRole=role;
+   committed.lastTheme=finished?-1:followTheme;
+   committed.sceneStep=finished?0:step+1;
+   committed.seed=seed.seed;
+   narrative.push({text:beat.body,role:role,emotion:first.emotion,card:beat.id,
+    family:beat.family,intent:intent,state:committed,
+    trace:{source:finished?'authored-story-closure':'authored-story-continuation',
+      composed:true,modelGenerated:false}});
+  }
+  // Every offered response advances the SAME authored beat, so even a
+  // misclassified Liquid index cannot jump to an unrelated story scene.
+  choices=narrative;
+ }
+ // A lexical topic match is a deterministic fallback when Liquid is unavailable
+ // or returns an invalid index. Do not copy the user's text into spoken output.
+ function topicalMatch(option){
+  var parts=norm(option.text).split(' '),score=0;
+  for(var i=0;i<terms.length;i++)if(parts.indexOf(terms[i])>=0)score++;
+  if(continuing&&/^authored-story-/.test(option.trace.source))score+=1000;
+  else if(continuing&&option.family===intent+'/'+role+'/theme'+followTheme)score+=100;
+  return score;
+ }
+ choices.sort(function(a,b){return topicalMatch(b)-topicalMatch(a);});
+ // An unrecognized *specific fiction subject* must not be answered with a
+ // random, unrelated scene. Ask for an authored detail instead.
+ // No private or unknown word is copied into either the response or the state.
+ if(intent==='jeu'&&!continuing&&explicit&&terms.length>0&&known.length!==1
+    &&corpus.unknownStoryTopic){
+  var unknown=corpus.unknownStoryTopic(role);
+  var next=JSON.parse(JSON.stringify(first.state));
+  next.recent[next.recent.length-1]=unknown.id;
+  next.families[next.families.length-1]=unknown.family;
+  if(first.trace.composed===true&&next.recentForms.length)next.recentForms.pop();
+  next.lastTheme=-1;next.sceneStep=0;
+  return {intent:intent,role:role,candidates:[{
+   text:unknown.body,role:role,emotion:first.emotion,card:unknown.id,
+   family:unknown.family,intent:intent,state:next,
+   trace:{source:'authored-unknown-topic',composed:false,modelGenerated:false}
+  }]};
+ }
+ return {intent:intent,role:role,candidates:choices};
 }
 function run(json){var input=JSON.parse(json);return JSON.stringify(choose(input));}
-root.BonzeRepertoire={run:run,choose:choose,detect:detect,auditCards:function(){return ITEMS.map(function(c){return {id:c.id,body:c.body};});},auditSlots:function(){return SYNS;},stats:function(){var per={};for(var p in byIntent)per[p]=byIntent[p].length;var perRole={},virtualCards=0;for(var i=0;i<ROLES.length;i++){var n=ROLES[i],local=ITEMS.filter(function(c){return c.role===n;}).length,composed=corpus?corpus.countPerRole:0;perRole[n]=local+composed;virtualCards+=composed;}
+root.BonzeRepertoire={run:run,choose:choose,propose:propose,detect:detect,auditCards:function(){return ITEMS.map(function(c){return {id:c.id,body:c.body};});},auditSlots:function(){return SYNS;},stats:function(){var per={};for(var p in byIntent)per[p]=byIntent[p].length;var perRole={},virtualCards=0;for(var i=0;i<ROLES.length;i++){var n=ROLES[i],local=ITEMS.filter(function(c){return c.role===n;}).length,composed=corpus?corpus.countPerRole:0;perRole[n]=local+composed;virtualCards+=composed;}
   if(corpus)for(var j=0;j<corpus.intents.length;j++){var intent=corpus.intents[j];per[intent]=(per[intent]||0)+ROLES.length*corpus.sizeFor(intent);}
   return {cards:ITEMS.length+virtualCards,materializedCards:ITEMS.length,virtualCards:virtualCards,perRole:perRole,roles:ROLES.slice(),byIntent:per};},roles:ROLES.slice(),intents:INTENTS.slice()};
 })(typeof globalThis!=='undefined'?globalThis:this);

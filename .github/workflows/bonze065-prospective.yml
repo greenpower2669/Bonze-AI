@@ -1,0 +1,36 @@
+name: BONZE-065 — prospective dialogue and safety diagnostics
+on:
+  push:
+    branches: [feature/bonze042-field-fixes]
+    paths:
+      - 'tests/fixtures/bonze065-unseen-protocol.mjs'
+      - 'scripts/bench-bonze065.mjs'
+      - 'tests/bonze065.test.mjs'
+      - '.github/workflows/bonze065-prospective.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  frozen-protocol:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify frozen fixture and segregated safety labels
+        run: node --test tests/bonze065.test.mjs
+      - name: Score narratives and record safety gaps without code changes
+        run: node scripts/bench-bonze065.mjs
+      - name: Preserve full experimental report, failures and ambiguity
+        uses: actions/upload-artifact@v4
+        with:
+          name: bonze065-untuned-dialogue-safety-diagnostics
+          path: |
+            bonze065-results.json
+            bonze065-dialogue.jsonl
+            bonze065-safety.jsonl
+            bonze065-report.md
+          if-no-files-found: error
+          retention-days: 30

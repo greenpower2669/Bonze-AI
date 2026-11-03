@@ -1,149 +1,75 @@
-# Ordres de mission Bonze AI — ouverts jusqu'à validation utilisateur
+# Bonze AI — ordres de mission actifs
+_Condensés au 01/11/2026 sans altérer l'historique : `docs/memory-archives/2026-11-01-pre-audit/ordres-de-mission.md`._
 
-## IMMUTABLE / À PRÉSERVER
+## Règles impératives de Fab
+1. **BONZE-044 fait autorité.** Le répertoire est auteur du texte. Liquid classe les intentions et choisit des indices de synonymes prévalidés ; aucune génération libre Liquid dans les répliques prononcées. Garder l'original si incertitude. Ne pas confondre quantité de formulations et compréhension.
+2. Préserver le conseil émotionnel, les huit tendances et l'arbitre, ainsi que l'identité innée/personnalisée/acquise. Ne pas les présenter comme huit LLM ou comme des facultés démontrées par de simples simulations.
+3. Hors ligne, aucune permission INTERNET pour l'APK Android, aucun repli cloud/STT/TTS, pas de réactivation intempestive du microphone. Arrêt immédiat, accessibilité, sous-titres persistants et voix française.
+4. Protéger historique, coffre chiffré, profils, éventuel ancien identifiant local `bonze-proto-01`, migration et sauvegarde `.bonze`. Ne jamais supprimer les données de l'APK existant, ni remplacer un package expérimental par une signature incompatible.
+5. Préserver `main`, la branche source, les branches de travail et les Releases ; **aucun merge ni nouvelle Release sans accord explicite**.
+6. **Livraison Android : APK unique, autonome et directement téléchargeable en asset d'une GitHub Release du dépôt**, non zippé. Le ZIP Actions n'est pas une livraison. Vérifier l'URL réellement disponible, versionCode, applicationId, SHA-256 et signature ; AAB réservé à la publication Play Store si demandée.
+7. Travail sur le dépôt réel avec les cinq mémoires vivantes propres à Bonze et la méthode FAB-Copilot. Toute modification de mémoire Djipie nécessite validation séparée de Fab.
 
-- Android application ID et namespace existants : `fr.bonzeai.companion` ; ne pas renommer.
-- Branche de travail : `feature/offline-bonsaiv1`, PR #1 ; aucun merge main sans accord explicite de Fab.
-- Android sans permission INTERNET ; modèle embarqué et aucun fallback cloud vocal.
-- Clé de stockage existante `bonze-proto-01` : migrer sans effacer l'historique.
-- **RÈGLE IMMUABLE DE LIVRAISON — exigence permanente de Fab :** pour chaque version Android destinée à Fab, livrer **un fichier `.apk` autonome, directement téléchargeable sur GitHub** comme asset natif d'une **Release ou prérelease du dépôt** (`https://github.com/greenpower2669/Bonze-AI/releases/download/<tag>/<nom>.apk`). Donner systématiquement le **lien direct vers le fichier `.apk`**, vérifié après publication ; nom lisible `Bonze-AI-vVERSION[-dev|-debug].apk` (ou `Bonze-AI-vVERSION-parallel.apk` pour un essai isolé), version et signature contrôlées.
-- **INTERDICTION DE ZIP EN LIVRAISON UTILISATEUR :** ne jamais imposer ni recommander à Fab un ZIP à ouvrir, un artefact GitHub Actions compressé, une archive de sources, un AAB, un simple lien de branche/PR, ni un lien de téléchargement hors GitHub à la place du `.apk` direct demandé. Les archives éventuellement produites **en interne par GitHub Actions** restent des intermédiaires techniques : extraire le fichier puis le joindre **seul en `.apk`** à la Release GitHub (un `.sha256` facultatif peut accompagner l'APK, mais jamais le remplacer).
-- **CONTRÔLE OBLIGATOIRE AVANT D'ANNONCER « APK LIVRÉ » :** confirmer présence effective de l'asset `.apk` dans la Release, URL directe accessible, identifiant Android et `versionCode`, SHA-256 et signature ; protéger les données et la compatibilité de mise à jour. Si GitHub refuse l'upload (403, autorisations, signature, etc.), consigner le blocage dans `todo.md`, expliquer ce qui manque et **ne jamais prétendre qu'un ZIP Actions ou un lien théorique est une livraison**. Cette préférence de format n'autorise ni publication non validée ni merge `main`.
-- APKs historiques nommés `Bonze-AI-vVERSION-debug.apk` ; signature debug de test, aucune clé Play/de production conservée dans le dépôt audité.
+## Missions encore ouvertes
+- **BONZE-030/031 :** apprentissage/mémoire à tiroirs véritablement contextuelle avec autorisation distincte de la lecture privée ; naturel conversationnel, capacité à répondre à une question spécifique, reprises de contexte, distinction faits/fiction.
+- **BONZE-039/040/041 :** fiches SVC chiffrées, personnalisation et anti-perroquet intégrées, mais résultats réels sur Samsung/voix toujours à valider.
+- **BONZE-043/044/049 :** 20 intentions, répertoire prioritaire, 10 000 formulations combinatoires par émotion et juge/sage (90 000). Liquid sélectionne uniquement des variantes bornées, ne rédige pas de phrases libres.
+- **BONZE-045/046 :** 21 paires synonymiques, Piper chiffres et horaires français ; mesurer prononciation, OOV, démarrage, latence, Bluetooth, veille et Stop.
+- **BONZE-047/048 :** publication 0.8 parallèle effectuée ; incident 403 diagnostiqué prudemment (nettoyage Releases observé, causalité non démontrée).
+- **BONZE-048 :** mémoires vivantes condensées à partir de l'audit, originaux archivés sans perte.
 
-## Missions
-
-- [ ] BONZE-001 : curiosité, respect et apprentissage invariants ; émotions et attitude évolutives.
-- [ ] BONZE-002 : rencontre réciproque et propriétaire unique par instance, enfant compris ; autres utilisateurs autorisés à converser sans modifier ses missions.
-- [ ] BONZE-003 : petit bonze expressif, yeux, sourcils, sourires, rougeurs, skins.
-- [ ] BONZE-004 : STT français entièrement local et désactivable ; voix légère et émotionnelle.
-- [ ] BONZE-005 : conscience des ressources : modes précis/éco/texte/arrêt, transparence sur ses limites d'écoute.
-- [ ] BONZE-006 : miroir de compétences, réussite/échec, aveu d'ignorance, demande d'aide ou d'apprentissage.
-- [ ] BONZE-007 : mémoires avec renforcement/oubli, mémoire sociale, archivage type FAB-Copilot.
-- [ ] BONZE-008 : architecture commune PWA et APK/AAB.
-- [ ] BONZE-009 : aucun accès Internet ou API imposé, consentement pour aide externe.
-
-Des briques existent en prototype, mais aucun ordre global n'est clôturé avant vérification.
-
-- [ ] BONZE-010 : fabriquer un APK Android installable à partir du noyau commun, tester sa signature debug, la transcription locale et l'absence de cloud ; livrer un lien direct via Release après compilation.
-
-- [ ] BONZE-011 : remplacer les seuls scripts par de vrais poids neuronaux locaux, une couche d'experts entraînés et un moteur de langage partagé ; tests et APK distribuable, sans merge main.
-
-BONZE-011 progression : micro-MoE 8 experts/304 poids, LFM2.5-230M GGUF 153 Mo, inférence Kotlin llama.cpp, APK CI et Release produits ; reste tests Android réel et validation par Fab.
-
-- [ ] BONZE-012 : écran fondé sur visage toujours visible, effets corporels des émotions, grandes légendes pour enfant/malvoyant, conversation mains libres à activation unique, envoi automatique des phrases et clavier facultatif. Prototype 0.3 construit ; validation sur appareil et par Fab encore requise.
+## Critères avant de dire « terminé »
+Essai réel Samsung avec 20 tours, jeu de rôle et suites, questions et corrections, prévention d'échos, casque Bluetooth, Piper/nombres/horaires/nom propre, interruptions/Stop/veille/écran verrouillé, RAM/CPU/temps jusqu'au son, coffre/migration et sauvegarde-restauration. Relever logs techniques respectant la confidentialité et tester le package réellement installable. Une CI verte ne vaut pas une validation humaine.
 
 
+## BONZE-050 — objectif prioritaire confirmé par Fab le 01/11/2026
+Bonze doit répondre selon le sujet réel et la continuité du dialogue, puis choisir les variantes propres aux huit émotions et au juge. Liquid classe l'intention puis choisit parmi plusieurs réponses entières composées par le répertoire ; le juge et les règles anti-répétition filtrent les alternatives avant publication. En cas d'hésitation, conserver la solution écrite et contrôlée, sans réponse libre, fausse connaissance ni pression sur la RAM.
+Seule la réponse retenue modifie l'état mémoire ; préserver le fonctionnement hors ligne, les données, le Stop et la voix choisie. Tester situations précises, négations, vingt tours, Piper, Bluetooth, consommation et latence avant toute nouvelle Release autorisée. Ne pas modifier main.
 
-## Avenant global Fab — 29 octobre 2026
+## BONZE-056 — pertinence du sujet prioritaire dans le choix Liquid (01/11/2026)
+Priorité validée : la **pertinence et la continuité du sujet précèdent le nombre de variantes**. Une histoire explicitement nommée fournit quatre formulations autorisées du même noyau ; Liquid choisit seulement l'indice. Ne pas exposer le juge à des thèmes concurrents pour une demande unique. Si plusieurs thèmes incompatibles ou aucun thème rédigé ne conviennent, formuler une clarification sans inventer de connaissance. Garder l'anti-répétition, les urgences, l'accessibilité, le hors-ligne et le modèle unique. La qualité de conversation du vrai Liquid et l'écoute Piper restent à vérifier sur le téléphone, aucune fusion main ni nouvelle Release sans permission.
 
-- [ ] BONZE-013 : graine locale unique durable et diversité innée d'apparence/tempérament ; trois couches innée/personnalisée/acquise séparées, historique des origines. Implémentation 0.4 livrée en prérelease, mission ouverte jusqu'à essai Fab.
-- [ ] BONZE-014 : éditeur accessible et facultatif, presets/skins, description vocalisable, fort contraste ; personnaliser sans effacer souvenirs ni personnalité. Implémentation 0.4 livrée en prérelease ; validation humaine ouverte.
-- [ ] BONZE-015 : huit tendances persistantes et interconnectées, visage continuellement proportionnel à leurs mélanges, traits innés et corps expressif. Implémentation explicite 0.4 ; neurones émotionnels contextuels plus riches restent à développer.
-- [ ] BONZE-016 : Piper français léger, moteur/poids/licences vérifiés, identité vocale stable, variation limitée aux paramètres réels. Intégration réelle dans le candidat 0.6 ; essai humain toujours requis avant clôture.
-- [ ] BONZE-017 : endurance globale, modes précis/éco/léger/texte/désactivé, décharge de modules et mesures réelles Android. Première implémentation 0.4 ; profils de performance appareil encore ouverts.
-- [ ] BONZE-018 : personnalité spontanée et sincère avec nom Bonze AI ; rencontre progressive, mémoire sociale et personnelle, miroir de compétences avec preuves, consolidation/oubli/archives et protections familiales. Prompt allégé ; les autres sous-missions demeurent ouvertes.
+## BONZE-057 — essayer l'expérience indépendamment d'Android
+Fab accepte d'envisager d'autres plateformes si Android freine les objectifs conversationnels. Prioriser **l'essai scientifique reproductible de Liquid comme sélecteur de phrases construites**, à l'aide d'un banc Linux CPU, avec comparaison 230M et 1.2B Q4, sans nouveau modèle simultané en RAM. L'expérience doit produire des sorties brutes et mesures contrôlables, éviter les promesses de qualité sans test humain et préserver la possibilité du port Android. Pas de Release, aucune fusion dans main, aucun changement Djipie sans accord dédié.
 
-Le contrat global de Fab est décrit dans brain.md et le plan de reprise dans docs/development-2026-10-29.md. Les études ne valent ni intégration Piper ni réalisation du MoE linguistique. Aucun ordre global précédent n'est clos automatiquement.
+## BONZE-059 — arbitre lexical sans génération, démonstrateur Linux (02/11/2026)
+Poursuivre l'expérimentation de l'intelligence locale **indépendamment de la plate-forme**. L'arbitre non génératif expérimental BONZE-059 ne remplace pas l'application : 99 demandes projet et 396 rotations mesurent uniquement l'adéquation à des exemples construits par le même développeur, pas une compréhension naturelle. Préserver les bonnes phrases, les émotions, l'anti-répétition, le hors-ligne et les contrôles de sécurité. Exiger un jeu indépendant de validation avant choix d'architecture ou installation sur Android. Pas de fusion main ou de Release sans autorisation.
 
+## BONZE-060 — stress figé des formulations françaises (02/11/2026)
+Continuer l'expérience Bonze en mettant la **pertinence réelle avant les performances annoncées**. Conserver les résultats complets du nouveau banc BONZE-060, notamment les abstentions inutiles et les formulations de détresse non reconnues. Ne jamais substituer un arbitre lexical expérimental aux garde-fous critiques ; élaborer une détection de danger indépendante et testée. Une amélioration au vu de ces échecs exigera un **autre jeu d'essai non exploité** avant revendication de qualité. Android préservé, ni fusion main ni Release sans approbation.
 
-Livraison de reprise : prérelease 0.4.0, commit e60d887, run 40858508226, tests automatisés et APK vérifiés. Les missions globales restent ouvertes pour validation humaine et éléments manquants ; aucun merge main effectué. Piper, MoE linguistique et mémoire sociale sécurisée restent expressément à réaliser.
+## BONZE-061 — routeur de priorité de sécurité expérimental (02/11/2026)
+Le prototype de classement des phrases ne doit jamais être seul responsable d'un message d'urgence. Le module `core/safety-priority.js` étudie un signal de priorité distinct, sans extraire d'information personnelle ni appeler de service en ligne. Il reste expérimental, non branché aux applications. Les tests unitaires ne constituent ni certification médicale ni preuve de couverture du français. Vérifier d'abord les mécanismes Android existants, puis valider cas adversariaux et revue humaine avant toute intégration ; conserver `main`, données et APK publiée intactes.
 
-## Retour d'essai Fab — 29/10/2026 : veille et incarnation
+## BONZE-062 — priorités, refus et changements de sujet (02/11/2026)
+Mandat « continue » : développer et mesurer un **prototype expérimental** qui écoute les préférences explicites et respecte les refus de sujets. Privilégier le sens de la demande courante sur l'ancien contexte et le choix aléatoire. Une demande ambiguë ou absente du répertoire mène à une clarification/abstention plutôt qu'à un autre thème. Le filtre d'urgence reste distinct et prioritaire ; il ne produit pas d'indice de conversation. Ne pas toucher au comportement Android réel, ni aux données utilisateur, ni à `main`, ni publier une APK/Release avant preuves indépendantes et autorisation. Référence détaillée : `docs/bonze062-priorites-dialogue.md`.
 
-- [ ] BONZE-019 : permettre à la conversation explicitement activée de continuer téléphone en veille/écran éteint. Cet ordre modifie l'ancien arrêt systématique au fond ; arrêt volontaire toujours prioritaire, aucun redémarrage autonome après Stop. Prévoir service Android de conversation et notification Arrêter.
-- [ ] BONZE-020 : langage naturel et participation au jeu de rôle, sans rappels identitaires/autopromotion hors sujet ; garder sincérité et respect. Diagnostiquer le contexte réellement envoyé au modèle et évaluer les scènes françaises.
-- [ ] BONZE-021 : agrandir le visage et renforcer son expressivité pendant la parole ; bouche lisible reliée à la lecture réelle, regard/sourcils/tête expressifs. Priorité au visage, mains remises à plus tard.
-- [ ] BONZE-022 : voix locale plus naturelle et cohérente avec le personnage, au-delà du seul débit ; poursuivre Piper avec écoute et validation réelles.
+## BONZE-063 — prospective auto-étiqueté et propagation des erreurs (02/11/2026)
+La continuation de Bonze doit tester de manière transparente les **expressions inconnues, les changements de sujet et l'accumulation d'erreurs**. Les 72 entrées du banc et ses 896 décisions sont auto-étiquetées et non indépendantes ; les proportions ne décrivent pas une compréhension naturelle. Les erreurs de sécurité (danger indirect non reconnu et citation littéraire prise pour confession) exigent revue humaine. La publication et la fusion `main` restent interdites sans validation explicite de Fab.
 
-Audit ciblé demandé et réalisé : audit-2026-10-29-veille-dialogue-visage.md. Causes de code, hypothèses et corrections à produire séparées. Aucune correction applicative livrée à l'occasion de cet audit.
+## BONZE-064 — ancre symbolique de sujet hors Android (02/11/2026)
+Expérimenter une **mémoire de sujet explicite, distincte des réponses produites**. Un candidat hors sujet ne doit jamais effacer le thème confirmé par l'utilisateur. Conserver seulement une étiquette canonique locale dans l'expérience, sans l'assimiler au coffre SVC ou à une mémoire factuelle. Les scores 160/160 sur les scripts déjà vus ne doivent pas être utilisés comme preuve de compréhension générale. Aucune Release, merge main ni modification de l'APK installée.
 
-29/10 — Fab autorise les corrections de l'audit (« Ok, corrige ça »). Réalisation 0.5 en cours pour BONZE-019/020/021/022 : service écran éteint, contexte de dialogue, visage et animation de parole, voix Android locale mieux réglée. Piper reste ouvert comme intégration distincte ; aucune clôture avant les vérifications et l'essai humain.
+## BONZE-065 — nouveau banc narratif et diagnostic de sécurité (02/11/2026)
+Poursuivre le développement de Bonze avec des **preuves vérifiées** : les tests sur récits plus complexes montrent que l'ancre de thème (112/240 suites exactes) peut faire moins bien que le contexte immédiat (140/240), bien qu'elle suive le thème sur 220/240 tours. Ne pas confondre le fil du thème, le dernier événement inventé, les faits réels sur l'utilisateur ni le contenu confidentiel. Pour BONZE-066, étudier deux canaux de mémoire à provenance claire, mais le code n'a **pas été écrit** dans cette mission à cause d'un blocage de l'outil ; conserver cet objectif dans `todo.md`. Le routeur sécurité est expérimental avec faux positifs et cas indirects non identifiés ; exiger validation humaine avant toute intégration. Préserver Android, `main` et la Release publiée.
 
+## BONZE-066 — mémoire narrative en deux canaux (02/11/2026)
+La consigne « on y retourne » a conduit à implémenter **BONZE-066 en module de recherche** : `core/scene-anchor.js`, ses tests et son benchmark GitHub. La mémoire de sujet confirmée par l'utilisateur est indépendante d'une phrase de scène que Bonze a réellement délivrée et acquittée. Une sortie proposée ou abandonnée ne doit pas être enregistrée ; les receipts de livraison anciens restent invalides même après reset. Les mesures sur le banc BONZE-065 connu (112→132 bons choix sur 240, 8→12 mauvais indices) montrent simultanément un gain et un risque de dérive ; conserver les échecs et exiger une évaluation indépendante avant tout déploiement. Ne pas modifier `main`, une APK installée ou la Release sans accord explicite. Voir `docs/bonze066-scene-confirmee.md`.
 
-Livraison de correction29/10 : prérelease0.5.0, commit ff04ec4, run #40868793495 vert. BONZE-019/020/021 et la partie voix Android de BONZE-022 sont produits pour essai humain : service écran éteint, contexte de jeu/dialogue, visage agrandi, parole animée et voix locale choisie. La qualité réelle sur Samsung et l'intégration Piper restent ouvertes. Aucun merge main. La clé de signature de test0.5 diffère de0.4 ; ne pas supprimer les données existantes sans décision de Fab.
+## BONZE-067 — contradictions narratives explicites (02/11/2026)
+Suite de l'expérience demandée par Fab : BONZE-067 constitue un **garde-fou narratif expérimental** pour empêcher qu'une contradiction explicite devienne un événement de scène. La voie de sécurité vitale reste distincte. Les tests orientés (14 conflits et 18 cas ouverts) réussissent, mais le filtre n'a stoppé **aucune** des réponses du banc narratif ancien : 132/240 sélectionnées correctement, exactement comme avant. Inscrire ces limites et demander de nouvelles scènes indépendantes plutôt que présenter un succès artificiel. Ne pas confondre texte délivré, vérité fictive, vérité sur la personne et phrases proposées. Continuer sur branche expérimentale sans toucher à `main` ou à l'APK publiée.
 
-## Avenant Fab 0.5.0 — 29 octobre 2026, après vidéo d'essai
+## BONZE-068 — deux bancs nouveaux et corrections contrôlées (02/11/2026)
+Continuation demandée par Fab : tester BONZE-067 sur des scènes inconnues, conserver les résultats sans les enjoliver et corriger prudemment. Deux bancs internes, 35 simples et 20 difficiles, révèlent un succès sur les contradictions littérales mais des difficultés fortes avec quantificateurs, pronoms, temporalité et identification de personnages. Après correction du sous-ensemble connu, le filtre reconnaît 6/10 conflits difficiles et ne produit aucun faux veto sur leurs dix contre-exemples. **Aucune preuve indépendante de compréhension narrative** : les données ont servi au réglage. Garder les quatre cas non résolus au TODO, respecter le droit à la clarification/abstention et les garanties de sécurité distinctes. Aucun merge `main`, APK ou Release sans accord explicite.
 
-- [ ] BONZE-023 PRIORITÉ : auditer toute la chaîne de conversation, réponses répétées/bloquées, préfixes Humain/Bonze, affichage périmé ; corriger seulement les causes prouvées avec régressions. Sous-titres non masqués par Arrêter, vérifier les états vers le visage.
-- [ ] BONZE-024 : huit modules émotionnels avec contributions contextualisées, expertise, interactions et arbitrage central ; progresser vers sous-réseaux neuronaux. Une seule personnalité, pas de scores présentés comme une délibération complète.
-- [ ] BONZE-025 : forces ET endurances individuelles ; fatigue modifiant différemment colère/humour/empathie, influences réciproques, apaisement et réglages expérimentaux. Modifie l'ancien contrat d'endurance uniquement globale.
-- [ ] BONZE-026 : journaux privés des calculs réellement exécutés, états, paramètres, contributions, arbitrage, réponse finale et erreurs ; aucune explication fabriquée après coup.
-- [ ] BONZE-027 : console administrateur avec curseurs forces/endurance/influences/arbitrage ; étudier 60 touches alternées (30 gauche/30 droite) dans zones libres supérieures ; authentification code ou biométrie supplémentaire et alternative accessible.
-- [ ] BONZE-028 : export/réimport protégés, versionnés et vérifiables de mémoire/identité/acquis/paramètres/poids/journaux ; migration et restauration contrôlée avant toute réinstallation à signature différente.
-- [ ] BONZE-029 PRIORITÉ VOCALE : réellement embarquer une voix Piper française via moteur compatible, licences moteur/phonémiseur/dépendances/poids résolues avant publication ; génération hors ligne, débit/pauses/timbre stable, expression réelle limitée, ressources mesurées, interruption, bouche sur signal joué, comparaison Android en secours. Ne pas clore sans fonctionnement APK, essai hors ligne et écoute humaine.
+## BONZE-069 — quantificateurs, jamais et pronoms de scène (03/11/2026)
+Continuation sollicitée : développer prudemment les règles de scène de BONZE-069 sans transformer le filtre lexical en générateur de faits. L'avancement est réel et testé : jeu construit avant code 17/17 TP après adaptation, deuxième jeu différent **8/16 TP et 0 faux veto**, sans réglage sur ce second résultat. Les scores internes n'établissent pas une compréhension naturelle générale. Le traitement des quantités plurielles, verbes synonymes et références complexes reste une mission ouverte ; chaque cas de non-preuve doit pouvoir mener à une abstention et ne jamais renforcer un faux souvenir personnel. Préserver Android, `main`, les cinq fichiers propres au projet et l'APK/Release installée ; aucune publication sans feu vert explicite.
 
-Ordre demandé : anomalies bloquantes, puis mécanismes émotionnels, administration, Piper ; conserver les acquis0.5 et publier APK direct testé. Aucun merge main.
+## BONZE-070 — faits de fiction structurés et journal de provenance (03/11/2026)
+La nouvelle étape demandée par Fab a produit **BONZE-070 en prototype modulaire et non intégré** : facts symboliques de fiction et journal temporaire alimenté seulement par une phrase dont la livraison a été acquittée. La provenance « assistant-delivered » ne doit jamais être confondue avec un souvenir personnel, une vérité certifiée ou une connaissance du monde. Préserver les résultats bruts : première expérience 17/17 contradictions attendues et 0 faux blocage sur 37 exemples conçus dans le projet, **mais seconde expérience sans réglage 6/16 et 0 faux blocage**, aucune supériorité dans la généralisation mesurée. Ne pas présenter le 37/37 comme une capacité naturelle démontrée. Consolider sujet, événements, chronologie, quantités et personnages uniquement après nouvelles preuves et validation humaine indépendante. Préserver Android, `main`, APK/Release et Djipie sans modifications non autorisées.
 
+## BONZE-071 — APK Bonze Lab 070 de démonstration Android (03/11/2026)
+Fab a demandé explicitement **une APK test pour observer les changements**. Réalisation : Bonze Lab 070 en prérelease de test séparée, [APK directe non zippée](https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.8.1-lab070/Bonze-AI-v0.8.1-lab070.apk) vérifiée, build [41604105320](https://github.com/greenpower2669/Bonze-AI/actions/runs/41604105320) réussi. Le volet accessible permet de manipuler une histoire de fiction et ses vérifications logiques, en RAM, avec affichage et reset. Le paquet s'installe sous identifiant distinct pour préserver Bonze principal ; il est signé avec clé debug et n'utilise aucune permission Internet. Expliquer clairement que la nouvelle logique reste un laboratoire **non relié à la conversation vocale habituelle**, et qu'aucun essai physique n'a été effectué. Ne pas merger dans `main` ni remplacer la Release 0.8 existante. Attendre les retours de Fab sur APK réelle avant de modifier le flux de narration native ou de publier un autre binaire.
 
-## Livrable d'avenant en validation — 0.6.0
-BONZE-023 : affichage et disposition corrigés avec preuves ; répétitions propres au modèle restent ouvertes. BONZE-024 : contributions contextualisées/arbitre réels, politiques encore manuelles ; spécialisation neuronale inachevée. BONZE-025/026/027 : mécanismes et console implémentés, essai famille/TalkBack encore nécessaire. BONZE-028 : crypto/Web validés, test de restauration native ajouté ; ne pas autoriser de désinstallation comme raccourci de signature. BONZE-029 : moteur/poids Piper intégrés, tests Android obligatoires puis écoute humaine ; aucune clôture anticipée.
-Fab a autorisé le développement, les tests et une prérelease directement téléchargeable ; aucune autorisation de merge main. La clé de livraison est contrôlée contre 0.5.0. Le geste de 60 touches ne remplace pas l'authentification ; le code de verrouillage partagé ne distingue pas les membres de la famille.
-
-### État vérifiable avant publication 0.6
-BONZE-023 : affichage/disposition corrigés ; qualité répétitive du 230M reste ouverte. BONZE-024..028 : mécanismes, traces, console et sauvegardes implémentés/testés, sans prétendre au MoE linguistique ni à une autorisation familiale complète. BONZE-029 : Piper MLS réellement produit/joué/arrêté hors connexion sur émulateur (40961214052), filiation de licences résolue ; chemin phonétique et regroupement des segments contrôlés. Publication de test après CI finale, écoute physique Samsung indispensable : mission non close. Détails expérimentaux archivés dans sauvegarde.md ; aucune mission retirée ni fusion main autorisée.
-
-Livré pour validation, pas clôturé : BONZE-023 corrections d’affichage/disposition et traces ; BONZE-024..027 calculs/endurance/journaux/console ; BONZE-028 sauvegardes contrôlées ; BONZE-029 moteur Piper embarqué et testé hors connexion, encore expérimental avec secours explicite pour court/inconnu. La qualité neuronale française, le vrai MoE et l’écoute Samsung restent ouverts ; aucun ordre de Fab supprimé.
-
-### Preuves de livraison 0.6.0 — 29 octobre 2026
-- Tag bonze-ai-v0.6.0 au commit 14757d3ba01c13d6774b82459f04b3b0a499c6a7 ; prérelease publiée, APK direct : 271 170 701 octets.
-- SHA-256 APK : 657689ccf72068343c6c6d6f086e75e24c17516c5db86a8752ea0378e95bb8a0. Certificat 128b1bb0d488f33dd9075888ee15d6ff943136d657018026d1e0b22d9c35991d, identique à 0.5 ; clé toujours en cache de test, sauvegarde privée durable ouverte.
-- Workflow 40964127638 entièrement réussi : 45 JS, 3 Python, 8 programmes JVM, 51 assertions navigateur, compilation/lint/manifeste/signature, 3 tests Android API 35 hors connexion et publication. Probe vocal 40964127723 vert au même SHA. Capture finale inspectée, visage/légendes/Stop visibles.
-- APK : https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.6.0/Bonze-AI-v0.6.0-debug.apk ; Release : https://github.com/greenpower2669/Bonze-AI/releases/tag/bonze-ai-v0.6.0 ; CI : https://github.com/greenpower2669/Bonze-AI/actions/runs/40964127638 .
-- Revue indépendante des changements effectuée. PR #1 en brouillon ; main vérifiée inchangée f5910311f903d8ae4378d62d100129b690fc0e85. Aucun essai physique Samsung ni écoute humaine revendiqués. Archives : sauvegarde.md et docs/history/avenant-0.6-worklog.md.
-
-## Demande validée Fab — 30 octobre 2026
-
-- [ ] **BONZE-030 — Mémoire à tiroirs autonome, locale et sélective** : s'inspirer de Djipie pour une carte d'index compacte, ouvrir uniquement les tiroirs nécessaires au dialogue et gérer séparément mémoire immédiate, personnelle/sociale, apprentissages, scènes, missions et archives. Chaque souvenir doit porter ses droits, origine, fiabilité et règles de correction/oubli. Aucun chargement intégral systématique, aucune dépendance à GitHub ni au cloud. Préserver l'historique, la personnalité, les identités et l'export `.bonze`, effectuer une migration réversible et mesurer l'impact sur Samsung Android 16. Développer par étapes avec tests de confidentialité et validation Fab avant publication.
-
-Voir `docs/architecture-memoire-a-tiroirs.md`. Il s'agit d'une **mission ouverte**, pas d'une capacité déjà livrée par la version 0.6.0. Aucun merge main.
-
-## Nouvelle passation globale Fab — 30 octobre 2026 (ouverte)
-- [ ] **Phase A / BONZE-031** : dialogue naturel en français, vrai contexte de tours, vérifier le template et éviter l'effet service client ; banc de tests, échantillonnage et validation Samsung. Correctif initial sur branche dédiée, non validé en modèle réel.
-- [ ] **Phase B** : comparer le LFM2.5-230M à LFM2.5-1.2B-Instruct Q4, licence/compatibilité/qualité/charges mémoire, un seul modèle actif. Pas de remplacement implicite.
-- [ ] **Phase C / BONZE-030** : mémoire autonome à tiroirs à accès sélectif, provenance/droits, migrations et sauvegardes ; isoler les personnes, chiffrement local adapté. Indépendante de Djipie.
-- [ ] **Phase D** : huit tendances/endurances, contributions contrôlables, arbitre, études de sous-réseaux entraînés et IA du savoir ; preuves d'ablation et refus de fausses pensées.
-- [ ] **Phase E** : approfondir Piper MLS, diction française, bouche/voix réellement lues et accessibilité avec évaluation humaine.
-- [ ] **Phase F** : validation Android Samsung hors ligne/veille/Stop/TalkBack/ressources et sauvegarde/rollback ; accord Fab avant conclusion.
-Contrats : préserver `fr.bonzeai.companion`, signature et données ; ne jamais imposer désinstallation, ne pas ajouter INTERNET, ne pas merger `main` ni publier de Release sans validation. La prérelease 0.6.0 `14757d3` demeure le point de retour. Branche expérimentale `feature/bonze031-dialogue-natural-v1` issue de `445408e`. Résultats détaillés et limites dans `docs/bench-dialogue-fr-bonze031.md`.
-
-## Ordres actifs confirmés — 30/10, progression codée
-- [x] Première correction BONZE-031 : dialogue court avec citations humaines/Bonze et consigne incarnée. **Pas validé qualitativement avec le modèle** ; BONZE-031 demeure ouvert.
-- [x] Première couche BONZE-030 : tiroirs privés avec empreinte d'instance, sélection lexicale bornée, consentement d'apprentissage, retrait/oubli et chiffrement local du nouveau coffre ; interface manuelle et extension de sauvegarde \`.bonze\`. **Pas de rappel neuronal sécurisé en conversation ni de permissions familiales fortes** ; BONZE-030 demeure ouvert.
-- [x] Préservation des huit tendances et ajout d'un garde-fou de connaissance explicite/traçable ; **pas un vrai expert de faits ni un MoE linguistique**.
-- [x] CI expérimentale sans diffusion : tests JS/JVM, Playwright hors ligne/coffre, compilation de source Android réussis sur \`41090306459\`.
-- [ ] Exécuter et analyser le benchmark réel LFM2.5-230M / LFM2.5-1.2B Q4, choisir seulement après preuves ; backend actuel Android reste 230M.
-- [ ] Continuer l'authentification des personnes, le rappel sélectif sûr et les migrations, puis apprentissage experts/arbitre/voix Piper et tests Samsung.
-- [ ] Conserver l'interdiction de merge \`main\` et de Release sans accord explicite ; la 0.6.0 reste publiée, aucun nouvel APK signé ou AAB.
-Rapport de passation exact : \`docs/history/bonze031-evolution-2026-10-30.md\` et tâches \`todo.md\`.
-
-## BONZE-032 — expérimentation de moteur, à ne pas clôturer
-- [x] Coder sélection accessible Liquid 230M ou 1.2B, fichier Q4_K_M importable **hors ligne** depuis Android SAF et SHA-256 strict, pas de chargement simultané. Défaut inchangé : 230M.
-- [x] Ajouter garde d'espace, copie temporaire et vérification complète ; sauvegarder le choix, refuser un gros modèle absent au lieu d'un plantage.
-- [x] Corriger l'erreur de compilation C++ du banc de comparaison ; régressions JavaScript et compilation Android de source sur CI intermédiaire vertes.
-- [ ] Vérifier le benchmark réel 230M/1.2B et les résultats français (humour, suite du dialogue, répétition, hallucinations), RAM/PSS et latence sur Samsung avant adoption recommandée.
-- [ ] Vérifier APK complet, signature identique 0.6, tests Android instrumentés/Piper/Stop/veille, compatibilité de sauvegarde, stockage et ressources puis validation Fab.
-- [ ] Aucune Release ni merge `main` sans autorisation. Aucun APK de cette branche publié.
-
-## Avenant technique 30/10 — constats vérifiés
-- [x] Exécuter comparaison réelle CPU/Linux sur LFM 230M et 1.2B Q4 et consigner sorties : `41096101109`, `docs/bench-dialogue-fr-bonze031-results.md`. Le 1.2B n'est pas supérieur de manière suffisamment constante pour remplacer le 230M.
-- [x] Ajouter `KnowledgeGuard.java` (règles bornées, non neuronales) pour limiter des informations sensibles ou temporelles inventées hors ligne et tracer l'origine de la réponse.
-- [x] Corriger concurrence de déverrouillage du coffre privé à tiroirs ; toute opération périmée est ignorée après Stop ou nouvelle tentative.
-- [x] Passer l'interface expérimentale au code Android7/version `0.7.0-dev`, conserver la 0.6.0 comme référence publiée.
-- [ ] Compiler APK complet/tester lint, vérifications de sécurité et signature de CI ; aucune distribution tant que certificat de mise à jour n'est pas préservé.
-- [ ] Améliorer dialogue multi-rôles, jugement vrai/fiction, prononciation Piper, expertises spécialisées apprises et tests Samsung, sans présentation trompeuse de réussite.
-
-### 30/10/2026 — livraison directe 0.7.0-dev pour économiser l’espace sur Android
-APK GitHub Release préversion : https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.7.0-dev/Bonze-AI-v0.7.0-dev.apk
-Run de compilation et publication : https://github.com/greenpower2669/Bonze-AI/actions/runs/41116988575 (succès).
-Source exacte publiée : `fdd4ba9477fbb87f72b7f69a2a0ec225bd471fbb`, code version 7 / 0.7.0-dev ; signature identique à 0.6.0 vérifiée par SHA-256 de certificat `128b1bb0d488f33dd9075888ee15d6ff943136d657018026d1e0b22d9c35991d`. Identifiant Android `fr.bonzeai.companion` identique : mise à jour en place, et non APK parallèle. Taille publiée : 271 211 531 octets, SHA-256 du fichier `a3f9903f3ff132a393e04a7740746fdebeffed106df8817e46d757191d2ccd90`. Pas de ZIP, pas de fusion `main`. Signature d'origine récupérée **uniquement dans le cache du workflow GitHub** sur `feature/offline-bonsaiv1`; ajout d'un workflow ponctuel `.github/workflows/bonze070-direct-apk.yml` à cette branche, sans modification des sources de la 0.6.0. L'APK de test parallèle antérieur reste un artefact Actions distinct et ne doit plus être recommandé pour un téléphone à faible stockage. Recommandation : sauvegarde privée `.bonze` avant installation, espace temporaire suffisant ; tests physiques Samsung toujours attendus.
-
-### BONZE-039 — personnalisation et mémoire SVC
-Implémenter sur une branche d'intégration basée sur la 0.7 existante : fiches structurées dans le coffre chiffré avec consentement, écran édition/recherche/oubli ; style conversation configurable (5 modes, forme d'adresse, longueur, humour, curiosité, douceur, débit de voix) réellement transmis au moteur Android ; contrôles automatisés et mémoire vivante. Conserver la PR #3 et la 0.7, aucun merge `main` et aucune Release prématurée. Tests matériels et réconciliation des deux lignes restent ouverts.
-
-### BONZE-040 — correction des répétitions et débogage voix (31/10/2026)
-À partir de BONZE-039, corriger le cas utilisateur prouvé d'une réponse qui répète une insulte reçue, surveiller les autres réponses circulaires, préremplir la sortie Piper pour éviter les sous-alimentations à l'initialisation, relever timings et `underrunCount`, exposer un journal technique anonymisé dans Options (stockage volontaire par SAF, pas d'Internet). Valider JS/JVM/UI/compilation puis vérifier au casque sur téléphone ; ne pas fusionner main ni publier d'APK avant validation et signature sûre.
-
-
-### BONZE-041 — Correction cohérente et APK de test isolé
-Mission : répondre aux tests négatifs de la 0.7 (« perroquet » + coupures), intégrer le répertoire BONZE-037 dans la ligne 0.7/039/040 sans perdre mémoires SVC, personnalisation et journal exportable. Les réponses LLM valides restent prioritaires, un secours local préécrit varie selon le contenu ; lecture Piper continue et normalisée, audit du lexique embarqué, sauvegardes validées. Préparer `0.8.0-dev` en **identifiant Android Dev distinct**, CI et inspection du package pour pouvoir mesurer sur téléphone. Ne pas fusionner main, publier une Release ni modifier la 0.7 installée sans ordre explicite. Conserver les limitations acoustiques dans le todo.
+## BONZE-072 — Liquid 1,2B dialogue libre, APK test Android (03/11/2026)
+Fab a constaté que le **dialogue normal** de l'APK précédente ne comprenait pas ses phrases, puis a demandé de tester **Liquid 1,2B plus gros**, empaqueté automatiquement. Livrer un vrai test signifie cette fois faire générer une réponse par le 1,2B, pas simplement utiliser ce modèle pour classer une intention. Mission réalisée dans l'édition Android parallèle `fr.bonzeai.companion.lab12b` (0.8.2-lab12b code 10). Modèle Q4 de ~731 Mo inclus et hash vérifié, ancienne architecture 230M conservée comme option, pas d'INTERNET. [APK non zippée directe](https://github.com/greenpower2669/Bonze-AI/releases/download/bonze-ai-v0.8.2-lab12b/Bonze-AI-v0.8.2-lab12b.apk) **publiée**, build [41607888706](https://github.com/greenpower2669/Bonze-AI/actions/runs/41607888706), récupération/publication [41609120245](https://github.com/greenpower2669/Bonze-AI/actions/runs/41609120245). GitHub refusait de créer la Release au SHA feature (403 workflows) : tag de publication rattaché à `main`, **source vraie du binaire = SHA `94d8f6a0` sur branche** documentée dans la notice, aucune fusion. C'est une exception technique à régulariser, pas une branche fusionnée. Ne jamais prétendre que la qualité conversationnelle est démontrée : attendre retour utilisateur réel, tests RAM/sécurité/TTS et A/B avant toute décision de conserver le 1,2B. Pas d'écriture dans Djipie sans validation de Fab.

@@ -1,8 +1,8 @@
 /* BONZE-034. Compressed, locally authored dialogue grammar.
- * Exactly 200 semantic seeds x 5 turn-taking forms x 2 closings = 2,000
- * virtual phrase cards per role; 9 roles => 18,000, allocated on selection.
- * Nothing is eagerly expanded into 18,000 strings or stored in SQLite/JSON.
- * These are compositional phrasings, NOT 18,000 independently written situations.
+ * Exactly 200 semantic seeds x 10 turn-taking forms x 5 closings = 10,000
+ * virtual phrase cards per role; 9 roles => 90,000, allocated on selection.
+ * Nothing is eagerly expanded into 90,000 strings or stored in SQLite/JSON.
+ * These are compositional phrasings, NOT 90,000 independently written situations.
  */
 (function(root){
 'use strict';
@@ -32,7 +32,7 @@ contrarié:[
 "Je vois que quelque chose te contrarie ; tu peux me l'expliquer.","On peut être en colère et chercher malgré tout une réponse utile.","Qu'est-ce qui t'a semblé injuste dans cette histoire ?","Je ne vais pas minimiser ton agacement ni rendre le conflit plus grave.","Une discussion ferme peut rester respectueuse.","Avant de réagir, regardons ce qui a déclenché la tension.","Il est parfois utile de séparer les faits des suppositions.","Tu peux dire ce que tu refuses sans avoir à blesser quelqu'un.","Cherchons une manière de faire comprendre ton point de vue.","Je peux t'aider à reformuler une demande plus clairement.","Si mon comportement t'a agacé, je préfère le savoir et le corriger."
 ],
 jeu:[
-"Et si nous inventions un château dont les portes changent de couleur ?","Je propose une forêt de lanternes où les arbres racontent des énigmes.","Notre héros pourrait rencontrer une tortue qui collectionne les nuages.","Un navire de papier pourrait traverser un océan de chocolat imaginaire.","Imaginons un petit robot persuadé d'être un grand explorateur.","Et si la lune prêtait son parapluie aux voyageurs ?","Une bibliothèque volante pourrait perdre ses livres au-dessus des montagnes.","Je connais une scène imaginaire avec un dragon qui a peur du feu.","Une valise mystérieuse pourrait contenir une ville minuscule.","Choisissons un personnage qui confond les étoiles et les lumières.","Une rivière à l'envers pourrait mener à un jardin de montres."
+"Et si nous inventions un château dont les portes changent de couleur ?","Je propose une forêt de lanternes où les arbres racontent des énigmes.","Notre héros pourrait rencontrer une tortue qui collectionne les nuages.","Un pirate voyage sur un navire de papier à travers un océan de chocolat imaginaire.","Imaginons un petit robot persuadé d'être un grand explorateur.","Et si la lune prêtait son parapluie aux voyageurs ?","Une bibliothèque volante pourrait perdre ses livres au-dessus des montagnes.","Je connais une scène imaginaire avec un dragon qui a peur du feu.","Une valise mystérieuse pourrait contenir une ville minuscule.","Choisissons un personnage qui confond les étoiles et les lumières.","Une rivière à l'envers pourrait mener à un jardin de montres."
 ],
 humour:[
 "Un escargot vient de demander un plan pour sa coquille.","Une carotte rêve de passer son permis de conduire.","Un nuage s'est inscrit à un concours de moustaches.","Un poisson voudrait ouvrir une boutique de parapluies.","La grenouille du village se prend pour une grande soprano.","Un robot a essayé de recharger son bonnet en électricité.","Une chaussette affirme avoir découvert le continent du canapé.","Un croissant demande une carte pour retrouver sa boulangerie.","Un pingouin a invité un ventilateur à son anniversaire.","Une pomme essaie de devenir reine du potager.","Une fourmi veut construire un ascenseur pour les miettes."
@@ -116,21 +116,80 @@ sage:[
 };
 
 var OPENERS={
-soft:["Je vais te proposer ceci :","Tu peux entendre cette idée :","Voici une possibilité :","Je veux dire les choses simplement :","Il me vient cette réponse :"],
-play:["J'ai une idée un peu folle :","Imagine plutôt ceci :","Écoute cette invention :","Je plante le décor :","J'ajoute une fantaisie :"],
-acknowledge:["Je voudrais te dire ceci :","Une idée me vient :","Voilà ce que j'aimerais partager :","Écoute cette petite pensée :","J'ai envie de répondre ainsi :"],
-open:["Voici ce qui me vient :","Écoute cette piste :","J'ai une proposition :","On pourrait commencer ainsi :","Je te répondrais ceci :"],
-farewell:["Avant de partir, une pensée :","Je te laisse ceci :","Pour la route :","Un dernier mot :","Avant la prochaine fois :"],
-careful:["Je vais rester précis :","Voilà une piste prudente :","Je préfère dire ceci :","Il faut garder cette nuance :","Pour éviter les raccourcis :"]
+ soft:["Je vais te proposer ceci :","Tu peux entendre cette idée :","Voici une possibilité :","Je veux dire les choses simplement :","Il me vient cette réponse :","Je t'écoute :","On peut essayer ceci :","Une idée pour toi :","Pour commencer :","Je te réponds :"],
+ play:["J'ai une idée un peu folle :","Imagine plutôt ceci :","Écoute cette invention :","Je plante le décor :","J'ajoute une fantaisie :","Et si on jouait ainsi :","Voici une autre idée :","Je vois cette scène :","On peut imaginer ceci :","Une aventure commence :"],
+ acknowledge:["Je voudrais te dire ceci :","Une idée me vient :","Voilà ce que j'aimerais partager :","Écoute cette petite pensée :","J'ai envie de répondre ainsi :","Je reçois tes mots :","Voici ma pensée :","Tout simplement :","Je te réponds :","Je veux partager ceci :"],
+ open:["Voici ce qui me vient :","Écoute cette piste :","J'ai une proposition :","On pourrait commencer ainsi :","Je te répondrais ceci :","Je t'écoute :","Voilà mon idée :","Je me demande :","Une piste possible :","Pour commencer :"],
+ farewell:["Avant de partir, une pensée :","Je te laisse ceci :","Pour la route :","Un dernier mot :","Avant la prochaine fois :","Pour finir :","Pour la suite :","Encore une pensée :","Je te souhaite ceci :","Juste avant de partir :"],
+ careful:["Je vais rester précis :","Voilà une piste prudente :","Je préfère dire ceci :","Il faut garder cette nuance :","Pour éviter les raccourcis :","Je reste prudent :","Un point important :","Restons exacts :","Je veux comprendre :","Voilà ce que je sais :"]
 };
 var ENDINGS={
-soft:["On peut en parler à ton rythme.","Tu peux choisir ce que tu veux me raconter."],
-play:["À toi d'inventer le prochain rebondissement !","On essaie cette piste imaginaire ?"],
-acknowledge:["Je te laisse apprécier ce moment.","Qu'aimerais-tu faire ensuite ?"],
-open:["Qu'en penses-tu ?","Tu peux me raconter la suite."],
-farewell:["À bientôt !","Prends soin de toi."],
-careful:["Si tu as une source, nous pouvons la vérifier.","Je préfère confirmer les faits avant d'aller plus loin."]
+ soft:["On peut en parler à ton rythme.","Tu peux choisir ce que tu veux me raconter.","Je t'écoute.","Tu choisis la suite.","Nous pouvons avancer ensemble."],
+ play:["À toi d'inventer le prochain rebondissement !","On essaie cette piste imaginaire ?","Et maintenant ?","À toi de jouer !","La suite est à inventer."],
+ acknowledge:["Je te laisse apprécier ce moment.","Qu'aimerais-tu faire ensuite ?","Merci pour ce moment.","On continue ensemble ?","Je suis là pour la suite."],
+ open:["Qu'en penses-tu ?","Tu peux me raconter la suite.","Je t'écoute.","À toi de voir.","La suite dépend de toi."],
+ farewell:["À bientôt !","Prends soin de toi.","Bonne suite à toi.","Nous pourrons en reparler.","Je te souhaite une belle journée."],
+ careful:["Si tu as une source, nous pouvons la vérifier.","Je préfère confirmer les faits avant d'aller plus loin.","Gardons ce doute.","Je veux être exact.","Nous pouvons chercher ensemble."]
 };
+// Original, short and locally authored follow-up beats per imaginary scene.
+// No raw user text is used and no neural generation is accepted as speech.
+var STORY_BEATS=[
+ [
+  "Une porte s'ouvre et notre héros découvre une nouvelle pièce.",
+  "Il choisit une porte et une lumière apparaît derrière lui.",
+  "Le château lui révèle enfin un passage vers un autre monde."
+ ],
+ [
+  "Dans la forêt, une lanterne raconte un secret à notre héros.",
+  "Les arbres lui posent une énigme et attendent sa réponse.",
+  "Une lumière ouvre un chemin entre les branches."
+ ],
+ [
+  "La tortue montre ses nuages à un nouvel ami.",
+  "Un nuage lui échappe et flotte vers la montagne.",
+  "Elle retrouve son nuage et décide de le partager."
+ ],
+ [
+  "Le pirate quitte le port sur son navire et rencontre une grande vague.",
+  "Son équipage cherche une route à travers cet océan.",
+  "Le navire arrive enfin sur une île imaginaire."
+ ],
+ [
+  "Le petit robot découvre une trace dans le sable.",
+  "Il suit cette trace et rencontre un autre explorateur.",
+  "Ensemble, ils choisissent une nouvelle aventure."
+ ],
+ [
+  "La lune tend son parapluie à un jeune voyageur.",
+  "Le voyageur découvre que ce parapluie brille dans la nuit.",
+  "La lune le remercie et éclaire son chemin."
+ ],
+ [
+  "Un livre tombe doucement près d'une maison.",
+  "Une petite fille découvre le livre et cherche sa bibliothèque.",
+  "La bibliothèque revient enfin au-dessus des montagnes."
+ ],
+ [
+  "Le dragon observe une petite flamme et décide de l'approcher.",
+  "Un ami lui montre comment jouer avec la lumière.",
+  "Le dragon comprend que sa peur peut diminuer peu à peu."
+ ],
+ [
+  "La valise s'ouvre et révèle une ville aux petites fenêtres.",
+  "Dans cette ville, une voix invite notre héros à entrer.",
+  "Le héros referme la valise pour protéger ce secret."
+ ],
+ [
+  "Le personnage suit une lumière en croyant voir une étoile.",
+  "Il découvre la différence entre les étoiles et les lampes.",
+  "Il choisit de regarder le ciel avec son nouvel ami."
+ ],
+ [
+  "La rivière mène notre héros au jardin des montres.",
+  "Une montre indique un chemin qu'il ne connaissait pas.",
+  "Le héros repart avec un souvenir de ce jardin."
+ ]
+];
 var SAFE_INTENTS=Object.keys(CORES);
 function validate(){
  var count=0;
@@ -141,19 +200,47 @@ function validate(){
   for(var n=0;n<CORES[k].length;n++)if(typeof CORES[k][n]!=='string'||CORES[k][n].length<30)throw Error('bad seed '+k);
  }
  if(count!==200)throw Error('expected exactly 200 semantic seeds, got '+count);
+ if(STORY_BEATS.length!==CORES.jeu.length||STORY_BEATS.some(function(x){return x.length!==3;}))throw Error('incomplete authored story continuations');
  for(var role in LENSES){if(LENSES[role].length!==VOICE_ORDER.length)throw Error('missing stance '+role);for(var z=0;z<LENSES[role].length;z++)if(typeof LENSES[role][z]!=='string'||LENSES[role][z].length<12)throw Error('invalid stance '+role+'/'+z);}
  for(var role in CUES)for(var mode in OPENERS)if(!CUES[role][mode])throw Error('missing cue '+role+'/'+mode);
- for(var mode in OPENERS)if(OPENERS[mode].length!==5||ENDINGS[mode].length!==2)throw Error('bad forms '+mode);
+ for(var mode in OPENERS)if(OPENERS[mode].length!==10||ENDINGS[mode].length!==5)throw Error('bad forms '+mode);
 }
 validate();
-function sizeFor(intent){return CORES[intent]?CORES[intent].length*10:0;}
+function sizeFor(intent){return CORES[intent]?CORES[intent].length*50:0;}
 function render(role,intent,index){
- var mode=MODE_OF[intent],cores=CORES[intent];if(!CUES[role]||!cores||index<0||index>=cores.length*10)throw Error('unknown catalogue entry');
- var kernel=Math.floor(index/10),open=Math.floor(index%10/2),close=index%2;
+ var mode=MODE_OF[intent],cores=CORES[intent];if(!CUES[role]||!cores||index<0||index>=cores.length*50)throw Error('unknown catalogue entry');
+ var kernel=Math.floor(index/50),open=Math.floor(index%50/5),close=index%5;
  return {id:intent+'/'+role+'/v'+index,role:role,intent:intent,family:intent+'/'+role+'/theme'+kernel,
   body:[LENSES[role][VOICE_ORDER.indexOf(intent)],OPENERS[mode][open],cores[kernel],ENDINGS[mode][close]].join(' '),
   theme:kernel,form:open,ending:close,composed:true};
 }
-root.BonzeCorpus={render:render,sizeFor:sizeFor,intents:SAFE_INTENTS,modes:MODE_OF,
- countPerRole:2000,roles:Object.keys(CUES),source:"composed; 200 curated semantic seeds x 10 forms per role"};
+function renderContinuation(role,theme,step,form,ending){
+ if(!CUES[role]||!STORY_BEATS[theme]||step<0||step>=3||
+    form<0||form>=10||ending<0||ending>=5)
+  throw Error('invalid story continuation');
+ return {id:'jeu/'+role+'/s'+theme+'b'+step+'f'+form+'e'+ending,
+  role:role,intent:'jeu',family:'jeu/'+role+'/theme'+theme,theme:theme,
+  form:form,ending:ending,composed:true,storyStep:step,
+  body:[LENSES[role][VOICE_ORDER.indexOf('jeu')],OPENERS.play[form],
+    STORY_BEATS[theme][step],ENDINGS.play[ending]].join(' ')};
+}
+function renderStoryClosure(role,theme,form,ending){
+ if(!CUES[role]||!STORY_BEATS[theme]||form<0||form>=10||ending<0||ending>=5)
+  throw Error('invalid story closure');
+ return {id:'jeu/'+role+'/end'+theme+'f'+form+'e'+ending,
+  role:role,intent:'jeu',family:'jeu/'+role+'/end'+theme,
+  theme:theme,form:form,ending:ending,composed:true,storyStep:3,
+  body:[LENSES[role][VOICE_ORDER.indexOf('jeu')],OPENERS.play[form],
+   'La suite est à inventer. Tu peux choisir une autre histoire.',
+   ENDINGS.play[ending]].join(' ')};
+}
+// Fixed clarification for topics absent from the authored story kernels.
+function unknownStoryTopic(role){
+ if(!CUES[role])throw Error('invalid author role');
+ return {id:'jeu/'+role+'/unknown-topic',role:role,intent:'jeu',
+  family:'jeu/'+role+'/unknown-topic',form:-1,ending:-1,composed:false,
+  body:"Je peux inventer une histoire avec toi. Quel personnage aimerais-tu imaginer pour commencer ?"};
+}
+root.BonzeCorpus={render:render,renderContinuation:renderContinuation,renderStoryClosure:renderStoryClosure,unknownStoryTopic:unknownStoryTopic,continuationCount:3,sizeFor:sizeFor,intents:SAFE_INTENTS,modes:MODE_OF,
+ countPerRole:10000,roles:Object.keys(CUES),source:"composed; 200 curated semantic seeds x 50 forms per role"};
 })(typeof globalThis!=='undefined'?globalThis:this);

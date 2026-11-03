@@ -1,0 +1,40 @@
+name: BONZE-068 - frozen new narrative challenge
+on:
+  push:
+    branches: [feature/bonze042-field-fixes]
+    paths:
+      - 'core/story-consistency.js'
+      - 'tests/fixtures/bonze068-new-scenes.mjs'
+      - 'tests/bonze068.test.mjs'
+      - 'scripts/bench-bonze068-baseline.mjs'
+      - 'tests/fixtures/bonze068-hard-cases.mjs'
+      - 'scripts/bench-bonze068-hard.mjs'
+      - '.github/workflows/bonze068-frozen-challenge.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check challenge and report structure
+        run: node --test tests/bonze068.test.mjs
+      - name: Run unmodified BONZE-067 on prospective cases
+        run: node scripts/bench-bonze068-baseline.mjs
+      - name: Evaluate harder new variants without tuning
+        run: node scripts/bench-bonze068-hard.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bonze068-untuned-baseline
+          path: |
+            bonze068-baseline.json
+            bonze068-baseline.md
+            bonze068-hard-results.json
+            bonze068-hard-results.md
+          if-no-files-found: error
+          retention-days: 30

@@ -1,0 +1,36 @@
+name: BONZE-062 — experimental French preference routing
+on:
+  push:
+    branches: [feature/bonze042-field-fixes]
+    paths:
+      - core/preference-arbiter.js
+      - tests/bonze062-preferences.test.mjs
+      - tests/fixtures/bonze062-preference-cases.mjs
+      - scripts/bench-preferences-bonze062.mjs
+      - .github/workflows/bonze062-preferences.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preference-benchmark:
+    name: Refusals, switches and priority/rotation checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run regression tests
+        run: node --test tests/bonze062-preferences.test.mjs
+      - name: Compare against frozen BONZE-060
+        run: node scripts/bench-preferences-bonze062.mjs
+      - name: Keep raw diagnostic results
+        uses: actions/upload-artifact@v4
+        with:
+          name: bonze062-preference-comparison
+          path: |
+            bonze062-comparison.json
+            bonze062-comparison.md
+          if-no-files-found: error
+          retention-days: 30

@@ -35,6 +35,54 @@ for(const role of corpus.roles){
  }
 }
 
+// BONZE-053: authored story continuations use the *same* bundled Piper lexicon.
+let storyVariants=0;
+for(const role of corpus.roles)for(let theme=0;theme<11;theme++)for(let step=0;step<3;step++){
+ const c=corpus.renderContinuation(role,theme,step,0,0);
+ storyVariants++;
+ const unknown=[...new Set((c.body.toLocaleLowerCase('fr-FR').match(WORD)||[])
+  .filter(w=>!dictionary.has(w)))];
+ for(const word of unknown)missing.set(word,(missing.get(word)||0)+1);
+ if(c.body.length>220)throw Error('Oversized story continuation '+c.id);
+}
+if(storyVariants!==297)throw Error('Story continuation count changed');
+for(const role of corpus.roles){
+ const extra=corpus.unknownStoryTopic(role);
+ if(extra.body.length>220)throw Error('Oversized unknown-topic clarification '+role);
+ const unknown=[...new Set((extra.body.toLocaleLowerCase('fr-FR').match(WORD)||[])
+  .filter(w=>!dictionary.has(w)))];
+ for(const word of unknown)missing.set(word,(missing.get(word)||0)+1);
+}
+for(const role of corpus.roles){
+ const item=corpus.renderStoryClosure(role,0,0,0);
+ if(item.body.length>220)throw Error('Oversized story closure '+role);
+ const unknown=[...new Set((item.body.toLocaleLowerCase('fr-FR').match(WORD)||[])
+  .filter(w=>!dictionary.has(w)))];
+ for(const word of unknown)missing.set(word,(missing.get(word)||0)+1);
+}
+
+
+// BONZE-044: a synonym chosen by Liquid must be pronounceable by the same
+// packaged Piper lexicon as our 90,000 authored cards.
+const synonymJava=readFileSync(new URL('../android/app/src/main/java/fr/bonzeai/companion/SynonymChoice.java',import.meta.url),'utf8');
+const approvedPairs=[...synonymJava.matchAll(/\{"([^"]+)","([^"]+)"\}/g)];
+if(approvedPairs.length<21)throw Error('BONZE-045 approved synonyms were lost');
+const synonymOOV=new Set();
+for(const pair of approvedPairs)for(const word of [pair[1],pair[2]])
+ for(const token of word.toLocaleLowerCase('fr-FR').match(WORD)||[])
+  if(!dictionary.has(token))synonymOOV.add(token);
+
+// Support for spoken integers is safe only when EVERY possible token is
+// present in the exact Piper dictionary shipped with this build.
+const cardinalWords=[
+ 'zéro','un','deux','trois','quatre','cinq','six','sept','huit','neuf',
+ 'dix','onze','douze','treize','quatorze','quinze','seize',
+ 'vingt','vingts','trente','quarante','cinquante','soixante',
+ 'cent','cents','mille','et','heure','heures'
+];
+const cardinalMissing=cardinalWords.filter(word=>!dictionary.has(word));
+if(cardinalMissing.length)throw Error('Piper French numeral tokens absent: '+cardinalMissing.join(', '));
+
 const authoredOOV=new Map(),authoredSentences=new Set();
 let authoredTested=0,authoredCovered=0;
 for(const card of authored){
@@ -67,6 +115,8 @@ const report={
  authoredCards:authored.length,
  authoredVariantsTested:authoredTested,
  authoredLexicallyCovered:authoredCovered,
+ approvedSynonymPairs:approvedPairs.length,
+ synonymOOV:[...synonymOOV],
  authoredOOV:[...authoredOOV.entries()].sort((a,b)=>b[1]-a[1]).map(([word,variants])=>({word,variants})),
  notes:'No acoustic claim. Short IPA and audio/permission failures remain possible even for covered texts.'
 };
@@ -74,5 +124,5 @@ writeFileSync('piper-corpus-report.json',JSON.stringify(report,null,2)+'\n');
 console.log('PIPER_CORPUS_AUDIT variants='+checked+' unique='+uniqueTexts.size+' fullLexicalCoveragePct='+report.lexicalCoveragePct+' OOV='+missing.size+' authoredOOV='+authoredOOV.size);
 console.log('PIPER_MOST_COMMON_OOV '+report.topOOV.slice(0,20).map(x=>x.word+':'+x.variants).join(' '));
 console.log('PIPER_AUTHORED_OOV '+report.authoredOOV.map(x=>x.word+':'+x.variants).join(' '));
-if(checked!==18000||uniqueTexts.size!==18000)throw Error('Corpus count or uniqueness changed');
-if(missing.size>0||authoredOOV.size>0)throw Error('Piper dictionary has '+missing.size+' corpus OOV and '+authoredOOV.size+' authored-card OOV; inspect archived audit');
+if(checked!==90000||uniqueTexts.size!==90000)throw Error('Corpus count or uniqueness changed');
+if(missing.size>0||authoredOOV.size>0||synonymOOV.size>0)throw Error('Piper dictionary has '+missing.size+' corpus OOV, '+authoredOOV.size+' authored OOV and '+synonymOOV.size+' synonym OOV: '+[...synonymOOV].join(', '));

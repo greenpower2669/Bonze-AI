@@ -1,0 +1,38 @@
+name: BONZE-059 — non-neural offline experiment
+on:
+  push:
+    branches:
+      - feature/bonze042-field-fixes
+    paths:
+      - 'core/non-neural-arbiter.js'
+      - 'tests/bonze059.test.mjs'
+      - 'tests/fixtures/bonze059-french-cases.mjs'
+      - 'scripts/bench-non-neural.mjs'
+      - '.github/workflows/bonze059-non-neural.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lexical-benchmark:
+    name: Measure 99 authored requests with 4 position rotations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Regressions, abstention and option-position checks
+        run: node --test tests/bonze059.test.mjs
+      - name: Run complete non-generative local baseline
+        run: node scripts/bench-non-neural.mjs
+      - name: Retain raw decisions and benchmark limits
+        uses: actions/upload-artifact@v4
+        with:
+          name: bonze059-non-neural-baseline
+          path: |
+            bonze059-diagnostics.json
+            bonze059-decisions.jsonl
+            bonze059-report.md
+          if-no-files-found: error
+          retention-days: 30

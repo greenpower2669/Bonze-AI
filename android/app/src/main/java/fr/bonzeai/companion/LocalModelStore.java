@@ -16,6 +16,50 @@ public final class LocalModelStore {
  private static final long MIN_BYTES=680_000_000L,MAX_BYTES=830_000_000L;
  private LocalModelStore(){}
  public static File destination(Context context){return new File(new File(context.getFilesDir(),"gguf"),LARGE_FILE);}
+ /** The larger GGUF is embedded only in the parallel, experimental app.
+  * This does not extract the model on the main/UI thread. */
+ public static boolean bundled(Context context){
+  if(!context.getPackageName().endsWith(".lab12b"))return false;
+  try(InputStream in=context.getAssets().open("models/"+LARGE_FILE)){
+   return in.read()!=-1;
+  }catch(IOException error){return false;}
+ }
+ /** Copy and hash embedded GGUF once on the inference worker.
+  * A valid private model imported manually remains untouched. */
+ public static synchronized File ensureBundled(Context context)throws Exception{
+  if(available(context))return destination(context);
+  if(!bundled(context))throw new IOException("Liquid 1,2B absent de cette édition.");
+  File dest=destination(context),folder=dest.getParentFile();
+  if(!folder.isDirectory()&&!folder.mkdirs())throw new IOException("Stockage privé inaccessible");
+  StatFs fs=new StatFs(folder.getAbsolutePath());
+  if(fs.getAvailableBytes()<850_000_000L)throw new IOException("Il faut au moins 850 Mo libres pour installer les poids intégrés.");
+  File temp=new File(folder,LARGE_FILE+".bundled-tmp");
+  MessageDigest digest=MessageDigest.getInstance("SHA-256");
+  long bytes=0;
+  try{
+   try(InputStream in=context.getAssets().open("models/"+LARGE_FILE);
+       FileOutputStream out=new FileOutputStream(temp)){
+    byte[] chunk=new byte[65536];int size;
+    while((size=in.read(chunk))!=-1){
+     if(Thread.currentThread().isInterrupted())throw new IOException("Copie du modèle interrompue");
+     bytes+=size;
+     if(bytes>MAX_BYTES)throw new IOException("Poids intégrés trop volumineux");
+     digest.update(chunk,0,size);out.write(chunk,0,size);
+    }
+    out.getFD().sync();
+   }
+   if(bytes<MIN_BYTES)throw new IOException("Poids incomplets");
+   StringBuilder sum=new StringBuilder();
+   for(byte unit:digest.digest())sum.append(String.format(Locale.ROOT,"%02x",unit&255));
+   if(!LARGE_SHA256.equals(sum.toString()))throw new IOException("Empreinte GGUF invalide");
+   if(dest.exists()&&!dest.delete())throw new IOException("Ancien modèle verrouillé");
+   if(!temp.renameTo(dest))throw new IOException("Copie atomique échouée");
+   if(!context.getSharedPreferences("bonze-conversation-v1",Context.MODE_PRIVATE)
+        .edit().putString("largeModelSha",LARGE_SHA256).commit())
+    throw new IOException("Validation GGUF non enregistrée");
+   return dest;
+  }finally{temp.delete();}
+ }
  public static boolean available(Context context){
   File file=destination(context);
   // Trust the verified marker only after an atomic file rename in private app storage.
@@ -34,8 +78,9 @@ public final class LocalModelStore {
   return !info.lowMemory&&info.availMem>=1_250_000_000L;
  }
  public static String choice(Context context){
-  String selected=context.getSharedPreferences("bonze-conversation-v1",Context.MODE_PRIVATE).getString("modelChoice",SMALL);
-  return LARGE.equals(selected)&&available(context)?LARGE:SMALL;
+  String selected=context.getSharedPreferences("bonze-conversation-v1",Context.MODE_PRIVATE)
+    .getString("modelChoice",bundled(context)?LARGE:SMALL);
+  return LARGE.equals(selected)&&(available(context)||bundled(context))?LARGE:SMALL;
  }
  public static String install(Context context,Uri uri)throws Exception{
   if(uri==null||!"content".equals(uri.getScheme()))throw new IOException("Source locale SAF uniquement");

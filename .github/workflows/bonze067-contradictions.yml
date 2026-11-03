@@ -1,0 +1,21 @@
+name: BONZE-067 conservative story contradiction tests
+on:
+  push:
+    branches: [feature/bonze042-field-fixes]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --test tests/bonze067.test.mjs
+      - run: node scripts/bench-bonze067.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bonze067-contradiction-results
+          path: |
+            bonze067-results.json
+            bonze067-report.md
+          retention-days: 30
