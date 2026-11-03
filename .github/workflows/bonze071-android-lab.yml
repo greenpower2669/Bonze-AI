@@ -1,15 +1,5 @@
 name: BONZE-071 Android Lab 070 direct test APK
 on:
-  push:
-    branches: [feature/bonze042-field-fixes]
-    paths:
-      - 'docs/scene-lab.js'
-      - 'docs/index.html'
-      - 'docs/app.js'
-      - 'docs/style.css'
-      - 'android/app/build.gradle'
-      - 'tests/bonze071-lab.test.mjs'
-      - '.github/workflows/bonze071-android-lab.yml'
   workflow_dispatch:
 permissions:
   contents: write
