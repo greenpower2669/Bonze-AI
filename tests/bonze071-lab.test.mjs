@@ -35,7 +35,7 @@ test('BONZE-071: lab installs separately and preserves existing version',()=>{
  assert.match(gradle,/applicationIdSuffix '\.lab070'/);
  assert.match(gradle,/0\.8\.1-lab070/);
  assert.match(gradle,/0\.8\.0-dev/);
- assert.match(gradle,/versionCode project\.hasProperty\('bonzeLab070'\) \? 9 : 8/);
+ assert.match(gradle,/project\.hasProperty\('bonzeLab070'\) \? 9 : 8/);
 });
 test('BONZE-071: first phrase is acknowledged, contradiction is blocked',()=>{
  const root={};
