@@ -1,0 +1,35 @@
+name: BONZE-069 quantifiers and pronouns — experimental
+on:
+  push:
+    branches: [feature/bonze042-field-fixes]
+    paths:
+      - 'core/story-consistency.js'
+      - 'tests/fixtures/bonze069-quantifiers-anaphora.mjs'
+      - 'scripts/bench-bonze069.mjs'
+      - 'tests/bonze069.test.mjs'
+      - '.github/workflows/bonze069-narrative-logic.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  logic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Frozen 49-pair diagnostic
+        run: node scripts/bench-bonze069.mjs
+      - name: Experimental regression tests
+        run: if [ -f tests/bonze069.test.mjs ]; then node --test tests/bonze069.test.mjs; fi
+      - name: Archive baseline and subsequent comparisons
+        uses: actions/upload-artifact@v4
+        with:
+          name: bonze069-quantifier-and-pronoun-diagnostics
+          path: |
+            bonze069-baseline.json
+            bonze069-baseline.md
+          if-no-files-found: error
+          retention-days: 30
