@@ -97,6 +97,7 @@ object BonzeInference {
         // The same worker owns all GGUF calls, so this reuses one model.
         if (loaded == null || loadedChoice != LocalModelStore.LARGE)
             classify(context, userText, recentContext, "")
+        if (loadedChoice != LocalModelStore.LARGE) return@runBlocking ""
         val model = loaded ?: return@runBlocking ""
         val system = "Tu es Bonze, un petit compagnon de conversation hors ligne. " +
             "Réponds directement au dernier message de la personne, en français naturel, " +
